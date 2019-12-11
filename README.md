@@ -7,6 +7,8 @@
 
 Paper:
 
+Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
+
 Link to PressurePose dataset:
 
 ## What code is in here?
