@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #Bodies at Rest: Code to visualize synthetic dataset.
-#Written by Henry M. Clever
+#(c) Henry M. Clever
 #Major updates made for CVPR release: December 10, 2019
 
 

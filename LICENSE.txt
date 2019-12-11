@@ -90,4 +90,9 @@ Commercial licensing opportunities
 For commercial use in the fields of medicine, psychology, and biomechanics, please contact ps-license@tue.mpg.de.
 For commercial use in all other fields please contact Body Labs Inc at smpl@bodylabs.com
 
+
+2. pyrender, (https://github.com/mmatl/pyrender) - MIT License
+3. trimesh, (https://github.com/mikedh/trimesh) - MIT License
+
+
 ************END OF THIRD-PARTY SOFTWARE NOTICES AND INFORMATION**********
