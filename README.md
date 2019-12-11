@@ -1,4 +1,5 @@
-# Bodies at Rest: 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data}
+# Bodies at Rest
+## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
   <img width="98%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/intro_overview.JPG?raw=true" alt="None"/>
@@ -19,8 +20,6 @@ This repository:
 For the synthetic data, when you run the following code, you will see something like the pictures below. There are flags in the code that allow you to segment based on the limbs and also to cut out mesh vertices that aren't facing the camera. The camera is positioned in the synthetic dataset at the same location as the real one, so cutting out the non-camera facing vertices will allow you to better compare the synthetic data to the real point cloud data.
 
 
-
-
 ## What other packages do I need?
 * SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/
 * PyRender - https://github.com/mmatl/pyrender
@@ -28,3 +27,7 @@ For the synthetic data, when you run the following code, you will see something 
 * PyTorch - https://pytorch.org/
 * PyTorch HMR - https://github.com/MandyMo/pytorch_HMR
 * Matplotlib, PyGlet, some others .... 
+
+
+## What code isn't here? 
+The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable. I'd also worry that users would have trouble getting it up and running because of its complexity; what I have now needs work to make it less challenging to install. 
