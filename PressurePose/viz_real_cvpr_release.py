@@ -11,7 +11,7 @@ import copy
 
 import sys
 sys.path.insert(0, '../lib_py')
-import lib_pyrender_ez as libPyRender
+import lib_pyrender_br as libPyRender
 from smpl.smpl_webuser.serialization import load_model
 
 import cPickle as pkl

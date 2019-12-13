@@ -12,16 +12,10 @@ from scipy import ndimage
 import scipy.stats as ss
 from scipy.misc import imresize
 from scipy.ndimage.interpolation import zoom
-#from skimage.feature import hog
-#from skimage import data, color, exposure
 
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import scale
-from sklearn import svm, linear_model, decomposition, kernel_ridge, neighbors
-from sklearn import metrics
-from sklearn.utils import shuffle
-
-from kinematics_lib import KinematicsLib
+import sys
+sys.path.insert(0, '../lib_py')
+from kinematics_lib_br import KinematicsLib
 
 # PyTorch libraries
 import argparse
@@ -38,11 +32,6 @@ MAT_HALF_WIDTH = MAT_WIDTH/2
 NUMOFTAXELS_X = 84#73 #taxels
 NUMOFTAXELS_Y = 47#30
 INTER_SENSOR_DISTANCE = 0.0286#metres
-LOW_TAXEL_THRESH_X = 0
-LOW_TAXEL_THRESH_Y = 0
-HIGH_TAXEL_THRESH_X = (NUMOFTAXELS_X - 1)
-HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1)
-
 
 
 # import hrl_lib.util as ut
@@ -57,7 +46,7 @@ class MeshDepthLib():
 
     def __init__(self, loss_vector_type, filepath_prefix, batch_size, verts_list):
 
-        if False:#torch.cuda.is_available():
+        if torch.cuda.is_available():
             self.GPU = True
             # Use for self.GPU
             dtype = torch.cuda.FloatTensor
@@ -373,8 +362,8 @@ class MeshDepthLib():
                     self.ones_cartesian = torch.ones([self.N, 24]).type(dtype)
 
 
-
-    def compute_tensor_mesh(self, gender_switch, betas_est, Rs_est, root_shift_est, start_incr, end_incr, GPU):
+    #human mesh recovery - kinematic embedding
+    def HMR(self, gender_switch, betas_est, Rs_est, root_shift_est, start_incr, end_incr, GPU):
 
         if GPU == False:
             self.dtype = torch.FloatTensor
@@ -411,25 +400,8 @@ class MeshDepthLib():
                                                                                J_est, self.parents, GPU,
                                                                                rotate_base=False)
 
-        # if start_incr == 0:
-        #    print root_shift_est[0, :], 'rootshift'
-        #    print J_est[0, :],'Jest'
-
 
         targets_est = targets_est + root_shift_est[start_incr:end_incr, :].unsqueeze(1) - J_est[:, 0:1, :]
-
-        # assemble a reduced form of the transformed mesh
-        # v_shaped_red = torch.stack([v_shaped[:, 1325, :],
-        #                            v_shaped[:, 336, :],  # head
-        #                            v_shaped[:, 1032, :],  # l knee
-        #                            v_shaped[:, 4515, :],  # r knee
-        #                            v_shaped[:, 1374, :],  # l ankle
-        #                            v_shaped[:, 4848, :],  # r ankle
-        #                            v_shaped[:, 1739, :],  # l elbow
-        #                            v_shaped[:, 5209, :],  # r elbow
-        #                            v_shaped[:, 1960, :],  # l wrist
-        #                            v_shaped[:, 5423, :]]).permute(1, 0, 2)  # r wrist
-
 
         pose_feature = (Rs_est[start_incr:end_incr, 1:, :, :]).sub(1.0, torch.eye(3).type(self.dtype)).view(-1, 207)
 
@@ -459,8 +431,8 @@ class MeshDepthLib():
         return verts, J_est, targets_est
 
 
-
-    def compute_depth_contact_planes(self, verts, bed_angle_batch, get_mesh_bottom_dist = True):
+    #PMR - Pressure Map Reconstruction#
+    def PMR(self, verts, bed_angle_batch, get_mesh_bottom_dist = True):
         cbs = verts.size()[0] #current batch size
         bend_taxel_loc = 48
 
@@ -477,29 +449,12 @@ class MeshDepthLib():
 
         bend_loc = bend_taxel_loc*0.0286
 
-        # import matplotlib.pyplot as plt
-        # plt.plot(-vertices[:, 1], vertices[:, 2], 'r.')
-
-        #print bed_angle_batch_sin.size()
-        #print verts_taxel[:, :, 2].size()
-
-        #print bed_angle_batch_sin
-        #print verts_taxel[:, 0, 2]
-        #print torch.mul(bed_angle_batch_sin, verts_taxel[:, :, 2].permute(1, 0)).permute(1, 0)[:, 0]
-
-
         verts_rot_taxel[:, :, 1] = torch.mul(bed_angle_batch_sin, verts_taxel[:, :, 2].permute(1, 0)).permute(1, 0) - \
                                    torch.mul(bed_angle_batch_cos, (bend_loc - verts_taxel[:, :, 1]).permute(1, 0)).permute(1, 0) + bend_loc
 
         verts_rot_taxel[:, :, 2] = torch.mul(bed_angle_batch_cos, verts_taxel[:, :, 2].permute(1, 0)).permute(1, 0) + \
                                    torch.mul(bed_angle_batch_sin, (bend_loc - verts_taxel[:, :, 1]).permute(1, 0)).permute(1, 0)
 
-
-
-        #import matplotlib.pyplot as plt
-        #plt.plot(-verts_taxel.cpu().detach().numpy()[0, :, 1], verts_taxel.cpu().detach().numpy()[0, :, 2], 'r.')
-
-        #print verts_taxel.size()
         verts_taxel = torch.cat((verts_taxel, verts_taxel[:, 0:8000, :]*0+3.0), dim = 1)
         #print verts_taxel.size(),"SIZE POST"
 

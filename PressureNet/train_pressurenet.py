@@ -17,7 +17,7 @@ from torch.autograd import Variable
 
 import chumpy as ch
 
-import convnet as convnet
+import convnet_br as convnet
 # import tf.transformations as tft
 
 # import hrl_lib.util as ut
@@ -30,12 +30,13 @@ def load_pickle(filename):
         return pickle.load(f)
 
 
+import sys
+sys.path.insert(0, '../lib_py')
+
 # Pose Estimation Libraries
-from visualization_lib import VisualizationLib
-from preprocessing_lib import PreprocessingLib
-from synthetic_lib import SyntheticLib
-from tensorprep_lib import TensorPrepLib
-from unpack_batch_lib import UnpackBatchLib
+from visualization_lib_br import VisualizationLib
+from preprocessing_lib_br import PreprocessingLib
+from tensorprep_lib_br import TensorPrepLib
 
 import cPickle as pkl
 import random
@@ -43,17 +44,6 @@ from scipy import ndimage
 import scipy.stats as ss
 from scipy.misc import imresize
 from scipy.ndimage.interpolation import zoom
-# from skimage.feature import hog
-# from skimage import data, color, exposure
-
-
-#from sklearn.cluster import KMeans
-#from sklearn.preprocessing import scale
-#from sklearn.preprocessing import normalize
-#from sklearn import svm, linear_model, decomposition, kernel_ridge, neighbors
-#from sklearn import metrics
-#from sklearn.utils import shuffle
-#from sklearn.multioutput import MultiOutputRegressor
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -66,11 +56,6 @@ NUMOFOUTPUTDIMS = 3
 NUMOFOUTPUTNODES_TRAIN = 24
 NUMOFOUTPUTNODES_TEST = 10
 INTER_SENSOR_DISTANCE = 0.0286  # metres
-LOW_TAXEL_THRESH_X = 0
-LOW_TAXEL_THRESH_Y = 0
-HIGH_TAXEL_THRESH_X = (NUMOFTAXELS_X - 1)
-HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1)
-TEST_SUBJECT = 9
 DEVICE = 0
 
 torch.set_num_threads(1)
@@ -108,20 +93,18 @@ class PhysicalTrainer():
         self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
-        self.CTRL_PNL['incl_ht_wt_channels'] = True
+        self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
-        self.CTRL_PNL['dropout'] = False
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 3
         self.CTRL_PNL['GPU'] = GPU
         self.CTRL_PNL['dtype'] = dtype
         repeat_real_data_ct = 3
         self.CTRL_PNL['regr_angles'] = opt.reg_angles
-        self.CTRL_PNL['aws'] = self.opt.aws
-        self.CTRL_PNL['depth_map_labels'] = True #can only be true if we have 100% synthetic data for training
-        self.CTRL_PNL['depth_map_labels_test'] = True #False #can only be true is we have 100% synth for testing
+        self.CTRL_PNL['depth_map_labels'] = opt.pmr #can only be true if we have 100% synthetic data for training
+        self.CTRL_PNL['depth_map_labels_test'] = opt.pmr #False #can only be true is we have 100% synth for testing
         self.CTRL_PNL['depth_map_output'] = self.CTRL_PNL['depth_map_labels']
-        self.CTRL_PNL['depth_map_input_est'] = True #do this if we're working in a two-part regression
+        self.CTRL_PNL['depth_map_input_est'] = opt.pmr #do this if we're working in a two-part regression
         self.CTRL_PNL['adjust_ang_from_est'] = self.CTRL_PNL['depth_map_input_est'] #holds betas and root same as prior estimate
         self.CTRL_PNL['clip_sobel'] = True
         self.CTRL_PNL['clip_betas'] = True
@@ -129,18 +112,14 @@ class PhysicalTrainer():
         self.CTRL_PNL['full_body_rot'] = True
         self.CTRL_PNL['normalize_input'] = True
         self.CTRL_PNL['all_tanh_activ'] = True
-        self.CTRL_PNL['L2_contact'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
-        self.CTRL_PNL['cal_noise'] = True
+        self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
 
         self.weight_joints = 1.0#self.opt.j_d_ratio*2
         self.weight_depth_planes = (1-self.opt.j_d_ratio)#*2
 
-        if opt.losstype == 'direct':
-            self.CTRL_PNL['depth_map_labels'] = False
-            self.CTRL_PNL['depth_map_output'] = False
 
         if self.CTRL_PNL['cal_noise'] == True:
             self.CTRL_PNL['incl_pmat_cntct_input'] = False #if there's calibration noise we need to recompute this every batch
@@ -155,6 +134,7 @@ class PhysicalTrainer():
             self.CTRL_PNL['num_input_channels'] += 2
         if self.CTRL_PNL['cal_noise'] == True:
             self.CTRL_PNL['num_input_channels'] += 1
+        self.CTRL_PNL['num_input_channels'] -= 1
 
         pmat_std_from_mult = ['N/A', 11.70153502792190, 19.90905848383454, 23.07018866032369, 0.0, 25.50538629767412]
         if self.CTRL_PNL['cal_noise'] == False:
@@ -168,59 +148,21 @@ class PhysicalTrainer():
                                              1./43.55800622930469,  #cm est
                                              1./pmat_std_from_mult[int(self.CTRL_PNL['pmat_mult'])], #pmat x5
                                              1./sobel_std_from_mult[int(self.CTRL_PNL['pmat_mult'])], #pmat sobel
-                                             1./1.0,                #bed height mat
                                              1./1.0,                #OUTPUT DO NOTHING
                                              1./1.0,                #OUTPUT DO NOTHING
                                              1. / 30.216647403350,  #weight
                                              1. / 14.629298141231]  #height
 
 
-        if self.opt.aws == True:
-            self.CTRL_PNL['filepath_prefix'] = '/home/ubuntu/'
-        else:
-            self.CTRL_PNL['filepath_prefix'] = '/home/henry/'
-            #self.CTRL_PNL['filepath_prefix'] = '/media/henry/multimodal_data_2/'
+        self.CTRL_PNL['filepath_prefix'] = '/home/henry/'
+        #self.CTRL_PNL['filepath_prefix'] = '/media/henry/multimodal_data_2/'
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
             self.verts_list = "all"
         else:
             self.verts_list = [1325, 336, 1032, 4515, 1374, 4848, 1739, 5209, 1960, 5423]
 
-        print self.CTRL_PNL['num_epochs'], 'NUM EPOCHS!'
-        # Entire pressure dataset with coordinates in world frame
 
-        self.save_name = '_' + opt.losstype + \
-                         '_synth_46000' + \
-                         '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
-                         '_' + str(self.CTRL_PNL['num_epochs']) + 'e' + \
-                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pmult'
-
-
-        if self.CTRL_PNL['depth_map_labels'] == True:
-            self.save_name += '_' + str(self.opt.j_d_ratio) + 'rtojtdpth'
-        if self.CTRL_PNL['depth_map_input_est'] == True:
-            self.save_name += '_depthestin'
-        if self.CTRL_PNL['adjust_ang_from_est'] == True:
-            self.save_name += '_angleadj'
-        if self.CTRL_PNL['all_tanh_activ'] == True:
-            self.save_name += '_tnhFIXN'
-        if self.CTRL_PNL['incl_ht_wt_channels'] == True:
-            self.save_name += '_htwt'
-        #if self.CTRL_PNL['L2_contact'] == True:
-        #    self.save_name += '_l2cnt'
-        if self.CTRL_PNL['cal_noise'] == True:
-            self.save_name += '_calnoise'
-        if self.CTRL_PNL['double_network_size'] == True:
-            self.save_name += '_dns'
-
-
-        # self.save_name = '_' + opt.losstype+'_real_s9_alltest_' + str(self.CTRL_PNL['batch_size']) + 'b_'# + str(self.CTRL_PNL['num_epochs']) + 'e'
-
-        print 'appending to', 'train' + self.save_name
-        self.train_val_losses = {}
-        self.train_val_losses['train' + self.save_name] = []
-        self.train_val_losses['val' + self.save_name] = []
-        self.train_val_losses['epoch' + self.save_name] = []
 
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
         self.output_size_train = (NUMOFOUTPUTNODES_TRAIN, NUMOFOUTPUTDIMS)
@@ -247,10 +189,6 @@ class PhysicalTrainer():
 
         if len(self.train_x_flat) == 0: print("NO TRAINING DATA INCLUDED")
 
-        self.train_a_flat = []  # Initialize the training pressure mat angle list
-        self.train_a_flat = TensorPrepLib().prep_angles(self.train_a_flat, dat_f_synth, dat_m_synth, num_repeats = 1)
-        self.train_a_flat = TensorPrepLib().prep_angles(self.train_a_flat, dat_f_real, dat_m_real, num_repeats = repeat_real_data_ct)
-
         if self.CTRL_PNL['depth_map_labels'] == True:
             self.depth_contact_maps = [] #Initialize the precomputed depth and contact maps. only synth has this label.
             self.depth_contact_maps = TensorPrepLib().prep_depth_contact(self.depth_contact_maps, dat_f_synth, dat_m_synth, num_repeats = 1)
@@ -268,7 +206,6 @@ class PhysicalTrainer():
 
         #stack the bed height array on the pressure image as well as a sobel filtered image
         train_xa = PreprocessingLib().preprocessing_create_pressure_angle_stack(self.train_x_flat,
-                                                                                self.train_a_flat,
                                                                                 self.mat_size,
                                                                                 self.CTRL_PNL)
 
@@ -336,11 +273,6 @@ class PhysicalTrainer():
 
         if len(self.test_x_flat) == 0: print("NO TESTING DATA INCLUDED")
 
-        self.test_a_flat = []  # Initialize the testing pressure mat angle listhave
-        self.test_a_flat = TensorPrepLib().prep_angles(self.test_a_flat, test_dat_f_synth, test_dat_m_synth, num_repeats = 1)
-        self.test_a_flat = TensorPrepLib().prep_angles(self.test_a_flat, test_dat_f_real, test_dat_m_real, num_repeats = 1)
-
-
         if self.CTRL_PNL['depth_map_labels_test'] == True:
             self.depth_contact_maps = [] #Initialize the precomputed depth and contact maps. only synth has this label.
             self.depth_contact_maps = TensorPrepLib().prep_depth_contact(self.depth_contact_maps, test_dat_f_synth, test_dat_m_synth, num_repeats = 1)
@@ -356,10 +288,9 @@ class PhysicalTrainer():
         else:
             self.depth_contact_maps_input_est = None
 
-        print np.shape(self.test_x_flat), np.shape(self.test_a_flat)
+        print np.shape(self.test_x_flat)
 
         test_xa = PreprocessingLib().preprocessing_create_pressure_angle_stack(self.test_x_flat,
-                                                                               self.test_a_flat,
                                                                                 self.mat_size,
                                                                                 self.CTRL_PNL)
 
@@ -409,48 +340,62 @@ class PhysicalTrainer():
 
 
 
+        self.save_name = '_' + opt.losstype + \
+                         '_synth_' + str(self.train_x_tensor.size()[0]) + \
+                         '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
+                         '_' + str(self.CTRL_PNL['num_epochs']) + 'e' + \
+                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pmult'
+
+
+        if self.CTRL_PNL['depth_map_labels'] == True:
+            self.save_name += '_' + str(self.opt.j_d_ratio) + 'rtojtdpth'
+        if self.CTRL_PNL['depth_map_input_est'] == True:
+            self.save_name += '_depthestin'
+        if self.CTRL_PNL['adjust_ang_from_est'] == True:
+            self.save_name += '_angleadj'
+        if self.CTRL_PNL['all_tanh_activ'] == True:
+            self.save_name += '_tnh'
+        if self.CTRL_PNL['incl_ht_wt_channels'] == True:
+            self.save_name += '_htwt'
+        if self.CTRL_PNL['cal_noise'] == True:
+            self.save_name += '_calnoise'
+        if self.CTRL_PNL['double_network_size'] == True:
+            self.save_name += '_dns'
+
+        print 'appending to', 'train' + self.save_name
+        self.train_val_losses = {}
+        self.train_val_losses['train' + self.save_name] = []
+        self.train_val_losses['val' + self.save_name] = []
+        self.train_val_losses['epoch' + self.save_name] = []
+
+
+
+
+
     def init_convnet_train(self):
 
-        #self.train_x_tensor = self.train_x_tensor.unsqueeze(1)
         self.train_dataset = torch.utils.data.TensorDataset(self.train_x_tensor, self.train_y_tensor)
         self.train_loader = torch.utils.data.DataLoader(self.train_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
 
-        #self.test_x_tensor = self.test_x_tensor.unsqueeze(1)
         self.test_dataset = torch.utils.data.TensorDataset(self.test_x_tensor, self.test_y_tensor)
         self.test_loader = torch.utils.data.DataLoader(self.test_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
 
+
+
         print "Loading convnet model................................"
-        if self.CTRL_PNL['loss_vector_type'] == 'direct':
-            fc_output_size = 30
-            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                     verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'],
-                                     in_channels=self.CTRL_PNL['num_input_channels'])
 
-        elif self.CTRL_PNL['loss_vector_type'] == 'anglesDC' or self.CTRL_PNL['loss_vector_type'] == 'anglesEU':
-            fc_output_size = 85## 10 + 3 + 24*3 --- betas, root shift, rotations
+        fc_output_size = 85## 10 + 3 + 24*3 --- betas, root shift, rotations
 
-            if self.CTRL_PNL['full_body_rot'] == True:
-                fc_output_size += 3
+        if self.CTRL_PNL['full_body_rot'] == True:
+            fc_output_size += 3
 
-            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                     verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'], in_channels=self.CTRL_PNL['num_input_channels'])
+        self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
+                                 verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'], in_channels=self.CTRL_PNL['num_input_channels'])
 
 
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_0.5rtojtdpth_tnh_htwt_100e_00002lr.pt', map_location={'cuda:4':'cuda:'+str(DEVICE)})
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_0.5rtojtdpth_tnh_htwt_calnoise_50e_00002lr.pt', map_location={'cuda:0':'cuda:'+str(DEVICE)})
-
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/convnet_anglesDC_synth_32000_128b_x5pmult_0.5rtojtdpth_alltanh_l2cnt_125e_00001lr.pt')
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/convnet_anglesDC_synth_32000_128b_x1pmult_0.5rtojtdpth_l2cnt_calnoise_150e_00001lr.pt')
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/convnet_anglesDC_synth_32000_128b_x1pmult_0.5rtojtdpth_alltanh_l2cnt_calnoise_125e_00001lr.pt')
-
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+"/data/convnets/planesreg_correction/DC_L2depth/convnet_anglesDC_synth_32000_128b_x5pmult_0.5rtojtdpth_depthestin_angleadj_alltanh_l2cnt_125e_200e_00001lr.pt", map_location={'cuda:7':'cuda:'+str(DEVICE)})
-            #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg_correction/'
-            #                            'convnet_anglesEU_synth_s9_3xreal_128b_1.0rtojtdpth_pmatcntin_depthestin_angleadj_100e_000005lr_betasreg.pt')
-
-            #self.model = convnet.CNN(self.mat_size, fc_output_size, hidden_dim, kernel_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'], filepath=filepath_prefix)
-            #self.model = torch.load('/home/ubuntu/Autobed_OFFICIAL_Trials' + '/subject_' + str(self.opt.leave_out) + '/convnets/convnet_9to18_'+str(self.CTRL_PNL['loss_vector_type'])+'_sTrue_128b_200e_' + str(self.opt.leave_out) + '.pt', map_location=lambda storage, loc: storage)
-
+        #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
+        #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_0.5rtojtdpth_tnh_htwt_100e_00002lr.pt', map_location={'cuda:4':'cuda:'+str(DEVICE)})
+        #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_0.5rtojtdpth_tnh_htwt_calnoise_50e_00002lr.pt', map_location={'cuda:0':'cuda:'+str(DEVICE)})
 
         pp = 0
         for p in list(self.model.parameters()):
@@ -462,7 +407,6 @@ class PhysicalTrainer():
 
 
         # Run model on GPU if available
-        #if torch.cuda.is_available():
         if GPU == True:
             self.model = self.model.cuda()
 
@@ -497,7 +441,7 @@ class PhysicalTrainer():
         '''
         Train the model for one epoch.
         '''
-        # Some models use slightly different forward passes and train and test
+        # Some models use different forward passes between train and test
         # time (e.g., any model with Dropout). This puts the model in train mode
         # (as opposed to eval mode) so it knows which one to use.
         self.model.train()
@@ -509,63 +453,46 @@ class PhysicalTrainer():
             for batch_idx, batch in enumerate(self.train_loader):
                 if GPU == True:
                     print "GPU memory:", torch.cuda.max_memory_allocated()
-                if self.CTRL_PNL['loss_vector_type'] == 'direct':
 
-                    self.optimizer.zero_grad()
-                    scores, INPUT_DICT, OUTPUT_DICT = \
-                        UnpackBatchLib().unpackage_batch_dir_pass(batch, is_training=True, model=self.model, CTRL_PNL = self.CTRL_PNL)
+                self.optimizer.zero_grad()
+                scores, INPUT_DICT, OUTPUT_DICT = \
+                    self.unpack_batch(batch, is_training=True, model = self.model, CTRL_PNL=self.CTRL_PNL)
+                #print torch.cuda.max_memory_allocated(), '1post train'
+                self.CTRL_PNL['first_pass'] = False
 
-                    scores_zeros = np.zeros((batch[0].numpy().shape[0], 10))  # 24 is joint euclidean errors
-                    scores_zeros = Variable(torch.Tensor(scores_zeros).type(dtype))
+                scores_zeros = Variable(torch.Tensor(np.zeros((batch[0].shape[0], scores.size()[1]))).type(dtype),
+                                        requires_grad=True)
 
-                    loss = self.criterion(scores, scores_zeros)
+                if self.CTRL_PNL['full_body_rot'] == True:
+                    OSA = 6
+                    loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints
+                    #if self.CTRL_PNL['adjust_ang_from_est'] == True:
+                    #    loss_bodyrot *= 0
+                else: OSA = 0
 
-
-
-                elif self.CTRL_PNL['loss_vector_type'] == 'anglesR' or self.CTRL_PNL['loss_vector_type'] == 'anglesDC' or self.CTRL_PNL['loss_vector_type'] == 'anglesEU':
-                    #print torch.cuda.max_memory_allocated(), '1pre train'
-                    self.optimizer.zero_grad()
-                    scores, INPUT_DICT, OUTPUT_DICT = \
-                        UnpackBatchLib().unpackage_batch_kin_pass(batch, is_training=True, model = self.model, CTRL_PNL=self.CTRL_PNL)
-                    #print torch.cuda.max_memory_allocated(), '1post train'
-                    self.CTRL_PNL['first_pass'] = False
-
-                    scores_zeros = Variable(torch.Tensor(np.zeros((batch[0].shape[0], scores.size()[1]))).type(dtype),
-                                            requires_grad=True)
-
-                    if self.CTRL_PNL['full_body_rot'] == True:
-                        OSA = 6
-                        loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints
-                        #if self.CTRL_PNL['adjust_ang_from_est'] == True:
-                        #    loss_bodyrot *= 0
-                    else: OSA = 0
-
-                    loss_eucl = self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:, 10+OSA:34+OSA])*self.weight_joints
-                    loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints*0.5
+                loss_eucl = self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:, 10+OSA:34+OSA])*self.weight_joints
+                loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints*0.5
 
 
-                    if self.CTRL_PNL['regr_angles'] == True:
-                        loss_angs = self.criterion2(scores[:, 34+OSA:106+OSA], scores_zeros[:, 34+OSA:106+OSA])*self.weight_joints
-                        loss = (loss_betas + loss_eucl + loss_bodyrot + loss_angs)
-                    else:
-                        loss = (loss_betas + loss_eucl + loss_bodyrot)
+                if self.CTRL_PNL['regr_angles'] == True:
+                    loss_angs = self.criterion2(scores[:, 34+OSA:106+OSA], scores_zeros[:, 34+OSA:106+OSA])*self.weight_joints
+                    loss = (loss_betas + loss_eucl + loss_bodyrot + loss_angs)
+                else:
+                    loss = (loss_betas + loss_eucl + loss_bodyrot)
 
 
-                    #print INPUT_DICT['batch_mdm'].size(), OUTPUT_DICT['batch_mdm_est'].size()
+                #print INPUT_DICT['batch_mdm'].size(), OUTPUT_DICT['batch_mdm_est'].size()
 
-                    if self.CTRL_PNL['depth_map_labels'] == True:
-                        INPUT_DICT['batch_mdm'][INPUT_DICT['batch_mdm'] > 0] = 0
-                        if self.CTRL_PNL['mesh_bottom_dist'] == True:
-                            OUTPUT_DICT['batch_mdm_est'][OUTPUT_DICT['batch_mdm_est'] > 0] = 0
+                if self.CTRL_PNL['depth_map_labels'] == True:
+                    INPUT_DICT['batch_mdm'][INPUT_DICT['batch_mdm'] > 0] = 0
+                    if self.CTRL_PNL['mesh_bottom_dist'] == True:
+                        OUTPUT_DICT['batch_mdm_est'][OUTPUT_DICT['batch_mdm_est'] > 0] = 0
 
-                        if self.CTRL_PNL['L2_contact'] == True:
-                            loss_mesh_depth = self.criterion2(INPUT_DICT['batch_mdm'], OUTPUT_DICT['batch_mdm_est'])*self.weight_depth_planes * (1. / 44.46155340000357) * (1. / 44.46155340000357)
-                            loss_mesh_contact = self.criterion(INPUT_DICT['batch_cm'], OUTPUT_DICT['batch_cm_est'])*self.weight_depth_planes * (1. / 0.4428100696329912)
-                        else:
-                            loss_mesh_depth = self.criterion(INPUT_DICT['batch_mdm'], OUTPUT_DICT['batch_mdm_est'])*self.weight_depth_planes * (1. / 44.46155340000357)
-                            loss_mesh_contact = self.criterion(INPUT_DICT['batch_cm'], OUTPUT_DICT['batch_cm_est'])*self.weight_depth_planes * (1. / 0.4428100696329912)
-                        loss += loss_mesh_depth
-                        loss += loss_mesh_contact
+                    loss_mesh_depth = self.criterion2(INPUT_DICT['batch_mdm'], OUTPUT_DICT['batch_mdm_est'])*self.weight_depth_planes * (1. / 44.46155340000357) * (1. / 44.46155340000357)
+                    loss_mesh_contact = self.criterion(INPUT_DICT['batch_cm'], OUTPUT_DICT['batch_cm_est'])*self.weight_depth_planes * (1. / 0.4428100696329912)
+
+                    loss += loss_mesh_depth
+                    loss += loss_mesh_contact
 
 
 
@@ -592,25 +519,23 @@ class PhysicalTrainer():
 
                    # print INPUT_DICT['batch_images'][im_display_idx, 4:, :].type()
 
-                    if self.CTRL_PNL['depth_map_input_est'] == True: #two part reg
-                        self.im_sample = INPUT_DICT['batch_images'][im_display_idx, 4:, :].squeeze()*20. #pmat
-                        self.im_sample_ext = INPUT_DICT['batch_images'][im_display_idx, 2:, :].squeeze()*20. #estimated input
-                        self.im_sample_ext2 = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #ground truth depth
-                        self.im_sample_ext3 = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #est depth output
+                    if self.CTRL_PNL['depth_map_labels'] == True: #pmr regression
+                        self.im_sample1 = INPUT_DICT['batch_images'][im_display_idx, 4:, :].squeeze()*20. #pmat
+                        self.im_sample2 = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #ground truth depth
+                        self.im_sample3 = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #est depth output
                     else:
-                        self.im_sample = INPUT_DICT['batch_images'][im_display_idx, 1:2, :].squeeze()*11.70153502792190#normalizing_std_constants[4]*5.  #pmat
-                        print np.sum(self.im_sample), 'sum samp'
-                        self.im_sample_ext = INPUT_DICT['batch_images'][im_display_idx, 1:2, :].squeeze()*11.70153502792190*5#normalizing_std_constants[0]  #pmat contact
-                        print np.sum(np.clip(self.im_sample_ext, 0, 100)), 'sum samp'
-                        self.im_sample_ext2 = INPUT_DICT['batch_images'][im_display_idx, 2:, :].squeeze()*20.#normalizing_std_constants[4]  #sobel
-                        #self.im_sample_ext2 = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #ground truth depth
-                        #self.im_sample_ext3 = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #est depth output
 
-                    #print scores[0, 10:16], 'scores of body rot'
+                        print INPUT_DICT['batch_images'].size(), 'size of input'
 
-                    #print self.im_sample.size(), self.im_sample_ext.size(), self.im_sample_ext2.size(), self.im_sample_ext3.size()
+                        self.im_sample1 = INPUT_DICT['batch_images'][im_display_idx, 0:1, :].squeeze()*11.70153502792190  #contact
+                        self.im_sample2 = INPUT_DICT['batch_images'][im_display_idx, 1:2, :].squeeze()*11.70153502792190  #pmat
+                        self.im_sample3 = INPUT_DICT['batch_images'][im_display_idx, 2:, :].squeeze()*20.  #sobel
+                        #self.im_sample4 = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #ground truth depth
+                        #self.im_sample4 = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #est depth output
 
-                    #self.publish_depth_marker_array(self.im_sample_ext3)
+                    #if self.CTRL_PNL['depth_map_input_est'] == True: #this is a network 2 option ONLY
+                    #    self.im_sample4 = #this is the INPUT depth map.
+
 
                     self.tar_sample = INPUT_DICT['batch_targets']
                     self.tar_sample = self.tar_sample[im_display_idx, :].squeeze() / 1000
@@ -670,77 +595,26 @@ class PhysicalTrainer():
                     self.train_val_losses['val' + self.save_name].append(val_loss)
 
 
-    def publish_depth_marker_array(self, depth_array):
-        depth_array = depth_array.squeeze().cpu().numpy()
-
-        PointCloudArray = MarkerArray()
-
-        x = np.arange(0, 27).astype(float)
-        x = np.tile(x, (64, 1))
-        y = np.arange(0, 64).astype(float)
-        y = np.tile(y, (27, 1)).T
-
-        point_cloud = np.stack((x,y,depth_array))
-        point_cloud = np.swapaxes(point_cloud, 0, 2)
-        point_cloud = np.swapaxes(point_cloud, 0, 1)
-        point_cloud = point_cloud.reshape(-1, 3)
-        point_cloud = point_cloud.astype(float)*0.0286
-        point_cloud[:, 2] = point_cloud[:, 2]/0.0286*0.001
-
-        point_cloud[:, 2] = np.flipud(point_cloud[:, 2])
-
-        #print point_cloud.shape
-        for joint in range(0, point_cloud.shape[0]):
-            #print point_cloud[joint, :]
-            Tmarker = Marker()
-            Tmarker.type = Tmarker.SPHERE
-            Tmarker.header.frame_id = "map"
-            Tmarker.action = Tmarker.ADD
-            Tmarker.scale.x = 0.07
-            Tmarker.scale.y = 0.07
-            Tmarker.scale.z = 0.07
-            Tmarker.color.a = 1.0
-            Tmarker.color.r = 0.0
-            Tmarker.color.g = 0.7
-            Tmarker.color.b = 0.0
-            Tmarker.pose.orientation.w = 1.0
-            Tmarker.pose.position.x = point_cloud[joint, 0]  # - INTER_SENSOR_DISTANCE * 10
-            Tmarker.pose.position.y = point_cloud[joint, 1]  # - INTER_SENSOR_DISTANCE * 10
-            Tmarker.pose.position.z = point_cloud[joint, 2]
-            PointCloudArray.markers.append(Tmarker)
-            tid = 0
-            for m in PointCloudArray.markers:
-                m.id = tid
-                tid += 1
-        # print TargetArray
-        pointcloudPublisher.publish(PointCloudArray)
-
-
-
-        #print point_cloud.shape, 'depth marker array shape'
-
-
     def validate_convnet(self, verbose=False, n_batches=None):
         self.model.eval()
         loss = 0.
         n_examples = 0
         batch_ct = 1
 
-        if True: #self.CTRL_PNL['aws'] == True:
+        if True:
             for batch_i, batch in enumerate(self.test_loader):
 
-                print('GPU memory val:', torch.cuda.max_memory_allocated())
                 scores, INPUT_DICT_VAL, OUTPUT_DICT_VAL = \
-                    UnpackBatchLib().unpackage_batch_kin_pass(batch, is_training=False, model=self.model, CTRL_PNL=self.CTRL_PNL)
+                    self.unpack_batch(batch, is_training=False, model=self.model, CTRL_PNL=self.CTRL_PNL)
                 scores_zeros = Variable(torch.Tensor(np.zeros((batch[0].shape[0], scores.size()[1]))).type(dtype),
                                         requires_grad=False)
 
+                loss_to_add = 0
 
                 if self.CTRL_PNL['full_body_rot'] == True:
                     OSA = 6
                     loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints)
-                    #if self.CTRL_PNL['adjust_ang_from_est'] == True:
-                    #    loss_bodyrot *= 0
+                    loss_to_add += loss_bodyrot
                 else: OSA = 0
 
                 loss_eucl = float(self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:,  10+OSA:34+OSA]) * self.weight_joints)
@@ -749,9 +623,9 @@ class PhysicalTrainer():
 
                 if self.CTRL_PNL['regr_angles'] == True:
                     loss_angs = float(self.criterion(scores[:, 34+OSA:106+OSA], scores_zeros[:, 34+OSA:106+OSA]) * self.weight_joints)
-                    loss_to_add = (loss_betas + loss_eucl + loss_bodyrot + loss_angs)
+                    loss_to_add = (loss_betas + loss_eucl + loss_angs)
                 else:
-                    loss_to_add = (loss_betas + loss_eucl + loss_bodyrot)
+                    loss_to_add = (loss_betas + loss_eucl)
 
                 # print INPUT_DICT_VAL['batch_mdm'].size(), OUTPUT_DICT_VAL['batch_mdm_est'].size()
 
@@ -760,12 +634,9 @@ class PhysicalTrainer():
                     if self.CTRL_PNL['mesh_bottom_dist'] == True:
                         OUTPUT_DICT_VAL['batch_mdm_est'][OUTPUT_DICT_VAL['batch_mdm_est'] > 0] = 0
 
-                    if self.CTRL_PNL['L2_contact'] == True:
-                        loss_mesh_depth = float(self.criterion2(INPUT_DICT_VAL['batch_mdm'],OUTPUT_DICT_VAL['batch_mdm_est']) * self.weight_depth_planes * (1. / 44.46155340000357) * (1. / 44.46155340000357))
-                        loss_mesh_contact = float(self.criterion(INPUT_DICT_VAL['batch_cm'],OUTPUT_DICT_VAL['batch_cm_est']) * self.weight_depth_planes * (1. / 0.4428100696329912))
-                    else:
-                        loss_mesh_depth = float(self.criterion(INPUT_DICT_VAL['batch_mdm'],OUTPUT_DICT_VAL['batch_mdm_est']) * self.weight_depth_planes * (1. / 44.46155340000357))
-                        loss_mesh_contact = float(self.criterion(INPUT_DICT_VAL['batch_cm'],OUTPUT_DICT_VAL['batch_cm_est']) * self.weight_depth_planes * (1. / 0.4428100696329912))
+                    loss_mesh_depth = float(self.criterion2(INPUT_DICT_VAL['batch_mdm'],OUTPUT_DICT_VAL['batch_mdm_est']) * self.weight_depth_planes * (1. / 44.46155340000357) * (1. / 44.46155340000357))
+                    loss_mesh_contact = float(self.criterion(INPUT_DICT_VAL['batch_cm'],OUTPUT_DICT_VAL['batch_cm_est']) * self.weight_depth_planes * (1. / 0.4428100696329912))
+
                     loss_to_add += loss_mesh_depth
                     loss_to_add += loss_mesh_contact
 
@@ -783,62 +654,154 @@ class PhysicalTrainer():
 
             loss /= batch_ct
             loss *= 1000
-            #loss *= 10. / 34
-
-        #if GPU == True:
-        #    VisualizationLib().print_error_train(INPUT_DICT_VAL['batch_targets'].cpu(), OUTPUT_DICT_VAL['batch_targets_est'].cpu(), self.output_size_val,
-        #                                       self.CTRL_PNL['loss_vector_type'], data='validate')
-        #else:
-        #    VisualizationLib().print_error_train(INPUT_DICT_VAL['batch_targets'], OUTPUT_DICT_VAL['batch_targets_est'], self.output_size_val,
-        #                                      self.CTRL_PNL['loss_vector_type'], data='validate')
-
-        #self.im_sample_val = INPUT_DICT_VAL['batch_images']
-        #self.im_sample_val = self.im_sample_val[0, 1:, :].squeeze()
-        #self.tar_sample_val = INPUT_DICT_VAL['batch_targets']  # this is just 10 x 3
-        #self.tar_sample_val = self.tar_sample_val[0, :].squeeze() / 1000
-        ##self.sc_sample_val = OUTPUT_DICT_VAL['batch_targets_est']  # score space is larger is 72 x3
-        #self.sc_sample_val = self.sc_sample_val[0, :].squeeze() / 1000
-        #self.sc_sample_val = self.sc_sample_val.view(24, 3)
-
-        #print self.im_sample.shape, self.im_sample_val.shape, self.im_sample_ext.shape, self.im_sample_ext2.shape
 
         if self.opt.visualize == True:
-            if GPU == True:
-                #print self.im_sample.type()
-                #print self.im_sample_ext.type()
-                #print self.im_sample_ext2.type()
-                #print self.im_sample_ext3.type()
+            VisualizationLib().visualize_pressure_map(self.im_sample1, self.tar_sample.cpu(), self.sc_sample.cpu(),
+                                                      self.im_sample2, self.tar_sample.cpu(), self.sc_sample.cpu(), #self.tar_sample.cpu(), self.sc_sample.cpu(),
+                                                      self.im_sample3, None, None, # self.tar_sample.cpu(), self.sc_sample.cpu(),
+                                                      #self.im_sample_ext3 ,None, None, # self.tar_sample.cpu(), self.sc_sample.cpu(),
+                                                      #self.im_sample_val.cpu(), self.tar_sample_val.cpu(), self.sc_sample_val.cpu(),
+                                                      block=False)
 
-                VisualizationLib().visualize_pressure_map(self.im_sample, self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                          self.im_sample_ext, self.tar_sample.cpu(), self.sc_sample.cpu(), #self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                          self.im_sample_ext2,None, None, # self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                          #self.im_sample_ext3 ,None, None, # self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                          #self.im_sample_val.cpu(), self.tar_sample_val.cpu(), self.sc_sample_val.cpu(),
-                                                          block=False)
-            else:
-                VisualizationLib().visualize_pressure_map(self.im_sample, self.tar_sample, self.sc_sample,
-                                                         # self.im_sample_ext, None, None,
-                                                          #self.im_sample_ext2, None, None,
-                                                          #self.im_sample_ext3, None, None, #, self.tar_sample_val, self.sc_sample_val,
-                                                          block=False)
         #print "loss is:" , loss
         return loss
 
 
 
+
+    def unpack_batch(self, batch, is_training, model, CTRL_PNL):
+
+        INPUT_DICT = {}
+        adj_ext_idx = 0
+        # 0:72: positions.
+        batch.append(batch[1][:, 72:82])  # betas
+        batch.append(batch[1][:, 82:154])  # angles
+        batch.append(batch[1][:, 154:157])  # root pos
+        batch.append(batch[1][:, 157:159])  # gender switch
+        batch.append(batch[1][:, 159])  # synth vs real switch
+        batch.append(batch[1][:, 160:161])  # mass, kg
+        batch.append(batch[1][:, 161:162])  # height, kg
+
+        if CTRL_PNL['adjust_ang_from_est'] == True:
+            adj_ext_idx += 3
+            batch.append(batch[1][:, 162:172]) #betas est
+            batch.append(batch[1][:, 172:244]) #angles est
+            batch.append(batch[1][:, 244:247]) #root pos est
+            if CTRL_PNL['full_body_rot'] == True:
+                adj_ext_idx += 1
+                batch.append(batch[1][:, 247:253]) #root atan2 est
+                #print "appended root", batch[-1], batch[12]
+
+            extra_smpl_angles = batch[10]
+            extra_targets = batch[11]
+        else:
+            extra_smpl_angles = None
+            extra_targets = None
+
+
+
+        if CTRL_PNL['depth_map_labels'] == True:
+            if CTRL_PNL['depth_map_labels_test'] == True or is_training == True:
+                batch.append(batch[0][:, CTRL_PNL['num_input_channels_batch0'], : ,:]) #mesh depth matrix
+                batch.append(batch[0][:, CTRL_PNL['num_input_channels_batch0']+1, : ,:]) #mesh contact matrix
+
+                #cut off batch 0 so we don't have depth or contact on the input
+                batch[0] = batch[0][:, 0:CTRL_PNL['num_input_channels_batch0'], :, :]
+                print "CLIPPING BATCH 0"
+
+        #print batch[0].size(), 'batch 0 shape'
+
+        # cut it off so batch[2] is only the xyz marker targets
+        batch[1] = batch[1][:, 0:72]
+
+
+        images_up_non_tensor = np.array(batch[0].numpy())
+
+
+        INPUT_DICT['batch_images'] = np.copy(images_up_non_tensor)
+
+        #here perform synthetic calibration noise over pmat and sobel filtered pmat.
+        if CTRL_PNL['cal_noise'] == True:
+            images_up_non_tensor = PreprocessingLib().preprocessing_add_calibration_noise(images_up_non_tensor,
+                                                                                          pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-3),
+                                                                                          norm_std_coeffs = CTRL_PNL['norm_std_coeffs'],
+                                                                                          is_training = is_training)
+
+
+        #print np.shape(images_up_non_tensor)
+
+        images_up_non_tensor = PreprocessingLib().preprocessing_pressure_map_upsample(images_up_non_tensor, multiple=2)
+
+        if is_training == True: #only add noise to training images
+            if CTRL_PNL['cal_noise'] == False:
+                images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
+                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-3),
+                                                                                    norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
+            else:
+                images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
+                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
+                                                                                    norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
+
+        images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
+
+
+        if CTRL_PNL['incl_ht_wt_channels'] == True: #make images full of stuff
+            weight_input = torch.ones((images_up.size()[0], images_up.size()[2] * images_up.size()[3])).type(CTRL_PNL['dtype'])
+            weight_input *= batch[7].type(CTRL_PNL['dtype'])
+            weight_input = weight_input.view((images_up.size()[0], 1, images_up.size()[2], images_up.size()[3]))
+            height_input = torch.ones((images_up.size()[0], images_up.size()[2] * images_up.size()[3])).type(CTRL_PNL['dtype'])
+            height_input *= batch[8].type(CTRL_PNL['dtype'])
+            height_input = height_input.view((images_up.size()[0], 1, images_up.size()[2], images_up.size()[3]))
+            images_up = torch.cat((images_up, weight_input, height_input), 1)
+
+
+        targets, betas = Variable(batch[1].type(CTRL_PNL['dtype']), requires_grad=False), \
+                         Variable(batch[2].type(CTRL_PNL['dtype']), requires_grad=False)
+
+        angles_gt = Variable(batch[3].type(CTRL_PNL['dtype']), requires_grad=is_training)
+        root_shift = Variable(batch[4].type(CTRL_PNL['dtype']), requires_grad=is_training)
+        gender_switch = Variable(batch[5].type(CTRL_PNL['dtype']), requires_grad=is_training)
+        synth_real_switch = Variable(batch[6].type(CTRL_PNL['dtype']), requires_grad=is_training)
+
+        OUTPUT_EST_DICT = {}
+        if CTRL_PNL['adjust_ang_from_est'] == True:
+            OUTPUT_EST_DICT['betas'] = Variable(batch[9].type(CTRL_PNL['dtype']), requires_grad=is_training)
+            OUTPUT_EST_DICT['angles'] = Variable(extra_smpl_angles.type(CTRL_PNL['dtype']), requires_grad=is_training)
+            OUTPUT_EST_DICT['root_shift'] = Variable(extra_targets.type(CTRL_PNL['dtype']), requires_grad=is_training)
+            if CTRL_PNL['full_body_rot'] == True:
+                OUTPUT_EST_DICT['root_atan2'] = Variable(batch[12].type(CTRL_PNL['dtype']), requires_grad=is_training)
+
+        if CTRL_PNL['depth_map_labels'] == True:
+            if CTRL_PNL['depth_map_labels_test'] == True or is_training == True:
+                INPUT_DICT['batch_mdm'] = batch[9+adj_ext_idx].type(CTRL_PNL['dtype'])
+                INPUT_DICT['batch_cm'] = batch[10+adj_ext_idx].type(CTRL_PNL['dtype'])
+        else:
+            INPUT_DICT['batch_mdm'] = None
+            INPUT_DICT['batch_cm'] = None
+
+        scores, OUTPUT_DICT = model.forward_kinematic_angles(images=images_up,
+                                                             gender_switch=gender_switch,
+                                                             synth_real_switch=synth_real_switch,
+                                                             CTRL_PNL=CTRL_PNL,
+                                                             OUTPUT_EST_DICT=OUTPUT_EST_DICT,
+                                                             targets=targets,
+                                                             is_training=is_training,
+                                                             betas=betas,
+                                                             angles_gt=angles_gt,
+                                                             root_shift=root_shift,
+                                                             )  # scores is a variable with 27 for 10 euclidean errors and 17 lengths in meters. targets est is a numpy array in mm.
+
+
+        INPUT_DICT['batch_images'] = images_up.data
+        INPUT_DICT['batch_targets'] = targets.data
+
+        return scores, INPUT_DICT, OUTPUT_DICT
+
+
+
+
+
 if __name__ == "__main__":
-    #Initialize trainer with a training database file
-
-    #from visualization_msgs.msg import MarkerArray
-    #from visualization_msgs.msg import Marker
-    #import rospy
-
-    #rospy.init_node('depth_cam_node')
-    #pointcloudPublisher = rospy.Publisher("/point_cloud", MarkerArray)
-
-    #import rospy
-
-    #rospy.init_node('pose_trainer')
 
     import optparse
     p = optparse.OptionParser()
@@ -846,30 +809,34 @@ if __name__ == "__main__":
                  dest='computer', \
                  default='lab_harddrive', \
                  help='Set path to the training database on lab harddrive.')
-    p.add_option('--gpu', action='store', type = 'string',
-                 dest='gpu', \
-                 default='0', \
-                 help='Set the GPU you will use.')
     p.add_option('--losstype', action='store', type = 'string',
                  dest='losstype', \
-                 default='direct', \
-                 help='Set if you want to do baseline ML or convnet.')
+                 default='anglesDC', \
+                 help='Choose direction cosine or euler angle regression.')
     p.add_option('--j_d_ratio', action='store', type = 'float',
                  dest='j_d_ratio', \
                  default=0.5, \
-                 help='Set the loss mix: joints to depth planes.')
+                 help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
     p.add_option('--qt', action='store_true',
                  dest='quick_test', \
                  default=False, \
                  help='Do a quick test.')
+    p.add_option('--pmr', action='store_true',
+                 dest='pmr', \
+                 default=False, \
+                 help='Run PMR on input plus precomputed spatial maps.')
+    p.add_option('--htwt', action='store_true',
+                 dest='htwt', \
+                 default=False, \
+                 help='Include height and weight info on the input.')
+    p.add_option('--calnoise', action='store_true',
+                 dest='calnoise', \
+                 default=False, \
+                 help='Apply calibration noise to the input to facilitate sim to real transfer.')
     p.add_option('--viz', action='store_true',
                  dest='visualize', \
                  default=False, \
                  help='Visualize.')
-    p.add_option('--aws', action='store_true',
-                 dest='aws', \
-                 default=False, \
-                 help='Use ubuntu user dir instead of henry.')
     p.add_option('--rgangs', action='store_true',
                  dest='reg_angles', \
                  default=False, \
@@ -877,22 +844,18 @@ if __name__ == "__main__":
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=30, metavar='N',
+    p.add_option('--log_interval', type=int, default=1, metavar='N',
                  help='number of batches between logging train status')
 
     opt, args = p.parse_args()
 
 
-    if opt.aws == True:
-        filepath_prefix = '/home/ubuntu/data/'
-        filepath_suffix = ''
-    else:
-        filepath_prefix = '/home/henry/data/'
-        #filepath_prefix = '/media/henry/multimodal_data_2/data/'
-        filepath_suffix = ''
+    #data_fp_prefix = '/home/henry/data/'
+    data_fp_prefix = '/media/henry/multimodal_data_2/data/'
+    data_fp_suffix = ''
 
-    filepath_suffix = '_output_46k_FIX_100e_htwt_clns0p1_V2'
-    #filepath_suffix = ''
+    #data_fp_suffix = '_output_46k_FIX_100e_htwt_clns0p1_V2'
+    data_fp_suffix = ''
 
     training_database_file_f = []
     training_database_file_m = []
@@ -902,65 +865,56 @@ if __name__ == "__main__":
 
 
     if opt.quick_test == True:
-        #training_database_file_f.append(filepath_prefix+'synth/random/train_roll0_f_lay_4000_none_stiff_output0p5.p')
-        #test_database_file_f.append(filepath_prefix+'synth/random/test_roll0_plo_m_lay_1000_none_stiff'+filepath_suffix+'.p')
-        #training_database_file_f.append(filepath_prefix+'synth/random/test_roll0_plo_m_lay_1000_none_stiff'+filepath_suffix+'.p')
-        #training_database_file_f.append(filepath_prefix+'synth/random3_supp/train_roll0_plo_hbh_f_lay_set1to2_2000'+filepath_suffix+'.p')
-        #training_database_file_f.append(filepath_prefix+'synth/random3_supp/train_roll0_plo_phu_f_lay_set2pl4_4000'+filepath_suffix+'.p')
-        #training_database_file_f.append(filepath_prefix+'synth/random3/test_rollpi_plo_f_lay_set23to24_3000'+filepath_suffix+'.p')
-        #test_database_file_f.append(filepath_prefix+'synth/random3/test_rollpi_plo_f_lay_set23to24_3000'+filepath_suffix+'.p')
-        #training_database_file_f.append(filepath_prefix+'synth/home_poses/home_pose_f.p')
-        training_database_file_f.append(filepath_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+filepath_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
     else:
 
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_roll0_f_lay_set5to7_5000' + filepath_suffix + '.p')
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_roll0_plo_f_lay_set5to7_5000' + filepath_suffix + '.p')
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_rollpi_f_lay_set18to22_10000' + filepath_suffix + '.p')
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_rollpi_plo_f_lay_set18to22_10000' + filepath_suffix + '.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3/test_roll0_f_lay_set14_1500'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3/test_roll0_plo_f_lay_set14_1500'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3/test_rollpi_plo_f_lay_set23to24_3000'+filepath_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_f_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_plo_f_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_f_lay_set18to22_10000' + data_fp_suffix + '.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3/test_roll0_f_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3/test_roll0_plo_f_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_plo_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_roll0_m_lay_set5to7_5000' + filepath_suffix + '.p')
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_roll0_plo_m_lay_set5to7_5000' + filepath_suffix + '.p')
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_rollpi_m_lay_set18to22_10000' + filepath_suffix + '.p')
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_rollpi_plo_m_lay_set18to22_10000' + filepath_suffix + '.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3/test_roll0_m_lay_set14_1500'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3/test_roll0_plo_m_lay_set14_1500'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3/test_rollpi_m_lay_set23to24_3000'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3/test_rollpi_plo_m_lay_set23to24_3000'+filepath_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_m_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_plo_m_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_m_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_m_lay_set18to22_10000' + data_fp_suffix + '.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3/test_roll0_m_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3/test_roll0_plo_m_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3/test_rollpi_m_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3/test_rollpi_plo_m_lay_set23to24_3000'+data_fp_suffix+'.p')
 
-        training_database_file_f.append(filepath_prefix+'synth/random3_supp/train_roll0_plo_hbh_f_lay_set1to2_2000'+filepath_suffix+'.p')
-        training_database_file_f.append(filepath_prefix+'synth/random3_supp/train_roll0_plo_phu_f_lay_set2pl4_4000'+filepath_suffix+'.p')
-        training_database_file_f.append(filepath_prefix+'synth/random3_supp/train_roll0_sl_f_lay_set2pl3pa1_4000'+filepath_suffix+'.p')
-        training_database_file_f.append(filepath_prefix+'synth/random3_supp/train_roll0_xl_f_lay_set2both_4000'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3_supp/test_roll0_plo_hbh_f_lay_set4_500'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3_supp/test_roll0_plo_phu_f_lay_set1pa3_500'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3_supp/test_roll0_sl_f_lay_set1both_500'+filepath_suffix+'.p')
-        test_database_file_f.append(filepath_prefix+'synth/random3_supp/test_roll0_xl_f_lay_set1both_500'+filepath_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_hbh_f_lay_set1to2_2000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_phu_f_lay_set2pl4_4000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_sl_f_lay_set2pl3pa1_4000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_xl_f_lay_set2both_4000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_hbh_f_lay_set4_500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_phu_f_lay_set1pa3_500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_sl_f_lay_set1both_500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_xl_f_lay_set1both_500'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(filepath_prefix+'synth/random3_supp/train_roll0_plo_hbh_m_lay_set2pa1_2000'+filepath_suffix+'.p')
-        training_database_file_m.append(filepath_prefix+'synth/random3_supp/train_roll0_plo_phu_m_lay_set2pl4_4000'+filepath_suffix+'.p')
-        training_database_file_m.append(filepath_prefix+'synth/random3_supp/train_roll0_sl_m_lay_set2pa1_4000'+filepath_suffix+'.p')
-        training_database_file_m.append(filepath_prefix+'synth/random3_supp/train_roll0_xl_m_lay_set2both_4000'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3_supp/test_roll0_plo_hbh_m_lay_set1_500'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3_supp/test_roll0_plo_phu_m_lay_set1pa3_500'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3_supp/test_roll0_sl_m_lay_set1both_500'+filepath_suffix+'.p')
-        test_database_file_m.append(filepath_prefix+'synth/random3_supp/test_roll0_xl_m_lay_set1both_500'+filepath_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_hbh_m_lay_set2pa1_2000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_phu_m_lay_set2pl4_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_sl_m_lay_set2pa1_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_xl_m_lay_set2both_4000'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_hbh_m_lay_set1_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_phu_m_lay_set1pa3_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_sl_m_lay_set1both_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_xl_m_lay_set1both_500'+data_fp_suffix+'.p')
 
-        #if opt.aws == True:
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_roll0_f_lay_set10to13_8000' + filepath_suffix + '.p')
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_roll0_plo_f_lay_set10to13_8000' + filepath_suffix + '.p')
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_rollpi_f_lay_set10to17_16000' + filepath_suffix + '.p')
-        training_database_file_f.append(filepath_prefix + 'synth/random3/train_rollpi_plo_f_lay_set10to17_16000' + filepath_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_f_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_plo_f_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_f_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_f_lay_set10to17_16000' + data_fp_suffix + '.p')
 
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_roll0_m_lay_set10to13_8000' + filepath_suffix + '.p')
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_roll0_plo_m_lay_set10to13_8000' + filepath_suffix + '.p')
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_rollpi_m_lay_set10to17_16000' + filepath_suffix + '.p')
-        training_database_file_m.append(filepath_prefix + 'synth/random3/train_rollpi_plo_m_lay_set10to17_16000' + filepath_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_plo_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_m_lay_set10to17_16000' + data_fp_suffix + '.p')
 
     p = PhysicalTrainer(training_database_file_f, training_database_file_m, test_database_file_f, test_database_file_m, opt)
 

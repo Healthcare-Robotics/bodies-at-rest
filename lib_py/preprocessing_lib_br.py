@@ -44,14 +44,6 @@ class PreprocessingLib():
     def __init__(self):
         pass
 
-    def chi2_distance(self, histA, histB, eps = 1e-10):
-        # compute the chi-squared distance
-        d = 0.5 * np.sum([((a - b) ** 2) / (a + b + eps)
-                for (a, b) in zip(histA, histB)])
-        # return the chi-squared distance
-        return d
-
-
 
     def preprocessing_add_image_noise(self, images, pmat_chan_idx, norm_std_coeffs):
 
@@ -158,51 +150,6 @@ class PreprocessingLib():
         return images
 
 
-    def preprocessing_pressure_array_resize(self, data, mat_size, verbose):
-        '''Will resize all elements of the dataset into the dimensions of the
-        pressure map'''
-        p_map_dataset = []
-        for map_index in range(len(data)):
-            #print map_index, self.mat_size, 'mapidx'
-            #Resize mat to make into a matrix
-            p_map = np.reshape(data[map_index], mat_size)
-            #print p_map
-            p_map_dataset.append(p_map)
-            #print p_map.shape
-        if verbose: print len(data[0]),'x',1, 'size of an incoming pressure map'
-        if verbose: print len(p_map_dataset[0]),'x',len(p_map_dataset[0][0]), 'size of a resized pressure map'
-        return p_map_dataset
-
-    def preprocessing_create_pressure_angle_stack_realtime(self, p_map, bedangle, mat_size, verbose = False):
-        '''This is for creating a 2-channel input using the height of the bed. '''
-        p_map = np.reshape(p_map, mat_size)
-
-        if verbose:
-            print np.shape(p_map)
-            print p_map.shape
-            print np.shape(bedangle), 'angle dat'
-
-            print 'calculating height matrix and sobel filter'
-        p_map_dataset = []
-
-
-        height_strip = np.zeros(np.shape(p_map)[0])
-        height_strip[0:25] = np.flip(np.linspace(0, 1, num=25) * 25 * 2.86 * np.sin(np.deg2rad(bedangle)),
-                                      axis=0)
-        height_strip = np.repeat(np.expand_dims(height_strip, axis=1), 27, 1)
-        a_map = height_strip
-
-
-        # this makes a sobel edge on the image
-        sx = ndimage.sobel(p_map, axis=0, mode='constant')
-        sy = ndimage.sobel(p_map, axis=1, mode='constant')
-        p_map_inter = np.hypot(sx, sy)
-
-        p_map_dataset.append([p_map, p_map_inter, a_map])
-
-        return p_map_dataset
-
-
     def preprocessing_blur_images(self, x_data, mat_size, sigma):
 
         x_data_return = []
@@ -218,54 +165,34 @@ class PreprocessingLib():
 
 
 
-    def preprocessing_create_pressure_angle_stack(self,x_data, a_data, mat_size, CTRL_PNL):
+    def preprocessing_create_pressure_angle_stack(self,x_data, mat_size, CTRL_PNL):
         '''This is for creating a 2-channel input using the height of the bed. '''
 
         if CTRL_PNL['verbose']: print np.max(x_data)
         x_data = np.clip(x_data, 0, 100)
 
-        if CTRL_PNL['verbose']:
-            print np.shape(x_data)
-            print np.shape(a_data), 'angle dat'
-            #print a_data
 
-            print 'calculating height matrix and sobel filter'
         p_map_dataset = []
         for map_index in range(len(x_data)):
             # print map_index, self.mat_size, 'mapidx'
             # Resize mat to make into a matrix
-
 
             p_map = np.reshape(x_data[map_index], mat_size)
 
             if mat_size == (84, 47):
                 p_map = p_map[10:74, 10:37]
 
-            height_strip = np.zeros(np.shape(p_map)[0])
-            height_strip[0:25] = np.flip(np.linspace(0, 1, num=25) * 25 * 2.86 * np.sin(np.deg2rad(a_data[map_index][0])), axis = 0)
-            height_strip = np.repeat(np.expand_dims(height_strip, axis = 1), 27, 1)
-            a_map = height_strip
+            # this makes a sobel edge on the image
+            sx = ndimage.sobel(p_map, axis=0, mode='constant')
+            sy = ndimage.sobel(p_map, axis=1, mode='constant')
+            p_map_inter = np.hypot(sx, sy)
+            if CTRL_PNL['clip_sobel'] == True:
+                p_map_inter = np.clip(p_map_inter, a_min=0, a_max = 100)
+            p_map_dataset.append([p_map, p_map_inter])
 
-            #ZACKORY: ALTER THE VARIABLE "p_map" HERE TO STANDARDIZE. IT IS AN 84x47 MATRIX WITHIN EACH LOOP.
-            #THIS ALTERATION WILL ALSO CHANGE HOW THE EDGE IS CALCULATED. IF YOU WANT TO DO THEM SEPARATELY,
-            #THEN DO IT AFTER THE 'INCLUDE INTER' IF STATEMENT.
-            #p_map = standardize(p_map)
-
-
-            if CTRL_PNL['incl_inter'] == True:
-                # this makes a sobel edge on the image
-                sx = ndimage.sobel(p_map, axis=0, mode='constant')
-                sy = ndimage.sobel(p_map, axis=1, mode='constant')
-                p_map_inter = np.hypot(sx, sy)
-                if CTRL_PNL['clip_sobel'] == True:
-                    p_map_inter = np.clip(p_map_inter, a_min=0, a_max = 100)
-                p_map_dataset.append([p_map, p_map_inter, a_map])
-            else:
-                p_map_dataset.append([p_map, a_map])
         if CTRL_PNL['verbose']: print len(x_data[0]), 'x', 1, 'size of an incoming pressure map'
         if CTRL_PNL['verbose']: print len(p_map_dataset[0][0]), 'x', len(p_map_dataset[0][0][0]), 'size of a resized pressure map'
         if CTRL_PNL['verbose']: print len(p_map_dataset[0][1]), 'x', len(p_map_dataset[0][1][0]), 'size of sobel filtered map'
-        if CTRL_PNL['verbose']: print len(p_map_dataset[0][2]), 'x', len(p_map_dataset[0][2][0]), 'size of angle array'
 
         return p_map_dataset
 
@@ -297,76 +224,3 @@ class PreprocessingLib():
         padded[:,10:74,10:37] = NxHxWimages
         NxHxWimages = padded
         return NxHxWimages
-
-
-
-    def person_based_loocv(self):
-        '''Computes Person Based Leave One Out Cross Validation. This means
-        that if we have 10 participants, we train using 9 participants and test
-        on 1 participant, and so on.
-        To run this function, make sure that each subject_* directory in the
-        dataset/ directory has a pickle file called individual_database.p
-        If you don't have it in some directory that means you haven't run,
-        create_raw_database.py on that subject's dataset. So create it and
-        ensure that the pkl file is created successfully'''
-        #Entire pressure dataset with coordinates in world frame
-        dataset_dirname = os.path.dirname(os.path.realpath(training_database_file))
-        print dataset_dirname
-        subject_dirs = [x[0] for x in os.walk(dataset_dirname)]
-        subject_dirs.pop(0)
-        print subject_dirs
-        dat = []
-        for i in range(len(subject_dirs)):
-            try:
-                dat.append(pkl.load(open(os.path.join(subject_dirs[i],
-                    'individual_database.p'), "rb")))
-            except:
-                print "Following dataset directory not formatted correctly. Is there an individual_dataset pkl file for every subject?"
-                print os.path.join(subject_dirs[i], 'individual_database.p')
-                sys.exit()
-        print "Inserted all individual datasets into a list of dicts"
-        print "Number of subjects:"
-        print len(dat)
-        mean_joint_error = np.zeros((len(dat), 10))
-        std_joint_error = np.zeros((len(dat), 10))
-        for i in range(len(dat)):
-            train_dat = {}
-            test_dat = dat[i]
-            for j in range(len(dat)):
-                if j == i:
-                    print "#of omitted data points"
-                    print len(dat[j].keys())
-                    pass
-                else:
-                    print len(dat[j].keys())
-                    print j
-                    train_dat.update(dat[j])
-            rand_keys = train_dat.keys()
-            print "Training Dataset Size:"
-            print len(rand_keys)
-            print "Testing dataset size:"
-            print len(test_dat.keys())
-            self.train_y = [] #Initialize the training coordinate list
-            self.dataset_y = [] #Initialization for the entire dataset
-            self.train_x_flat = rand_keys[:]#Pressure maps
-            [self.train_y.append(train_dat[key]) for key in self.train_x_flat]#Coordinates
-            self.test_x_flat = test_dat.keys()#Pressure maps(test dataset)
-            self.test_y = [] #Initialize the ground truth list
-            [self.test_y.append(test_dat[key]) for key in self.test_x_flat]#ground truth
-            self.dataset_x_flat = rand_keys[:]#Pressure maps
-            [self.dataset_y.append(train_dat[key]) for key in self.dataset_x_flat]
-            self.cv_fold = 3 # Value of k in k-fold cross validation
-            self.mat_frame_joints = []
-            p.train_hog_knn()
-            (mean_joint_error[i][:], std_joint_error[i][:]) = self.test_learning_algorithm(self.regr)
-            print "Mean Error:"
-            print mean_joint_error
-        print "MEAN ERROR AFTER PERSON LOOCV:"
-        total_mean_error = np.mean(mean_joint_error, axis=0)
-        total_std_error = np.mean(std_joint_error, axis=0)
-        print total_mean_error
-        print "STD DEV:"
-        print total_std_error
-        pkl.dump(mean_joint_error, open('./dataset/mean_loocv_results.p', 'w'))
-        pkl.dump(mean_joint_error, open('./dataset/std_loocv_results.p', 'w'))
-

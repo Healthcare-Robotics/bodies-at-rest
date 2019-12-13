@@ -3,13 +3,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from kinematics_lib import KinematicsLib
-from mesh_depth_lib import MeshDepthLib
 import scipy.stats as ss
 import torchvision
 import time
 
-from visualization_lib import VisualizationLib
+import sys
+sys.path.insert(0, '../lib_py')
+
+
+from visualization_lib_br import VisualizationLib
+from kinematics_lib_br import KinematicsLib
+from mesh_depth_lib_br import MeshDepthLib
 
 
 class CNN(nn.Module):
@@ -112,9 +116,6 @@ class CNN(nn.Module):
         self.CNN_fc1_double = nn.Sequential(
             nn.Linear(67200*2, out_size), #89600, out_size),
         )
-        self.CNN_fc2 = nn.Sequential(
-            nn.Linear(11200, out_size),
-        )
 
         print 'Out size:', out_size
 
@@ -132,142 +133,6 @@ class CNN(nn.Module):
 
         self.verts_list = verts_list
         self.meshDepthLib = MeshDepthLib(loss_vector_type, filepath, batch_size, verts_list = self.verts_list)
-
-
-
-    def forward_direct(self, images, targets, is_training = True):
-
-        OUTPUT_DICT = {}
-        scores_cnn = self.CNN_pack1(images)
-        scores_size = scores_cnn.size()
-
-        # This combines the height, width, and filters into a single dimension
-        scores_cnn = scores_cnn.view(images.size(0),scores_size[1] *scores_size[2]*scores_size[3])
-
-        # this output is N x 85: betas, root shift, angles
-        scores = self.CNN_fc1(scores_cnn)
-
-        # weight the outputs, which are already centered around 0. First make them uniformly smaller than the direct output, which is too large.
-        scores = torch.mul(scores.clone(), 0.01)
-
-        num_joints = scores.shape[1]/3
-
-        #get it so the initial joints positions all start at the middle of the bed ish
-        for fc_output_ct in range(num_joints):
-            scores[:, fc_output_ct*3 + 0] = torch.add(scores[:, fc_output_ct*3 + 0], 0.6)
-            scores[:, fc_output_ct*3 + 1] = torch.add(scores[:, fc_output_ct*3 + 1], 1.2)
-            scores[:, fc_output_ct*3 + 2] = torch.add(scores[:, fc_output_ct*3 + 2], 0.1)
-
-
-        zero_joint_filler = torch.zeros(scores.size()[0], 3).type(self.dtype)
-        #print scores.shape
-
-        targets_est = scores.clone().detach()*1000
-        targets_est = torch.cat((zero_joint_filler,
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        targets_est[:, 3:6],
-                                        targets_est[:, 21:24],
-                                        targets_est[:, 18:21],
-                                        zero_joint_filler,
-                                        targets_est[:, 27:30],
-                                        targets_est[:, 24:27],
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        targets_est[:, 0:3],
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        targets_est[:, 9:12],
-                                        targets_est[:, 6:9],
-                                        targets_est[:, 15:18],
-                                        targets_est[:, 12:15],
-                                        zero_joint_filler,
-                                        zero_joint_filler,
-                                        ),dim = 1)
-
-
-        targets_reduced = torch.cat((targets[:, 45:48],
-                                   targets[:, 9:12],
-                                   targets[:, 57:60],
-                                   targets[:, 54:57],
-                                   targets[:, 63:66],
-                                   targets[:, 60:63],
-                                   targets[:, 15:18],
-                                   targets[:, 12:15],
-                                   targets[:, 24:27],
-                                   targets[:, 21:24]), dim =1)
-
-        # here we want to compute our score as the Euclidean distance between the estimated x,y,z points and the target.
-        scores = targets_reduced / 1000. - scores
-        scores = scores.pow(2)
-
-        for joint_num in range(10):
-            scores[:, joint_num] = (scores[:, joint_num*3 + 0] +
-                                    scores[:, joint_num*3 + 1] +
-                                    scores[:, joint_num*3 + 2]).sqrt()
-
-        scores = scores[:, 0:10]
-
-        OUTPUT_DICT['batch_targets_est'] = targets_est
-
-        return scores, OUTPUT_DICT
-
-
-
-
-    def forward_kinematic_angles_realtime(self, images):
-        scores_cnn = self.CNN_pack1(images)
-        scores_size = scores_cnn.size()
-
-        # This combines the height, width, and filters into a single dimension
-        scores_cnn = scores_cnn.view(images.size(0), scores_size[1] * scores_size[2] * scores_size[3])
-
-        scores = self.CNN_fc1(scores_cnn)  # this is N x 229: betas, root shift, Rotation matrices
-
-        # weight the outputs, which are already centered around 0. First make them uniformly smaller than the direct output, which is too large.
-        scores = torch.mul(scores.clone(), 0.01)
-
-        # normalize the output of the network based on the range of the parameters
-        if self.GPU == True:
-            output_norm = 10 * [6.0] + [0.91, 1.98, 0.15] + list(
-                torch.abs(self.bounds.view(72, 2)[:, 1] - self.bounds.view(72, 2)[:, 0]).cpu().numpy())
-        else:
-            output_norm = 10 * [6.0] + [0.91, 1.98, 0.15] + list(
-                torch.abs(self.bounds.view(72, 2)[:, 1] - self.bounds.view(72, 2)[:, 0]).numpy())
-        for i in range(85):
-            scores[:, i] = torch.mul(scores[:, i].clone(), output_norm[i])
-
-        # add a factor so the model starts close to the home position. Has nothing to do with weighting.
-        scores[:, 10] = torch.add(scores[:, 10].clone(), 0.6)
-        scores[:, 11] = torch.add(scores[:, 11].clone(), 1.2)
-        scores[:, 12] = torch.add(scores[:, 12].clone(), 0.1)
-
-
-        betas_est = scores[:,0:10].clone().detach().cpu().numpy()  # make sure to detach so the gradient flow of joints doesn't corrupt the betas
-        root_shift_est = scores[:, 10:13].clone().detach().cpu().numpy()
-
-
-        # normalize for tan activation function
-        scores[:, 13:85] -= torch.mean(self.bounds[0:72, 0:2], dim=1)
-        scores[:, 13:85] *= (2. / torch.abs(self.bounds[0:72, 0] - self.bounds[0:72, 1]))
-        scores[:, 13:85] = scores[:, 13:85].tanh()
-        scores[:, 13:85] /= (2. / torch.abs(self.bounds[0:72, 0] - self.bounds[0:72, 1]))
-        scores[:, 13:85] += torch.mean(self.bounds[0:72, 0:2], dim=1)
-
-        if self.loss_vector_type == 'anglesDC':
-
-            angles_est = scores[:, 13:85].clone().detach().cpu().numpy()
-
-        elif self.loss_vector_type == 'anglesEU':
-
-            angles_est = KinematicsLib().batch_dir_cos_angles_from_euler_angles(scores[:, 13:85].view(-1, 24, 3).clone(), self.zeros_cartesian, self.ones_cartesian)
-
-        return np.squeeze(betas_est), np.squeeze(root_shift_est), np.squeeze(angles_est)
-
 
 
 
@@ -291,7 +156,7 @@ class CNN(nn.Module):
             #self.dtype = torch.FloatTensor
 
         else:
-            if True:#CTRL_PNL['aws'] == True:
+            if CTRL_PNL['GPU'] == True:
                 self.GPU = True
                 self.dtype = torch.cuda.FloatTensor
             else:
@@ -303,23 +168,6 @@ class CNN(nn.Module):
                 self.verts_list = [1325, 336, 1032, 4515, 1374, 4848, 1739, 5209, 1960, 5423]
             self.meshDepthLib = MeshDepthLib(loss_vector_type=self.loss_vector_type, filepath_prefix=filepath_prefix,
                                              batch_size=images.size(0), verts_list = self.verts_list)
-
-        #print(torch.cuda.max_memory_allocated(), 'conv1')
-
-        #for i in range(images.size()[1]):
-        #    print "channel:", i, "  mean:", torch.mean(images[:, i, :, :]), "  std:", torch.std(images[:, i, :, :])
-
-        #for i in range(0, 25):
-        #    print
-        #    for j in range(images.size()[1]):
-        #        print "channel:", j, "  mean:", torch.mean(images[i, j, :, :]), "  std:", torch.std(images[i, j, :, :])
-        #    VisualizationLib().visualize_pressure_map(images[i, 0, :, :].cpu()*20., None, None,
-        #                                              images[i, 1, :, :].cpu()*20., None, None,
-        #                                              images[i, 2, :, :].cpu()*20., None, None,
-        #                                              images[i, 5, :, :].cpu()*20., None, None,
-        #                                              block=False)
-        #    time.sleep(0.5)
-
 
         if CTRL_PNL['all_tanh_activ'] == True:
             if CTRL_PNL['double_network_size'] == False:
@@ -351,10 +199,10 @@ class CNN(nn.Module):
 
         #normalize the output of the network based on the range of the parameters
         if self.GPU == True:
-            output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + list(torch.abs(self.meshDepthLib.bounds.view(72,2)[:, 1] - self.meshDepthLib.bounds.view(72,2)[:, 0]).cpu().numpy())
+            output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + 6*[2.0] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[3:, 1] - self.meshDepthLib.bounds.view(72,2)[3:, 0]).cpu().numpy())
         else:
-            output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[:, 1] - self.meshDepthLib.bounds.view(72, 2)[:, 0]).numpy())
-        for i in range(85):
+            output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + 6*[2.0] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[3:, 1] - self.meshDepthLib.bounds.view(72, 2)[3:, 0]).numpy())
+        for i in range(88):
             scores[:, i] = torch.mul(scores[:, i].clone(), output_norm[i])
 
 
@@ -439,12 +287,6 @@ class CNN(nn.Module):
             betas_est = scores[:, 0:10].clone()#.detach() #make sure to detach so the gradient flow of joints doesn't corrupt the betas
             root_shift_est = scores[:, 10:13].clone()
 
-            #if CTRL_PNL['full_body_rot'] == True:
-            #    if CTRL_PNL['loss_vector_type'] == 'anglesEU':
-            #        self.meshDepthLib.bounds[0:3, 0] = torch.Tensor(np.array(-2*np.pi))
-            #        self.meshDepthLib.bounds[0:3, 1] = torch.Tensor(np.array(2*np.pi))
-
-
 
             # normalize for tan activation function
             scores[:, 13+OSA:85+OSA] -= torch.mean(self.meshDepthLib.bounds[0:72, 0:2], dim=1)
@@ -514,9 +356,9 @@ class CNN(nn.Module):
 
             for sub_batch_incr in sub_batch_incr_list:
                 end_incr += sub_batch_incr
-                verts_sub, J_est_sub, targets_est_sub = self.meshDepthLib.compute_tensor_mesh(gender_switch, betas_est,
-                                                                                              Rs_est, root_shift_est,
-                                                                                              start_incr, end_incr, self.GPU)
+                verts_sub, J_est_sub, targets_est_sub = self.meshDepthLib.HMR(gender_switch, betas_est,
+                                                                              Rs_est, root_shift_est,
+                                                                              start_incr, end_incr, self.GPU)
                 if start_incr == 0:
                     verts = verts_sub.clone()
                     J_est = J_est_sub.clone()
@@ -531,8 +373,8 @@ class CNN(nn.Module):
             if CTRL_PNL['incl_ht_wt_channels'] == True: bed_ang_idx -= 2
             bed_angle_batch = torch.mean(images[:, bed_ang_idx, 1:3, 0], dim=1)
 
-            OUTPUT_DICT['batch_mdm_est'], OUTPUT_DICT['batch_cm_est'] = self.meshDepthLib.compute_depth_contact_planes(verts, bed_angle_batch,
-                                                                                                                       CTRL_PNL['mesh_bottom_dist'])
+            OUTPUT_DICT['batch_mdm_est'], OUTPUT_DICT['batch_cm_est'] = self.meshDepthLib.PMR(verts, bed_angle_batch,
+                                                                                            CTRL_PNL['mesh_bottom_dist'])
 
             OUTPUT_DICT['batch_mdm_est'] = OUTPUT_DICT['batch_mdm_est'].type(self.dtype)
             OUTPUT_DICT['batch_cm_est'] = OUTPUT_DICT['batch_cm_est'].type(self.dtype)
@@ -615,7 +457,6 @@ class CNN(nn.Module):
 
 
         #print verts[0:10], 'VERTS EST INIT'
-        #if CTRL_PNL['dropout'] == True:
         OUTPUT_DICT['verts'] = verts.clone().detach().cpu().numpy()
 
         targets_est_detached = torch.Tensor(targets_est.clone().detach().cpu().numpy()).type(self.dtype)

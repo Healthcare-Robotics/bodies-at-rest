@@ -12,6 +12,15 @@ from scipy import ndimage
 import scipy.stats as ss
 from scipy.misc import imresize
 from scipy.ndimage.interpolation import zoom
+#from skimage.feature import hog
+#from skimage import data, color, exposure
+
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import scale
+from sklearn import svm, linear_model, decomposition, kernel_ridge, neighbors
+from sklearn import metrics
+from sklearn.utils import shuffle
+
 
 
 # PyTorch libraries
@@ -35,7 +44,10 @@ HIGH_TAXEL_THRESH_X = (NUMOFTAXELS_X - 1)
 HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1)
 
 
+
+# import hrl_lib.util as ut
 import cPickle as pickle
+# from hrl_lib.util import load_pickle
 def load_pickle(filename):
     with open(filename, 'rb') as f:
         return pickle.load(f)
@@ -60,7 +72,17 @@ class TensorPrepLib():
                                 datcurr_to_append = list(
                                     np.array(datcurr_to_append).reshape(84, 47)[10:74, 10:37].reshape(1728))
                             try:
+                                #if len(dat_curr['images']) == 3000:
+                                #    if inputgoalset < len(dat_curr['images'])/2:
+                                #        dat[key].append(datcurr_to_append)
+                                #elif len(dat_curr['images']) == 1500:
+                                #    if inputgoalset < len(dat_curr['images'])/3:
+                                #        dat[key].append(datcurr_to_append)
+                                #else:
+                                #    dat[key].append(datcurr_to_append)
+                                #if inputgoalset < len(dat_curr['images'])/4:
                                 dat[key].append(datcurr_to_append)
+
                             except:
                                 try:
                                     dat[key] = []
@@ -84,14 +106,6 @@ class TensorPrepLib():
                     for i in range(num_repeats):
                         im_list.append(dat['images'][entry])
         return im_list
-
-    def prep_angles(self, ang_list, dat_f, dat_m, num_repeats):
-        for dat in [dat_f, dat_m]:
-            if dat is not None:
-                for entry in range(len(dat['images'])):
-                    for i in range(num_repeats):
-                        ang_list.append([dat['bed_angle_deg'][entry]])
-        return ang_list
 
     def prep_depth_contact(self, depth_contact_list, dat_f, dat_m, num_repeats):
         for dat in [dat_f, dat_m]:
@@ -284,7 +298,6 @@ class TensorPrepLib():
             normalizing_std_constants.append(CTRL_PNL['norm_std_coeffs'][5])
             normalizing_std_constants.append(CTRL_PNL['norm_std_coeffs'][6])
             normalizing_std_constants.append(CTRL_PNL['norm_std_coeffs'][7])
-            normalizing_std_constants.append(CTRL_PNL['norm_std_coeffs'][8])
 
 
             if CTRL_PNL['cal_noise'] == True: normalizing_std_constants = normalizing_std_constants[1:] #here we don't precompute the contact
@@ -302,8 +315,8 @@ class TensorPrepLib():
 
         #y[:, 160] *= normalizing_std_constants[0]
         #y[:, 161] *= normalizing_std_constants[1]
-        y[:, 160] *= CTRL_PNL['norm_std_coeffs'][9]
-        y[:, 161] *= CTRL_PNL['norm_std_coeffs'][10]
+        y[:, 160] *= CTRL_PNL['norm_std_coeffs'][8]
+        y[:, 161] *= CTRL_PNL['norm_std_coeffs'][9]
 
 
 
