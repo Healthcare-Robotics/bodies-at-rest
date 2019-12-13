@@ -41,6 +41,9 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 * PyTorch HMR - https://github.com/MandyMo/pytorch_HMR
 * Matplotlib, PyGlet, some others .... 
 
+## Computer requirements
+To train all 184K images, you'll need at least 64GB of ram on your CPU with the present implementation. You can run smaller sizes (e.g. 32K images) on a machine much smaller. If you restructured some code or converted some images to a more efficient format (e.g. float to int) it might help. You'll also need at least 8GB of ram on your GPU to fit the present implementation of PressureNet. I'm sure there are other ways to make this code more efficient, so if you can do it, make a request for me and push it back up to this repository with a tagged python filename - just make sure you have documented the changes with good comments. 
+
 
 ## What code isn't here? 
 The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable. I'd also worry that users would have trouble getting it up and running because of its complexity; what I have now needs work to make it less challenging to install. 
