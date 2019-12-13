@@ -25,7 +25,7 @@ For the synthetic data, when you run the following code, you will see something 
 
 ## PressureNet training
 There are 3 steps to train PressureNet as implemented in the paper.
-* Step 1: Train network 1 for 100 epochs using loss function 1. Run the following: `python trainer_convnet.py --losstype 'anglesDC'`. You can also use the flags `--htwt` and `--calnoise` to include height/weight data and noise into the network. 
+* Step 1: Train network 1 for 100 epochs using loss function 1. Run the following: `python trainer_convnet.py`. You can also use the flags `--htwt` and `--calnoise` to include height/weight data and noise into the network. 
 * Step 2: Compute a new dataset that has spatial map reconstructions from the PMR output of network 1. Run the following: `python validate_convnet1_savedepth.py`. Make sure the flags on this match the flags you trained network 1 on.
 * Step 3: Train network 2 for 100 epochs using loss function 2. Run the following: `python trainer_convnet.py --losstype 'anglesDC' --pmr`. Make sure the flags on this match the flags you trained network 1 on.
 
