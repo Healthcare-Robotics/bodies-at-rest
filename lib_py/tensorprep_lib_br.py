@@ -138,9 +138,11 @@ class TensorPrepLib():
             mesh_depth_contact_maps_input_est = np.array(mesh_depth_contact_maps_input_est)
             train_xa = np.concatenate((mesh_depth_contact_maps_input_est, train_xa), axis = 1)
 
+        print np.shape(train_xa), CTRL_PNL['incl_pmat_cntct_input']
         if CTRL_PNL['incl_pmat_cntct_input'] == True:
             train_xa = np.concatenate((train_contact, train_xa), axis=1)
 
+        print np.shape(train_xa)
         if CTRL_PNL['depth_map_labels'] == True:
             mesh_depth_contact_maps = np.array(mesh_depth_contact_maps) #GROUND TRUTH
             train_xa = np.concatenate((train_xa, mesh_depth_contact_maps), axis=1)

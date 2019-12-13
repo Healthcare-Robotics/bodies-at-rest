@@ -96,7 +96,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
-        self.CTRL_PNL['num_input_channels'] = 3
+        self.CTRL_PNL['num_input_channels'] = 2
         self.CTRL_PNL['GPU'] = GPU
         self.CTRL_PNL['dtype'] = dtype
         repeat_real_data_ct = 3
@@ -134,7 +134,6 @@ class PhysicalTrainer():
             self.CTRL_PNL['num_input_channels'] += 2
         if self.CTRL_PNL['cal_noise'] == True:
             self.CTRL_PNL['num_input_channels'] += 1
-        self.CTRL_PNL['num_input_channels'] -= 1
 
         pmat_std_from_mult = ['N/A', 11.70153502792190, 19.90905848383454, 23.07018866032369, 0.0, 25.50538629767412]
         if self.CTRL_PNL['cal_noise'] == False:
@@ -392,10 +391,8 @@ class PhysicalTrainer():
         self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
                                  verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'], in_channels=self.CTRL_PNL['num_input_channels'])
 
-
+        #load in a model instead if one is partially trained
         #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
-        #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_0.5rtojtdpth_tnh_htwt_100e_00002lr.pt', map_location={'cuda:4':'cuda:'+str(DEVICE)})
-        #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_0.5rtojtdpth_tnh_htwt_calnoise_50e_00002lr.pt', map_location={'cuda:0':'cuda:'+str(DEVICE)})
 
         pp = 0
         for p in list(self.model.parameters()):
@@ -423,13 +420,10 @@ class PhysicalTrainer():
                 self.t2 = 0
             print 'Time taken by epoch',epoch,':',self.t2,' seconds'
 
-            if epoch == 25 or epoch == 50 or epoch == 75 or epoch == 100 or epoch == 125 or epoch == 150 or epoch == 175 or epoch == 200:
+            if epoch == 100:
                 torch.save(self.model, filepath_prefix+'synth/convnet'+self.save_name+'.pt')#+'_'+str(epoch)+'e.pt')
                 pkl.dump(self.train_val_losses,open(filepath_prefix+'synth/convnet_losses'+self.save_name+'_'+str(epoch)+'e.p', 'wb'))
 
-
-        print 'done with epochs, now evaluating'
-        #self.validate_convnet('test')
 
         print self.train_val_losses, 'trainval'
         # Save the model (architecture and weights)
@@ -482,8 +476,10 @@ class PhysicalTrainer():
 
 
                 #print INPUT_DICT['batch_mdm'].size(), OUTPUT_DICT['batch_mdm_est'].size()
-
                 if self.CTRL_PNL['depth_map_labels'] == True:
+                    hover_map = OUTPUT_DICT['batch_mdm_est'].clone()
+                    hover_map[hover_map < 0] = 0
+
                     INPUT_DICT['batch_mdm'][INPUT_DICT['batch_mdm'] > 0] = 0
                     if self.CTRL_PNL['mesh_bottom_dist'] == True:
                         OUTPUT_DICT['batch_mdm_est'][OUTPUT_DICT['batch_mdm_est'] > 0] = 0
@@ -501,8 +497,8 @@ class PhysicalTrainer():
                 loss *= 1000
 
 
-                if batch_idx % opt.log_interval == 0:# and batch_idx > 0:
-                    val_n_batches = 4
+                if True: #batch_idx % opt.log_interval == 0:# and batch_idx > 0:
+                    val_n_batches = 1
                     print "evaluating on ", val_n_batches
 
                     im_display_idx = 0 #random.randint(0,INPUT_DICT['batch_images'].size()[0])
@@ -520,21 +516,36 @@ class PhysicalTrainer():
                    # print INPUT_DICT['batch_images'][im_display_idx, 4:, :].type()
 
                     if self.CTRL_PNL['depth_map_labels'] == True: #pmr regression
-                        self.im_sample1 = INPUT_DICT['batch_images'][im_display_idx, 4:, :].squeeze()*20. #pmat
-                        self.im_sample2 = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #ground truth depth
-                        self.im_sample3 = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #est depth output
+                        self.cntct_in = INPUT_DICT['batch_images'][im_display_idx, 0, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][0]  #contact
+                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][4] #pmat
+                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
+                        self.pmap_recon = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze()*-1).cpu().data #est depth output
+                        self.cntct_recon = (OUTPUT_DICT['batch_cm_est'][im_display_idx, :, :].squeeze()).cpu().data #est depth output
+                        self.hover_recon = (hover_map[im_display_idx, :, :].squeeze()).cpu().data #est depth output
+                        self.pmap_recon_gt = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze()*-1).cpu().data #ground truth depth
+                        self.cntct_recon_gt = (INPUT_DICT['batch_cm'][im_display_idx, :, :].squeeze()).cpu().data #ground truth depth
                     else:
+                        self.cntct_in = INPUT_DICT['batch_images'][im_display_idx, 0, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][0]  #contact
+                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][4]  #pmat
+                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
+                        self.pmap_recon = None
+                        self.cntct_recon = None
+                        self.hover_recon = None
+                        self.pmap_recon_gt = None
+                        self.cntct_recon_gt = None
 
-                        print INPUT_DICT['batch_images'].size(), 'size of input'
+                    if self.CTRL_PNL['depth_map_input_est'] == True: #this is a network 2 option ONLY
+                        self.pmap_recon_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][2] #pmat
+                        self.cntct_recon_in = INPUT_DICT['batch_images'][im_display_idx, 3, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][3] #pmat
+                        self.hover_recon_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][1] #pmat
+                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 4, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][4] #pmat
+                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 5, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
+                    else:
+                        self.pmap_recon_in = None
+                        self.cntct_recon_in = None
+                        self.hover_recon_in = None
 
-                        self.im_sample1 = INPUT_DICT['batch_images'][im_display_idx, 0:1, :].squeeze()*11.70153502792190  #contact
-                        self.im_sample2 = INPUT_DICT['batch_images'][im_display_idx, 1:2, :].squeeze()*11.70153502792190  #pmat
-                        self.im_sample3 = INPUT_DICT['batch_images'][im_display_idx, 2:, :].squeeze()*20.  #sobel
-                        #self.im_sample4 = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #ground truth depth
-                        #self.im_sample4 = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze().unsqueeze(0)*-1).cpu() #est depth output
 
-                    #if self.CTRL_PNL['depth_map_input_est'] == True: #this is a network 2 option ONLY
-                    #    self.im_sample4 = #this is the INPUT depth map.
 
 
                     self.tar_sample = INPUT_DICT['batch_targets']
@@ -640,7 +651,7 @@ class PhysicalTrainer():
                     loss_to_add += loss_mesh_depth
                     loss_to_add += loss_mesh_contact
 
-                    loss += loss_to_add
+                loss += loss_to_add
 
                 #print loss
                 n_examples += self.CTRL_PNL['batch_size']
@@ -656,11 +667,12 @@ class PhysicalTrainer():
             loss *= 1000
 
         if self.opt.visualize == True:
-            VisualizationLib().visualize_pressure_map(self.im_sample1, self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                      self.im_sample2, self.tar_sample.cpu(), self.sc_sample.cpu(), #self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                      self.im_sample3, None, None, # self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                      #self.im_sample_ext3 ,None, None, # self.tar_sample.cpu(), self.sc_sample.cpu(),
-                                                      #self.im_sample_val.cpu(), self.tar_sample_val.cpu(), self.sc_sample_val.cpu(),
+            VisualizationLib().visualize_pressure_map(pimage_in = self.pimage_in, cntct_in = self.cntct_in, sobel_in = self.sobel_in,
+                                                      targets_raw = self.tar_sample.cpu(), scores_net1 = self.sc_sample.cpu(),
+                                                      pmap_recon_in = self.pmap_recon_in, cntct_recon_in = self.cntct_recon_in,
+                                                      hover_recon_in = self.hover_recon_in,
+                                                      pmap_recon = self.pmap_recon, cntct_recon = self.cntct_recon, hover_recon = self.hover_recon,
+                                                      pmap_recon_gt=self.pmap_recon_gt, cntct_recon_gt = self.cntct_recon_gt,
                                                       block=False)
 
         #print "loss is:" , loss
@@ -699,6 +711,8 @@ class PhysicalTrainer():
             extra_targets = None
 
 
+        print batch[0].size()
+        print CTRL_PNL['num_input_channels_batch0']
 
         if CTRL_PNL['depth_map_labels'] == True:
             if CTRL_PNL['depth_map_labels_test'] == True or is_training == True:
@@ -709,7 +723,7 @@ class PhysicalTrainer():
                 batch[0] = batch[0][:, 0:CTRL_PNL['num_input_channels_batch0'], :, :]
                 print "CLIPPING BATCH 0"
 
-        #print batch[0].size(), 'batch 0 shape'
+        print batch[0].size(), 'batch 0 shape'
 
         # cut it off so batch[2] is only the xyz marker targets
         batch[1] = batch[1][:, 0:72]
@@ -723,7 +737,7 @@ class PhysicalTrainer():
         #here perform synthetic calibration noise over pmat and sobel filtered pmat.
         if CTRL_PNL['cal_noise'] == True:
             images_up_non_tensor = PreprocessingLib().preprocessing_add_calibration_noise(images_up_non_tensor,
-                                                                                          pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-3),
+                                                                                          pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
                                                                                           norm_std_coeffs = CTRL_PNL['norm_std_coeffs'],
                                                                                           is_training = is_training)
 
@@ -735,11 +749,11 @@ class PhysicalTrainer():
         if is_training == True: #only add noise to training images
             if CTRL_PNL['cal_noise'] == False:
                 images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
-                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-3),
+                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
                                                                                     norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
             else:
                 images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
-                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
+                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-1),
                                                                                     norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
 
         images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
@@ -794,6 +808,8 @@ class PhysicalTrainer():
 
         INPUT_DICT['batch_images'] = images_up.data
         INPUT_DICT['batch_targets'] = targets.data
+
+        print "Input size: ", INPUT_DICT['batch_images'].size()
 
         return scores, INPUT_DICT, OUTPUT_DICT
 
@@ -854,8 +870,8 @@ if __name__ == "__main__":
     data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
-    #data_fp_suffix = '_output_46k_FIX_100e_htwt_clns0p1_V2'
-    data_fp_suffix = ''
+    data_fp_suffix = '_output_46k_FIX_100e_htwt_clns0p1_V2'
+    #data_fp_suffix = ''
 
     training_database_file_f = []
     training_database_file_m = []
