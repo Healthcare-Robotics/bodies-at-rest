@@ -30,6 +30,9 @@ This repository:
 For the synthetic data, when you run the following code, you will see something like the pictures below. There are flags in the code that allow you to segment based on the limbs and also to cut out mesh vertices that aren't facing the camera. The camera is positioned in the synthetic dataset at the same location as the real one, so cutting out the non-camera facing vertices will allow you to better compare the synthetic data to the real point cloud data.
 
 
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break3.JPG?raw=true" alt="None"/>
+</p>
 
 ## PressureNet training
 There are 3 steps to train PressureNet as implemented in the paper.
@@ -50,6 +53,10 @@ There are 3 steps to train PressureNet as implemented in the paper.
 The data can take a long time to load. Use the `--qt` flag to run a quick test on a small portion of the dataset to check for bugs. You can use an euler angle parameterization instead of the direction cosines in the SMPL model. Use the `--losstype 'anglesEU'` flag for that. You'll have to change some file directories so that the `train_pressurenet.py` knows where to find your data.
 
 
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break4.JPG?raw=true" alt="None"/>
+</p>
+
 ## What other packages do I need?
 * SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/
 * PyRender - https://github.com/mmatl/pyrender
@@ -58,9 +65,23 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 * PyTorch HMR - https://github.com/MandyMo/pytorch_HMR
 * Matplotlib, PyGlet, some others .... 
 
+
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+</p>
+
 ## Computer requirements
 To train all 184K images, you'll need at least 64GB of ram on your CPU with the present implementation. You can run smaller sizes (e.g. 32K images) on a machine much smaller. If you restructured some code or converted some images to a more efficient format (e.g. float to int) it might help. You'll also need at least 8GB of ram on your GPU to fit the present implementation of PressureNet. I'm sure there are other ways to make this code more efficient, so if you can do it, make a request for me and push it back up to this repository with a tagged python filename - just make sure you have documented the changes with good comments. 
 
 
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
+</p>
+
 ## What code isn't here? 
 The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable. I'd also worry that users would have trouble getting it up and running because of its complexity; what I have now needs work to make it less challenging to install. 
+
+
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
+</p>
