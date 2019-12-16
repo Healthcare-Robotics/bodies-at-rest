@@ -25,12 +25,18 @@ For the synthetic data, when you run the following code, you will see something 
 
 ## PressureNet training
 There are 3 steps to train PressureNet as implemented in the paper.
-* Step 1: Train network 1 for 100 epochs using loss function 1. Run the following: `python train_pressurenet.py --net 1`. You can also use the flags `--htwt`, `--calnoise`, and `--small` to include height/weight data in the network, calibration noise in the network, and train on a smaller dataset size (1/4th). 
+* Step 1: Train network 1 for 100 epochs using loss function 1. Run the following: `python train_pressurenet.py --net 1`. You can also use the flags `--htwt`, `--calnoise`, and `--small` to include height/weight data in the network, calibration noise in the network, and train on a smaller dataset size (1/4th). It's important to visualize things to make sure your network is training OK. So if you use the `--viz` flag a set of pressure maps pops up with joint markers projected into 2D - there are 24 of them. Green - ground truth, yellow - estimated. 
+
+<p align="left">
+  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/net1.png?raw=true" alt="None"/>
+</p>
+
+
 * Step 2: Compute a new dataset that has spatial map reconstructions from the PMR output of network 1. Run the following: `python compute_network1_spatialmaps.py`. Make sure the flags on this match the flags you trained network 1 on.
-* Step 3: Train network 2 for 100 epochs using loss function 2. Run the following: `python train_pressurenet.py --net 2 --pmr`. Make sure the flags on this match the flags you trained network 1 on.
+* Step 3: Train network 2 for 100 epochs using loss function 2. Run the following: `python train_pressurenet.py --net 2 --pmr`. Make sure the flags on this match the flags you trained network 1 on (except `--viz`, that doesn't matter).
 
 
-The data can take a long time to load. Use the `--qt` flag to run a quick test on a small portion of the dataset to check for bugs. You can use an euler angle parameterization instead of the direction cosines in the SMPL model. Use the `--losstype 'anglesEU'` flag for that. It's important to visualize things to make sure your network is training OK. So if you use the `--viz` flag a set of pressure maps pops up with joint markers projected into 2D - there are 24 of them. Green - ground truth, yellow - estimated. You'll have to change some file directories so that the `train_pressurenet.py` knows where to find your data.
+The data can take a long time to load. Use the `--qt` flag to run a quick test on a small portion of the dataset to check for bugs. You can use an euler angle parameterization instead of the direction cosines in the SMPL model. Use the `--losstype 'anglesEU'` flag for that. You'll have to change some file directories so that the `train_pressurenet.py` knows where to find your data.
 
 
 ## What other packages do I need?
