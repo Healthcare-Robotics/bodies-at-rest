@@ -239,7 +239,7 @@ class VisualizationLib():
 
 
 
-        fig = plt.figure(tight_layout=True, figsize = (1.5*num_subplots, 5))
+        fig = plt.figure(tight_layout=True, figsize = (1.5*num_subplots*.8, 5*.8))
         gs = gridspec.GridSpec(2, num_subplots)
 
 
@@ -301,7 +301,7 @@ class VisualizationLib():
             ax17.imshow(100 - cntct_recon_in*100, interpolation='nearest', cmap=
             plt.cm.gray, origin='upper', vmin=0, vmax=100)
             ax17.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, top=False)
-            ax17.set_title(r'$\hat{Q}^{-}_1$')
+            ax17.set_title(r'$\hat{C}_{O,1}$')
 
             ax18 = fig.add_subplot(gs[0, 7])
             ax18.set_xlim([-hover_recon_in_mult, 27.0 * hover_recon_in_mult])
@@ -309,7 +309,7 @@ class VisualizationLib():
             ax18.imshow(hover_recon_in, interpolation='nearest', cmap=
             plt.cm.viridis, origin='upper', vmin=0, vmax=100)
             ax18.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, top=False)
-            ax18.set_title(r'$\hat{Q}^{-}_1$')
+            ax18.set_title(r'$\hat{Q}^{+}_1$')
 
 
         if pmap_recon_gt is not None:
@@ -363,7 +363,8 @@ class VisualizationLib():
         #Visualize estimated from training set
         self.plot_joint_markers(scores_net1, pimage_in_mult, ax1, 'yellow')
 
-
+        fig.savefig('/home/henry/data/blah.png', dpi=400)
+        print "saved."
         plt.show(block=block)
 
 

@@ -55,7 +55,7 @@ def load_pickle(filename):
 
 class TensorPrepLib():
 
-    def load_files_to_database(self, database_file, creation_type, verbose = False):
+    def load_files_to_database(self, database_file, creation_type, verbose = False, reduce_data = False):
         # load in the training or testing files.  This may take a while.
        # print "GOT HERE!!", database_file
         dat = None
@@ -80,8 +80,11 @@ class TensorPrepLib():
                                 #        dat[key].append(datcurr_to_append)
                                 #else:
                                 #    dat[key].append(datcurr_to_append)
-                                #if inputgoalset < len(dat_curr['images'])/4:
-                                dat[key].append(datcurr_to_append)
+                                if reduce_data == True:
+                                    if inputgoalset < len(dat_curr['images'])/4:
+                                        dat[key].append(datcurr_to_append)
+                                else:
+                                    dat[key].append(datcurr_to_append)
 
                             except:
                                 try:

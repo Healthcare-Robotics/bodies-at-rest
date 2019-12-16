@@ -92,7 +92,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['batch_size'] = 128
         self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
-        self.CTRL_PNL['shuffle'] = True
+        self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
@@ -105,7 +105,10 @@ class PhysicalTrainer():
         self.CTRL_PNL['depth_map_labels_test'] = opt.pmr #False #can only be true is we have 100% synth for testing
         self.CTRL_PNL['depth_map_output'] = self.CTRL_PNL['depth_map_labels']
         self.CTRL_PNL['depth_map_input_est'] = opt.pmr #do this if we're working in a two-part regression
-        self.CTRL_PNL['adjust_ang_from_est'] = self.CTRL_PNL['depth_map_input_est'] #holds betas and root same as prior estimate
+        if opt.net == 1:
+            self.CTRL_PNL['adjust_ang_from_est'] = False #starts angles from scratch
+        elif opt.net == 2:
+            self.CTRL_PNL['adjust_ang_from_est'] = True #gets betas and angles from prior estimate
         self.CTRL_PNL['clip_sobel'] = True
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
@@ -172,10 +175,15 @@ class PhysicalTrainer():
 
         #################################### PREP TRAINING DATA ##########################################
         #load training ysnth data
-        dat_f_synth = TensorPrepLib().load_files_to_database(training_database_file_f, 'synth')
-        dat_m_synth = TensorPrepLib().load_files_to_database(training_database_file_m, 'synth')
-        dat_f_real = TensorPrepLib().load_files_to_database(training_database_file_f, 'real')
-        dat_m_real = TensorPrepLib().load_files_to_database(training_database_file_m, 'real')
+        if opt.small == True and opt.net == 1:
+            reduce_data = True
+        else:
+            reduce_data = False
+
+        dat_f_synth = TensorPrepLib().load_files_to_database(training_database_file_f, creation_type = 'synth', reduce_data = reduce_data)
+        dat_m_synth = TensorPrepLib().load_files_to_database(training_database_file_m, creation_type = 'synth', reduce_data = reduce_data)
+        dat_f_real = TensorPrepLib().load_files_to_database(training_database_file_f, creation_type = 'real', reduce_data = reduce_data)
+        dat_m_real = TensorPrepLib().load_files_to_database(training_database_file_m, creation_type = 'real', reduce_data = reduce_data)
 
 
         self.train_x_flat = []  # Initialize the testing pressure mat list
@@ -257,10 +265,10 @@ class PhysicalTrainer():
 
         #################################### PREP TESTING DATA ##########################################
         # load in the test file
-        test_dat_f_synth = TensorPrepLib().load_files_to_database(testing_database_file_f, 'synth')
-        test_dat_m_synth = TensorPrepLib().load_files_to_database(testing_database_file_m, 'synth')
-        test_dat_f_real = TensorPrepLib().load_files_to_database(testing_database_file_f, 'real')
-        test_dat_m_real = TensorPrepLib().load_files_to_database(testing_database_file_m, 'real')
+        test_dat_f_synth = TensorPrepLib().load_files_to_database(testing_database_file_f, creation_type = 'synth', reduce_data = reduce_data)
+        test_dat_m_synth = TensorPrepLib().load_files_to_database(testing_database_file_m, creation_type = 'synth', reduce_data = reduce_data)
+        test_dat_f_real = TensorPrepLib().load_files_to_database(testing_database_file_f, creation_type = 'real', reduce_data = reduce_data)
+        test_dat_m_real = TensorPrepLib().load_files_to_database(testing_database_file_m, creation_type = 'real', reduce_data = reduce_data)
 
         self.test_x_flat = []  # Initialize the testing pressure mat list
         self.test_x_flat = TensorPrepLib().prep_images(self.test_x_flat, test_dat_f_synth, test_dat_m_synth, num_repeats = 1)
@@ -445,6 +453,8 @@ class PhysicalTrainer():
 
             # This will loop a total = training_images/batch_size times
             for batch_idx, batch in enumerate(self.train_loader):
+                if batch_idx in [0, 1]: continue
+
                 if GPU == True:
                     print "GPU memory:", torch.cuda.max_memory_allocated()
 
@@ -821,42 +831,39 @@ if __name__ == "__main__":
 
     import optparse
     p = optparse.OptionParser()
-    p.add_option('--computer', action='store', type = 'string',
-                 dest='computer', \
-                 default='lab_harddrive', \
+    p.add_option('--computer', action='store', type = 'string', dest='computer', default='lab_harddrive',
                  help='Set path to the training database on lab harddrive.')
-    p.add_option('--losstype', action='store', type = 'string',
-                 dest='losstype', \
-                 default='anglesDC', \
+
+    p.add_option('--losstype', action='store', type = 'string', dest='losstype', default='anglesDC',
                  help='Choose direction cosine or euler angle regression.')
-    p.add_option('--j_d_ratio', action='store', type = 'float',
-                 dest='j_d_ratio', \
-                 default=0.5, \
+
+    p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5,
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
-    p.add_option('--qt', action='store_true',
-                 dest='quick_test', \
-                 default=False, \
+
+    p.add_option('--net', action='store', type = 'int', dest='net', default=0,
+                 help='Choose a network.')
+
+    p.add_option('--qt', action='store_true', dest='quick_test', default=False,
                  help='Do a quick test.')
-    p.add_option('--pmr', action='store_true',
-                 dest='pmr', \
-                 default=False, \
+
+    p.add_option('--pmr', action='store_true', dest='pmr', default=False,
                  help='Run PMR on input plus precomputed spatial maps.')
-    p.add_option('--htwt', action='store_true',
-                 dest='htwt', \
-                 default=False, \
+
+    p.add_option('--small', action='store_true', dest='small', default=False,
+                 help='Make the dataset 1/4th of the original size.')
+
+    p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
-    p.add_option('--calnoise', action='store_true',
-                 dest='calnoise', \
-                 default=False, \
+
+    p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
-    p.add_option('--viz', action='store_true',
-                 dest='visualize', \
-                 default=False, \
-                 help='Visualize.')
-    p.add_option('--rgangs', action='store_true',
-                 dest='reg_angles', \
-                 default=False, \
+
+    p.add_option('--viz', action='store_true', dest='visualize', default=False,
+                 help='Visualize training.')
+
+    p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False,
                  help='Regress the angles as well as betas and joint pos.')
+
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
@@ -866,12 +873,22 @@ if __name__ == "__main__":
     opt, args = p.parse_args()
 
 
-    #data_fp_prefix = '/home/henry/data/'
-    data_fp_prefix = '/media/henry/multimodal_data_2/data/'
+    data_fp_prefix = '/home/henry/data/'
+    #data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
-    data_fp_suffix = '_output_46k_FIX_100e_htwt_clns0p1_V2'
-    #data_fp_suffix = ''
+    if opt.net == 1:
+        data_fp_suffix = ''
+    elif opt.net == 2:
+        data_fp_suffix = '_output_46k_FIX_100e'
+        if opt.htwt == True:
+            data_fp_suffix += '_htwt'
+        if opt.calnoise == True:
+            data_fp_suffix += '_clns0p1'
+        data_fp_suffix += '_V2'
+    else:
+        print "Please choose a valid network. You can specify '--net 1' or '--net 2'."
+        sys.exit()
 
     training_database_file_f = []
     training_database_file_m = []
@@ -885,7 +902,6 @@ if __name__ == "__main__":
         test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
     else:
-
         training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_f_lay_set5to7_5000' + data_fp_suffix + '.p')
         training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_plo_f_lay_set5to7_5000' + data_fp_suffix + '.p')
         training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
