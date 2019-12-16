@@ -157,7 +157,7 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
-        self.CTRL_PNL['convnet_fp_prefix'] = '../../../data/convnets/'
+        self.CTRL_PNL['convnet_fp_prefix'] = '../../../data_BR/convnets/'
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
             self.verts_list = "all"
@@ -870,7 +870,7 @@ if __name__ == "__main__":
     opt, args = p.parse_args()
 
 
-    data_fp_prefix = '../../../data/'
+    data_fp_prefix = '../../../data_BR/'
     #data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
