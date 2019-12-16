@@ -9,7 +9,7 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-Link to PressurePose dataset:
+Link to PressurePose dataset: XXXXXXX. Make a new folder on your desktop, `~/data/`, and unzip it there.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
