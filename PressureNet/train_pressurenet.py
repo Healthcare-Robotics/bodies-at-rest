@@ -91,7 +91,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['verbose'] = opt.verbose
         self.opt = opt
         self.CTRL_PNL['batch_size'] = 128
-        self.CTRL_PNL['num_epochs'] = 1000
+        self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
@@ -647,9 +647,9 @@ class PhysicalTrainer():
 
                 if self.CTRL_PNL['regr_angles'] == True:
                     loss_angs = float(self.criterion(scores[:, 34+OSA:106+OSA], scores_zeros[:, 34+OSA:106+OSA]) * self.weight_joints)
-                    loss_to_add = (loss_betas + loss_eucl + loss_angs)
+                    loss_to_add += (loss_betas + loss_eucl + loss_angs)
                 else:
-                    loss_to_add = (loss_betas + loss_eucl)
+                    loss_to_add += (loss_betas + loss_eucl)
 
                 # print INPUT_DICT_VAL['batch_mdm'].size(), OUTPUT_DICT_VAL['batch_mdm_est'].size()
 
@@ -736,13 +736,14 @@ if __name__ == "__main__":
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=5, metavar='N',
+    p.add_option('--log_interval', type=int, default=20, metavar='N',
                  help='number of batches between logging train status') #if you visualize too often it will slow down training.
 
     opt, args = p.parse_args()
 
 
-    data_fp_prefix = '../../../data_BR/'
+    data_fp_prefix = '../../../data/'
+    #data_fp_prefix = '../../../data_BR/'
     #data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
