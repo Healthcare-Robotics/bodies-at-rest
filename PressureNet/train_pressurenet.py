@@ -90,7 +90,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['verbose'] = opt.verbose
         self.opt = opt
         self.CTRL_PNL['batch_size'] = 128
-        self.CTRL_PNL['num_epochs'] = 100
+        self.CTRL_PNL['num_epochs'] = 2
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
@@ -117,6 +117,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
+        self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
 
@@ -156,8 +157,7 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
-        self.CTRL_PNL['filepath_prefix'] = '/home/henry/'
-        #self.CTRL_PNL['filepath_prefix'] = '/media/henry/multimodal_data_2/'
+        self.CTRL_PNL['convnet_fp_prefix'] = '../../../data/convnets/'
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
             self.verts_list = "all"
@@ -347,11 +347,11 @@ class PhysicalTrainer():
 
 
 
-        self.save_name = '_' + opt.losstype + \
-                         '_synth_' + str(self.train_x_tensor.size()[0]) + \
+        self.save_name = '_' + str(opt.net) + '_' + opt.losstype + \
+                         '_' + str(self.train_x_tensor.size()[0]) + 'ct' + \
                          '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
                          '_' + str(self.CTRL_PNL['num_epochs']) + 'e' + \
-                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pmult'
+                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pm'
 
 
         if self.CTRL_PNL['depth_map_labels'] == True:
@@ -365,15 +365,15 @@ class PhysicalTrainer():
         if self.CTRL_PNL['incl_ht_wt_channels'] == True:
             self.save_name += '_htwt'
         if self.CTRL_PNL['cal_noise'] == True:
-            self.save_name += '_calnoise'
+            self.save_name += '_clns'+str(int(self.CTRL_PNL['cal_noise_amt']*100)) + 'p'
         if self.CTRL_PNL['double_network_size'] == True:
             self.save_name += '_dns'
 
         print 'appending to', 'train' + self.save_name
         self.train_val_losses = {}
-        self.train_val_losses['train' + self.save_name] = []
-        self.train_val_losses['val' + self.save_name] = []
-        self.train_val_losses['epoch' + self.save_name] = []
+        self.train_val_losses['train_loss'] = []
+        self.train_val_losses['val_loss'] = []
+        self.train_val_losses['epoch_ct'] = []
 
 
 
@@ -397,10 +397,10 @@ class PhysicalTrainer():
             fc_output_size += 3
 
         self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                 verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'], in_channels=self.CTRL_PNL['num_input_channels'])
+                                 verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
 
         #load in a model instead if one is partially trained
-        #self.model = torch.load(self.CTRL_PNL['filepath_prefix']+'data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
+        #self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
 
         pp = 0
         for p in list(self.model.parameters()):
@@ -428,10 +428,12 @@ class PhysicalTrainer():
                 self.t2 = 0
             print 'Time taken by epoch',epoch,':',self.t2,' seconds'
 
-            if epoch == 100:
-                torch.save(self.model, filepath_prefix+'synth/convnet'+self.save_name+'.pt')#+'_'+str(epoch)+'e.pt')
-                pkl.dump(self.train_val_losses,open(filepath_prefix+'synth/convnet_losses'+self.save_name+'_'+str(epoch)+'e.p', 'wb'))
-
+            if epoch == self.CTRL_PNL['num_epochs']:
+                print "saving convnet."
+                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'.pt')
+                print "saved convnet."
+                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e.p', 'wb'))
+                print "saved losses."
 
         print self.train_val_losses, 'trainval'
         # Save the model (architecture and weights)
@@ -507,7 +509,7 @@ class PhysicalTrainer():
                 loss *= 1000
 
 
-                if True: #batch_idx % opt.log_interval == 0:# and batch_idx > 0:
+                if batch_idx % opt.log_interval == 0:# and batch_idx > 0:
                     val_n_batches = 1
                     print "evaluating on ", val_n_batches
 
@@ -611,9 +613,9 @@ class PhysicalTrainer():
 
 
                     print 'appending to alldata losses'
-                    self.train_val_losses['train' + self.save_name].append(train_loss)
-                    self.train_val_losses['epoch' + self.save_name].append(epoch)
-                    self.train_val_losses['val' + self.save_name].append(val_loss)
+                    self.train_val_losses['train_loss'].append(train_loss)
+                    self.train_val_losses['epoch_ct'].append(epoch)
+                    self.train_val_losses['val_loss'].append(val_loss)
 
 
     def validate_convnet(self, verbose=False, n_batches=None):
@@ -721,9 +723,6 @@ class PhysicalTrainer():
             extra_targets = None
 
 
-        print batch[0].size()
-        print CTRL_PNL['num_input_channels_batch0']
-
         if CTRL_PNL['depth_map_labels'] == True:
             if CTRL_PNL['depth_map_labels_test'] == True or is_training == True:
                 batch.append(batch[0][:, CTRL_PNL['num_input_channels_batch0'], : ,:]) #mesh depth matrix
@@ -731,9 +730,6 @@ class PhysicalTrainer():
 
                 #cut off batch 0 so we don't have depth or contact on the input
                 batch[0] = batch[0][:, 0:CTRL_PNL['num_input_channels_batch0'], :, :]
-                print "CLIPPING BATCH 0"
-
-        print batch[0].size(), 'batch 0 shape'
 
         # cut it off so batch[2] is only the xyz marker targets
         batch[1] = batch[1][:, 0:72]
@@ -749,7 +745,8 @@ class PhysicalTrainer():
             images_up_non_tensor = PreprocessingLib().preprocessing_add_calibration_noise(images_up_non_tensor,
                                                                                           pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
                                                                                           norm_std_coeffs = CTRL_PNL['norm_std_coeffs'],
-                                                                                          is_training = is_training)
+                                                                                          is_training = is_training,
+                                                                                          noise_amount = CTRL_PNL['cal_noise_amt'])
 
 
         #print np.shape(images_up_non_tensor)
@@ -819,7 +816,7 @@ class PhysicalTrainer():
         INPUT_DICT['batch_images'] = images_up.data
         INPUT_DICT['batch_targets'] = targets.data
 
-        print "Input size: ", INPUT_DICT['batch_images'].size()
+        print "ConvNet input size: ", INPUT_DICT['batch_images'].size()
 
         return scores, INPUT_DICT, OUTPUT_DICT
 
@@ -837,7 +834,7 @@ if __name__ == "__main__":
     p.add_option('--losstype', action='store', type = 'string', dest='losstype', default='anglesDC',
                  help='Choose direction cosine or euler angle regression.')
 
-    p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5,
+    p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
 
     p.add_option('--net', action='store', type = 'int', dest='net', default=0,
@@ -861,31 +858,30 @@ if __name__ == "__main__":
     p.add_option('--viz', action='store_true', dest='visualize', default=False,
                  help='Visualize training.')
 
-    p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False,
+    p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False, #I found this option doesn't help much.
                  help='Regress the angles as well as betas and joint pos.')
 
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=1, metavar='N',
-                 help='number of batches between logging train status')
+    p.add_option('--log_interval', type=int, default=5, metavar='N',
+                 help='number of batches between logging train status') #if you visualize too often it will slow down training.
 
     opt, args = p.parse_args()
 
 
-    data_fp_prefix = '/home/henry/data/'
+    data_fp_prefix = '../../../data/'
     #data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
     if opt.net == 1:
         data_fp_suffix = ''
     elif opt.net == 2:
-        data_fp_suffix = '_output_46k_FIX_100e'
+        data_fp_suffix = '_output_46k_100e'
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
             data_fp_suffix += '_clns0p1'
-        data_fp_suffix += '_V2'
     else:
         print "Please choose a valid network. You can specify '--net 1' or '--net 2'."
         sys.exit()
@@ -898,55 +894,55 @@ if __name__ == "__main__":
 
 
     if opt.quick_test == True:
-        training_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
     else:
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_f_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_plo_f_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_f_lay_set18to22_10000' + data_fp_suffix + '.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3/test_roll0_f_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3/test_roll0_plo_f_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3/test_rollpi_plo_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_f_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_plo_f_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_plo_f_lay_set18to22_10000' + data_fp_suffix + '.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_f_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_plo_f_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_rollpi_plo_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_m_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_plo_m_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_m_lay_set18to22_10000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_m_lay_set18to22_10000' + data_fp_suffix + '.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3/test_roll0_m_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3/test_roll0_plo_m_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3/test_rollpi_m_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3/test_rollpi_plo_m_lay_set23to24_3000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_m_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_plo_m_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_m_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_plo_m_lay_set18to22_10000' + data_fp_suffix + '.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_m_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_plo_m_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_rollpi_m_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_rollpi_plo_m_lay_set23to24_3000'+data_fp_suffix+'.p')
 
-        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_hbh_f_lay_set1to2_2000'+data_fp_suffix+'.p')
-        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_phu_f_lay_set2pl4_4000'+data_fp_suffix+'.p')
-        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_sl_f_lay_set2pl3pa1_4000'+data_fp_suffix+'.p')
-        training_database_file_f.append(data_fp_prefix+'synth/random3_supp/train_roll0_xl_f_lay_set2both_4000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_hbh_f_lay_set4_500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_phu_f_lay_set1pa3_500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_sl_f_lay_set1both_500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/random3_supp/test_roll0_xl_f_lay_set1both_500'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_plo_hbh_f_lay_set1to2_2000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_plo_phu_f_lay_set2pl4_4000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_sl_f_lay_set2pl3pa1_4000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_xl_f_lay_set2both_4000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_plo_hbh_f_lay_set4_500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_plo_phu_f_lay_set1pa3_500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_sl_f_lay_set1both_500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_xl_f_lay_set1both_500'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_hbh_m_lay_set2pa1_2000'+data_fp_suffix+'.p')
-        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_plo_phu_m_lay_set2pl4_4000'+data_fp_suffix+'.p')
-        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_sl_m_lay_set2pa1_4000'+data_fp_suffix+'.p')
-        training_database_file_m.append(data_fp_prefix+'synth/random3_supp/train_roll0_xl_m_lay_set2both_4000'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_hbh_m_lay_set1_500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_plo_phu_m_lay_set1pa3_500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_sl_m_lay_set1both_500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/random3_supp/test_roll0_xl_m_lay_set1both_500'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_plo_hbh_m_lay_set2pa1_2000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_plo_phu_m_lay_set2pl4_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_sl_m_lay_set2pa1_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_xl_m_lay_set2both_4000'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_plo_hbh_m_lay_set1_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_plo_phu_m_lay_set1pa3_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_sl_m_lay_set1both_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_xl_m_lay_set1both_500'+data_fp_suffix+'.p')
 
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_f_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_roll0_plo_f_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_f_lay_set10to17_16000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_f_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_f_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_plo_f_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_f_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_plo_f_lay_set10to17_16000' + data_fp_suffix + '.p')
 
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_m_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_roll0_plo_m_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_m_lay_set10to17_16000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/random3/train_rollpi_plo_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_plo_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_plo_m_lay_set10to17_16000' + data_fp_suffix + '.p')
 
     p = PhysicalTrainer(training_database_file_f, training_database_file_m, test_database_file_f, test_database_file_m, opt)
 

@@ -44,7 +44,7 @@ def load_pickle(filename):
 
 class MeshDepthLib():
 
-    def __init__(self, loss_vector_type, filepath_prefix, batch_size, verts_list):
+    def __init__(self, loss_vector_type, batch_size, verts_list):
 
         if torch.cuda.is_available():
             self.GPU = True
@@ -169,7 +169,7 @@ class MeshDepthLib():
 
                 from smpl.smpl_webuser.serialization import load_model
 
-                model_path_f = filepath_prefix + 'git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
+                model_path_f = '../../../git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
                 human_f = load_model(model_path_f)
                 self.v_template_f = torch.Tensor(np.array(human_f.v_template)).type(dtype)
                 self.shapedirs_f = torch.Tensor(np.array(human_f.shapedirs)).permute(0, 2, 1).type(dtype)
@@ -178,7 +178,7 @@ class MeshDepthLib():
                 self.posedirs_f = torch.Tensor(np.array(human_f.posedirs)).type(dtype)
                 self.weights_f = torch.Tensor(np.array(human_f.weights)).type(dtype)
 
-                model_path_m = filepath_prefix + '/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+                model_path_m = '../../../git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
                 human_m = load_model(model_path_m)
                 self.v_template_m = torch.Tensor(np.array(human_m.v_template)).type(dtype)
                 self.shapedirs_m = torch.Tensor(np.array(human_m.shapedirs)).permute(0, 2, 1).type(dtype)
@@ -258,7 +258,7 @@ class MeshDepthLib():
             if loss_vector_type == 'anglesR' or loss_vector_type == 'anglesDC' or loss_vector_type == 'anglesEU':
                 from smpl.smpl_webuser.serialization import load_model
 
-                model_path_f = filepath_prefix + 'git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
+                model_path_f = '../../../git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
                 human_f = load_model(model_path_f)
                 self.v_template_f = torch.Tensor(np.array(human_f.v_template)).type(dtype)
                 self.shapedirs_f = torch.Tensor(np.array(human_f.shapedirs)).permute(0, 2, 1).type(dtype)
@@ -287,7 +287,7 @@ class MeshDepthLib():
                                                         human_f.weights[verts_list[8], :],
                                                         human_f.weights[verts_list[9], :]])).type(dtype)
 
-                model_path_m = filepath_prefix + '/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+                model_path_m = '../../../git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
                 human_m = load_model(model_path_m)
                 self.v_template_m = torch.Tensor(np.array(human_m.v_template)).type(dtype)
                 self.shapedirs_m = torch.Tensor(np.array(human_m.shapedirs)).permute(0, 2, 1).type(dtype)

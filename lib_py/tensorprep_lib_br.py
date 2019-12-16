@@ -282,12 +282,6 @@ class TensorPrepLib():
 
     def normalize_network_input(self, x, CTRL_PNL):
 
-        pmat_mult = int(CTRL_PNL['pmat_mult'])
-
-        if CTRL_PNL['cal_noise'] == True:
-            pmat_mult = int(0)
-
-
         if CTRL_PNL['depth_map_input_est'] == True:
             normalizing_std_constants = CTRL_PNL['norm_std_coeffs']
 

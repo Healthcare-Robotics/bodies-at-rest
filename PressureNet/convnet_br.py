@@ -17,7 +17,7 @@ from mesh_depth_lib_br import MeshDepthLib
 
 
 class CNN(nn.Module):
-    def __init__(self, out_size, loss_vector_type, batch_size, verts_list, filepath = '/home/henry/', in_channels = 3):
+    def __init__(self, out_size, loss_vector_type, batch_size, verts_list, in_channels = 3):
         '''
         Create components of a CNN classifier and initialize their weights.
 
@@ -132,7 +132,7 @@ class CNN(nn.Module):
         self.dtype = dtype
 
         self.verts_list = verts_list
-        self.meshDepthLib = MeshDepthLib(loss_vector_type, filepath, batch_size, verts_list = self.verts_list)
+        self.meshDepthLib = MeshDepthLib(loss_vector_type, batch_size, verts_list = self.verts_list)
 
 
 
@@ -142,7 +142,6 @@ class CNN(nn.Module):
 
         reg_angles = CTRL_PNL['regr_angles']
 
-        filepath_prefix = CTRL_PNL['filepath_prefix']
         OUTPUT_DICT = {}
 
         self.GPU = CTRL_PNL['GPU']
@@ -166,7 +165,7 @@ class CNN(nn.Module):
                 self.verts_list = "all"
             else:
                 self.verts_list = [1325, 336, 1032, 4515, 1374, 4848, 1739, 5209, 1960, 5423]
-            self.meshDepthLib = MeshDepthLib(loss_vector_type=self.loss_vector_type, filepath_prefix=filepath_prefix,
+            self.meshDepthLib = MeshDepthLib(loss_vector_type=self.loss_vector_type,
                                              batch_size=images.size(0), verts_list = self.verts_list)
 
         if CTRL_PNL['all_tanh_activ'] == True:

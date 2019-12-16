@@ -76,9 +76,9 @@ class PreprocessingLib():
         return images
 
 
-    def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training):
+    def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training, noise_amount):
         if is_training == True:
-            variation_amount = 0.1
+            variation_amount = float(noise_amount)
             print "ADDING CALIB NOISE", variation_amount
 
             #pmat_contact_orig = np.copy(images[:, pmat_chan_idx, :, :])
