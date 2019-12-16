@@ -37,6 +37,7 @@ sys.path.insert(0, '../lib_py')
 from visualization_lib_br import VisualizationLib
 from preprocessing_lib_br import PreprocessingLib
 from tensorprep_lib_br import TensorPrepLib
+from unpack_batch_lib_br import UnpackBatchLib
 
 import cPickle as pkl
 import random
@@ -90,9 +91,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['verbose'] = opt.verbose
         self.opt = opt
         self.CTRL_PNL['batch_size'] = 128
-        self.CTRL_PNL['num_epochs'] = 2
+        self.CTRL_PNL['num_epochs'] = 1000
         self.CTRL_PNL['incl_inter'] = True
-        self.CTRL_PNL['shuffle'] = False
+        self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
@@ -462,7 +463,7 @@ class PhysicalTrainer():
 
                 self.optimizer.zero_grad()
                 scores, INPUT_DICT, OUTPUT_DICT = \
-                    self.unpack_batch(batch, is_training=True, model = self.model, CTRL_PNL=self.CTRL_PNL)
+                    UnpackBatchLib().unpack_batch(batch, is_training=True, model = self.model, CTRL_PNL=self.CTRL_PNL)
                 #print torch.cuda.max_memory_allocated(), '1post train'
                 self.CTRL_PNL['first_pass'] = False
 
@@ -528,18 +529,18 @@ class PhysicalTrainer():
                    # print INPUT_DICT['batch_images'][im_display_idx, 4:, :].type()
 
                     if self.CTRL_PNL['depth_map_labels'] == True: #pmr regression
-                        self.cntct_in = INPUT_DICT['batch_images'][im_display_idx, 0, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][0]  #contact
-                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][4] #pmat
-                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
+                        self.cntct_in = INPUT_DICT['batch_images'][im_display_idx, 0, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][0]  #contact
+                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][4] #pmat
+                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
                         self.pmap_recon = (OUTPUT_DICT['batch_mdm_est'][im_display_idx, :, :].squeeze()*-1).cpu().data #est depth output
                         self.cntct_recon = (OUTPUT_DICT['batch_cm_est'][im_display_idx, :, :].squeeze()).cpu().data #est depth output
                         self.hover_recon = (hover_map[im_display_idx, :, :].squeeze()).cpu().data #est depth output
                         self.pmap_recon_gt = (INPUT_DICT['batch_mdm'][im_display_idx, :, :].squeeze()*-1).cpu().data #ground truth depth
                         self.cntct_recon_gt = (INPUT_DICT['batch_cm'][im_display_idx, :, :].squeeze()).cpu().data #ground truth depth
                     else:
-                        self.cntct_in = INPUT_DICT['batch_images'][im_display_idx, 0, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][0]  #contact
-                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][4]  #pmat
-                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
+                        self.cntct_in = INPUT_DICT['batch_images'][im_display_idx, 0, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][0]  #contact
+                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][4]  #pmat
+                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
                         self.pmap_recon = None
                         self.cntct_recon = None
                         self.hover_recon = None
@@ -547,11 +548,11 @@ class PhysicalTrainer():
                         self.cntct_recon_gt = None
 
                     if self.CTRL_PNL['depth_map_input_est'] == True: #this is a network 2 option ONLY
-                        self.pmap_recon_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][2] #pmat
-                        self.cntct_recon_in = INPUT_DICT['batch_images'][im_display_idx, 3, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][3] #pmat
-                        self.hover_recon_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][1] #pmat
-                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 4, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][4] #pmat
-                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 5, :].squeeze()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
+                        self.pmap_recon_in = INPUT_DICT['batch_images'][im_display_idx, 2, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][2] #pmat
+                        self.cntct_recon_in = INPUT_DICT['batch_images'][im_display_idx, 3, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][3] #pmat
+                        self.hover_recon_in = INPUT_DICT['batch_images'][im_display_idx, 1, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][1] #pmat
+                        self.pimage_in = INPUT_DICT['batch_images'][im_display_idx, 4, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][4] #pmat
+                        self.sobel_in = INPUT_DICT['batch_images'][im_display_idx, 5, :].squeeze().cpu()/self.CTRL_PNL['norm_std_coeffs'][5]  #sobel
                     else:
                         self.pmap_recon_in = None
                         self.cntct_recon_in = None
@@ -628,7 +629,7 @@ class PhysicalTrainer():
             for batch_i, batch in enumerate(self.test_loader):
 
                 scores, INPUT_DICT_VAL, OUTPUT_DICT_VAL = \
-                    self.unpack_batch(batch, is_training=False, model=self.model, CTRL_PNL=self.CTRL_PNL)
+                    UnpackBatchLib().unpack_batch(batch, is_training=False, model=self.model, CTRL_PNL=self.CTRL_PNL)
                 scores_zeros = Variable(torch.Tensor(np.zeros((batch[0].shape[0], scores.size()[1]))).type(dtype),
                                         requires_grad=False)
 
@@ -693,135 +694,6 @@ class PhysicalTrainer():
 
 
 
-    def unpack_batch(self, batch, is_training, model, CTRL_PNL):
-
-        INPUT_DICT = {}
-        adj_ext_idx = 0
-        # 0:72: positions.
-        batch.append(batch[1][:, 72:82])  # betas
-        batch.append(batch[1][:, 82:154])  # angles
-        batch.append(batch[1][:, 154:157])  # root pos
-        batch.append(batch[1][:, 157:159])  # gender switch
-        batch.append(batch[1][:, 159])  # synth vs real switch
-        batch.append(batch[1][:, 160:161])  # mass, kg
-        batch.append(batch[1][:, 161:162])  # height, kg
-
-        if CTRL_PNL['adjust_ang_from_est'] == True:
-            adj_ext_idx += 3
-            batch.append(batch[1][:, 162:172]) #betas est
-            batch.append(batch[1][:, 172:244]) #angles est
-            batch.append(batch[1][:, 244:247]) #root pos est
-            if CTRL_PNL['full_body_rot'] == True:
-                adj_ext_idx += 1
-                batch.append(batch[1][:, 247:253]) #root atan2 est
-                #print "appended root", batch[-1], batch[12]
-
-            extra_smpl_angles = batch[10]
-            extra_targets = batch[11]
-        else:
-            extra_smpl_angles = None
-            extra_targets = None
-
-
-        if CTRL_PNL['depth_map_labels'] == True:
-            if CTRL_PNL['depth_map_labels_test'] == True or is_training == True:
-                batch.append(batch[0][:, CTRL_PNL['num_input_channels_batch0'], : ,:]) #mesh depth matrix
-                batch.append(batch[0][:, CTRL_PNL['num_input_channels_batch0']+1, : ,:]) #mesh contact matrix
-
-                #cut off batch 0 so we don't have depth or contact on the input
-                batch[0] = batch[0][:, 0:CTRL_PNL['num_input_channels_batch0'], :, :]
-
-        # cut it off so batch[2] is only the xyz marker targets
-        batch[1] = batch[1][:, 0:72]
-
-
-        images_up_non_tensor = np.array(batch[0].numpy())
-
-
-        INPUT_DICT['batch_images'] = np.copy(images_up_non_tensor)
-
-        #here perform synthetic calibration noise over pmat and sobel filtered pmat.
-        if CTRL_PNL['cal_noise'] == True:
-            images_up_non_tensor = PreprocessingLib().preprocessing_add_calibration_noise(images_up_non_tensor,
-                                                                                          pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
-                                                                                          norm_std_coeffs = CTRL_PNL['norm_std_coeffs'],
-                                                                                          is_training = is_training,
-                                                                                          noise_amount = CTRL_PNL['cal_noise_amt'])
-
-
-        #print np.shape(images_up_non_tensor)
-
-        images_up_non_tensor = PreprocessingLib().preprocessing_pressure_map_upsample(images_up_non_tensor, multiple=2)
-
-        if is_training == True: #only add noise to training images
-            if CTRL_PNL['cal_noise'] == False:
-                images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
-                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
-                                                                                    norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
-            else:
-                images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
-                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-1),
-                                                                                    norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
-
-        images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
-
-
-        if CTRL_PNL['incl_ht_wt_channels'] == True: #make images full of stuff
-            weight_input = torch.ones((images_up.size()[0], images_up.size()[2] * images_up.size()[3])).type(CTRL_PNL['dtype'])
-            weight_input *= batch[7].type(CTRL_PNL['dtype'])
-            weight_input = weight_input.view((images_up.size()[0], 1, images_up.size()[2], images_up.size()[3]))
-            height_input = torch.ones((images_up.size()[0], images_up.size()[2] * images_up.size()[3])).type(CTRL_PNL['dtype'])
-            height_input *= batch[8].type(CTRL_PNL['dtype'])
-            height_input = height_input.view((images_up.size()[0], 1, images_up.size()[2], images_up.size()[3]))
-            images_up = torch.cat((images_up, weight_input, height_input), 1)
-
-
-        targets, betas = Variable(batch[1].type(CTRL_PNL['dtype']), requires_grad=False), \
-                         Variable(batch[2].type(CTRL_PNL['dtype']), requires_grad=False)
-
-        angles_gt = Variable(batch[3].type(CTRL_PNL['dtype']), requires_grad=is_training)
-        root_shift = Variable(batch[4].type(CTRL_PNL['dtype']), requires_grad=is_training)
-        gender_switch = Variable(batch[5].type(CTRL_PNL['dtype']), requires_grad=is_training)
-        synth_real_switch = Variable(batch[6].type(CTRL_PNL['dtype']), requires_grad=is_training)
-
-        OUTPUT_EST_DICT = {}
-        if CTRL_PNL['adjust_ang_from_est'] == True:
-            OUTPUT_EST_DICT['betas'] = Variable(batch[9].type(CTRL_PNL['dtype']), requires_grad=is_training)
-            OUTPUT_EST_DICT['angles'] = Variable(extra_smpl_angles.type(CTRL_PNL['dtype']), requires_grad=is_training)
-            OUTPUT_EST_DICT['root_shift'] = Variable(extra_targets.type(CTRL_PNL['dtype']), requires_grad=is_training)
-            if CTRL_PNL['full_body_rot'] == True:
-                OUTPUT_EST_DICT['root_atan2'] = Variable(batch[12].type(CTRL_PNL['dtype']), requires_grad=is_training)
-
-        if CTRL_PNL['depth_map_labels'] == True:
-            if CTRL_PNL['depth_map_labels_test'] == True or is_training == True:
-                INPUT_DICT['batch_mdm'] = batch[9+adj_ext_idx].type(CTRL_PNL['dtype'])
-                INPUT_DICT['batch_cm'] = batch[10+adj_ext_idx].type(CTRL_PNL['dtype'])
-        else:
-            INPUT_DICT['batch_mdm'] = None
-            INPUT_DICT['batch_cm'] = None
-
-        scores, OUTPUT_DICT = model.forward_kinematic_angles(images=images_up,
-                                                             gender_switch=gender_switch,
-                                                             synth_real_switch=synth_real_switch,
-                                                             CTRL_PNL=CTRL_PNL,
-                                                             OUTPUT_EST_DICT=OUTPUT_EST_DICT,
-                                                             targets=targets,
-                                                             is_training=is_training,
-                                                             betas=betas,
-                                                             angles_gt=angles_gt,
-                                                             root_shift=root_shift,
-                                                             )  # scores is a variable with 27 for 10 euclidean errors and 17 lengths in meters. targets est is a numpy array in mm.
-
-
-        INPUT_DICT['batch_images'] = images_up.data
-        INPUT_DICT['batch_targets'] = targets.data
-
-        print "ConvNet input size: ", INPUT_DICT['batch_images'].size()
-
-        return scores, INPUT_DICT, OUTPUT_DICT
-
-
-
 
 
 if __name__ == "__main__":
@@ -877,11 +749,19 @@ if __name__ == "__main__":
     if opt.net == 1:
         data_fp_suffix = ''
     elif opt.net == 2:
-        data_fp_suffix = '_output_46k_100e'
+        data_fp_suffix = '_convnet_1_'+str(opt.losstype)
+
+        if opt.small == True:
+            data_fp_suffix += '_750ct'
+        else:
+            data_fp_suffix += '_184000ct'
+
+        data_fp_suffix += '_128b_1000e_x5pm_tnh'
+
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
-            data_fp_suffix += '_clns0p1'
+            data_fp_suffix += '_clns10p'
     else:
         print "Please choose a valid network. You can specify '--net 1' or '--net 2'."
         sys.exit()

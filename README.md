@@ -63,6 +63,7 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 * Trimesh - https://github.com/mikedh/trimesh
 * PyTorch - https://pytorch.org/
 * PyTorch HMR - https://github.com/MandyMo/pytorch_HMR
+* LateX packages - `sudo apt-get install dvipng texlive-fonts-recommended texlive-fonts-extra`
 * Matplotlib, PyGlet, some others .... 
 
 
