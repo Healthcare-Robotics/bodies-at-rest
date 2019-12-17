@@ -753,11 +753,11 @@ if __name__ == "__main__":
         data_fp_suffix = '_convnet_1_'+str(opt.losstype)
 
         if opt.small == True:
-            data_fp_suffix += '_750ct'
+            data_fp_suffix += '_46000ct'
         else:
             data_fp_suffix += '_184000ct'
 
-        data_fp_suffix += '_128b_1000e_x5pm_tnh'
+        data_fp_suffix += '_128b_100e_x5pm_tnh'
 
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
@@ -775,55 +775,65 @@ if __name__ == "__main__":
 
 
     if opt.quick_test == True:
-        training_database_file_f.append(data_fp_prefix+'synth/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        #run a quick test
+        training_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
     else:
-        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_f_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_plo_f_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_plo_f_lay_set18to22_10000' + data_fp_suffix + '.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_f_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_plo_f_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_rollpi_plo_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        #General partition - 104,000 train + 12,000 test
+        training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_plo_f_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general/train_rollpi_m_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general/train_rollpi_plo_m_lay_set18to22_10000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_f_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_plo_f_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general/train_rollpi_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general/train_rollpi_plo_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+        test_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_plo_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/general/test_rollpi_m_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/general/test_rollpi_plo_m_lay_set23to24_3000'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_m_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_plo_m_lay_set5to7_5000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_m_lay_set18to22_10000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_plo_m_lay_set18to22_10000' + data_fp_suffix + '.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_m_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_plo_m_lay_set14_1500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_rollpi_m_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_rollpi_plo_m_lay_set23to24_3000'+data_fp_suffix+'.p')
 
-        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_plo_hbh_f_lay_set1to2_2000'+data_fp_suffix+'.p')
-        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_plo_phu_f_lay_set2pl4_4000'+data_fp_suffix+'.p')
-        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_sl_f_lay_set2pl3pa1_4000'+data_fp_suffix+'.p')
-        training_database_file_f.append(data_fp_prefix+'synth/train_roll0_xl_f_lay_set2both_4000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_plo_hbh_f_lay_set4_500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_plo_phu_f_lay_set1pa3_500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_sl_f_lay_set1both_500'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/test_roll0_xl_f_lay_set1both_500'+data_fp_suffix+'.p')
+        #General supine partition - 52,000 train + 6,000 test
+        training_database_file_f.append(data_fp_prefix + 'synth/general_supine/train_roll0_f_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/general_supine/train_roll0_plo_f_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general_supine/train_roll0_m_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general_supine/train_roll0_plo_m_lay_set5to7_5000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/general_supine/train_roll0_f_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_f.append(data_fp_prefix + 'synth/general_supine/train_roll0_plo_f_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general_supine/train_roll0_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+        training_database_file_m.append(data_fp_prefix + 'synth/general_supine/train_roll0_plo_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+        test_database_file_f.append(data_fp_prefix+'synth/general_supine/test_roll0_f_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/general_supine/test_roll0_plo_f_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/general_supine/test_roll0_m_lay_set14_1500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/general_supine/test_roll0_plo_m_lay_set14_1500'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_plo_hbh_m_lay_set2pa1_2000'+data_fp_suffix+'.p')
-        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_plo_phu_m_lay_set2pl4_4000'+data_fp_suffix+'.p')
-        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_sl_m_lay_set2pa1_4000'+data_fp_suffix+'.p')
-        training_database_file_m.append(data_fp_prefix+'synth/train_roll0_xl_m_lay_set2both_4000'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_plo_hbh_m_lay_set1_500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_plo_phu_m_lay_set1pa3_500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_sl_m_lay_set1both_500'+data_fp_suffix+'.p')
-        test_database_file_m.append(data_fp_prefix+'synth/test_roll0_xl_m_lay_set1both_500'+data_fp_suffix+'.p')
 
-        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_f_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/train_roll0_plo_f_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_f_lay_set10to17_16000' + data_fp_suffix + '.p')
-        training_database_file_f.append(data_fp_prefix + 'synth/train_rollpi_plo_f_lay_set10to17_16000' + data_fp_suffix + '.p')
+        #Hands behind head partition - 4,000 train + 1,000 test
+        training_database_file_f.append(data_fp_prefix+'synth/hands_behind_head/train_roll0_plo_hbh_f_lay_set1to2_2000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/hands_behind_head/train_roll0_plo_hbh_m_lay_set2pa1_2000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/hands_behind_head/test_roll0_plo_hbh_f_lay_set4_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/hands_behind_head/test_roll0_plo_hbh_m_lay_set1_500'+data_fp_suffix+'.p')
 
-        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_m_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/train_roll0_plo_m_lay_set10to13_8000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_m_lay_set10to17_16000' + data_fp_suffix + '.p')
-        training_database_file_m.append(data_fp_prefix + 'synth/train_rollpi_plo_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+        #Prone hands up partition - 8,000 train + 1,000 test
+        training_database_file_f.append(data_fp_prefix+'synth/prone_hands_up/train_roll0_plo_phu_f_lay_set2pl4_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/prone_hands_up/train_roll0_plo_phu_m_lay_set2pl4_4000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/prone_hands_up/test_roll0_plo_phu_f_lay_set1pa3_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/prone_hands_up/test_roll0_plo_phu_m_lay_set1pa3_500'+data_fp_suffix+'.p')
+
+        #Straight limbs partition - 8,000 train + 1,000 test
+        training_database_file_f.append(data_fp_prefix+'synth/straight_limbs/train_roll0_sl_f_lay_set2pl3pa1_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/straight_limbs/train_roll0_sl_m_lay_set2pa1_4000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/straight_limbs/test_roll0_sl_f_lay_set1both_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/straight_limbs/test_roll0_sl_m_lay_set1both_500'+data_fp_suffix+'.p')
+
+        #Crossed legs partition - 8,000 train + 1,000 test
+        training_database_file_f.append(data_fp_prefix+'synth/crossed_legs/train_roll0_xl_f_lay_set2both_4000'+data_fp_suffix+'.p')
+        training_database_file_m.append(data_fp_prefix+'synth/crossed_legs/train_roll0_xl_m_lay_set2both_4000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/crossed_legs/test_roll0_xl_f_lay_set1both_500'+data_fp_suffix+'.p')
+        test_database_file_m.append(data_fp_prefix+'synth/crossed_legs/test_roll0_xl_m_lay_set1both_500'+data_fp_suffix+'.p')
+
 
     p = PhysicalTrainer(training_database_file_f, training_database_file_m, test_database_file_f, test_database_file_m, opt)
 

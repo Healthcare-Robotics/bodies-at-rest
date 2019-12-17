@@ -58,8 +58,15 @@ CAM_BED_DIST = 1.66
 
 
 class Viz3DPose():
-    def __init__(self, participant_directory):
+    def __init__(self):
+        self.pyRender = libPyRender.pyRenderMesh(render = True)
+        self.pressure_im_size = (64, 27)
+        self.pressure_im_size_required = (64, 27)
+        self.overall_image_scale_amount = 0.85
 
+
+
+    def load_new_participant_info(self, participant_directory):
         ##load participant info
         participant_info = load_pickle(participant_directory+"/participant_info_red.p")
         print "participant directory: ", participant_directory
@@ -71,12 +78,6 @@ class Viz3DPose():
         self.weight_lbs = participant_info['weight_lbs']
 
 
-        self.pyRender = libPyRender.pyRenderMesh(render = True)
-
-        self.pressure_im_size = (64, 27)
-        self.pressure_im_size_required = (64, 27)
-
-        self.overall_image_scale_amount = 0.85
 
     def depth_image(self, depth_r_orig):
         # DEPTH'
@@ -137,6 +138,7 @@ class Viz3DPose():
 
             pmat_corners = dat['pmat_corners'][im_num]
             rgb = dat['RGB'][im_num]
+            print "Pose type: ", dat['pose_type'][im_num]
 
             rgb[int(pmat_corners[0][1]+0.5)-2:int(pmat_corners[0][1]+0.5)+2, \
                 int(pmat_corners[0][0]+0.5)-2:int(pmat_corners[0][0]+0.5)+2, :] = 0
@@ -204,7 +206,7 @@ class Viz3DPose():
             self.pyRender.render_3D_data(camera_point, pmat = pmat, pc = pc_autofil_red)
 
             self.point_cloud_array = None
-            #sleep(3)
+            sleep(1)
 
 
 
@@ -234,16 +236,19 @@ if __name__ ==  "__main__":
                         "S188",
                         "S196", ]
 
+    V3D = Viz3DPose()
+
     for PARTICIPANT in participant_list:
 
 
-        participant_directory = "/media/henry/multimodal_data_2/CVPR2020_study/public_real_data/"+PARTICIPANT
+        #participant_directory = "/media/henry/multimodal_data_2/CVPR2020_study/public_real_data/"+PARTICIPANT
+        participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
         #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
 
-        V3D = Viz3DPose(participant_directory)
+        V3D.load_new_participant_info(participant_directory)
 
-
-        dat = load_pickle(participant_directory+"/prescribed_blurred.p")
+        #dat = load_pickle(participant_directory+"/prescribed.p")
+        dat = load_pickle(participant_directory+"/p_select.p")
 
         F_eval = V3D.evaluate_data(dat)
 
