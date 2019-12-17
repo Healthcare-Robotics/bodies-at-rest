@@ -305,8 +305,8 @@ class TensorPrepLib():
                 print "normalizing idx", i
                 x[:, i, :, :] *= normalizing_std_constants[i]
 
-            for i in range(x.shape[0]):
-                print torch.m
+            #for i in range(x.shape[0]):
+            #    print torch.m
 
         return x
 

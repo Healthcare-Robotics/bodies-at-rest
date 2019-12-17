@@ -299,13 +299,15 @@ class PhysicalTrainer():
 
 
         self.model_name = 'convnet_1_'+str(self.opt.losstype)
-        if self.opt.small == True: self.model_name += '_750ct'
+        if self.opt.small == True: self.model_name += '_46000ct'
         else: self.model_name += '_184000ct'
 
-        self.model_name += '_128b_1000e_x5pm_tnh'
+        self.model_name += '_128b_x5pm_tnh'
 
         if self.opt.htwt == True: self.model_name += '_htwt'
         if self.opt.calnoise == True: self.model_name += '_clns10p'
+
+        self.model_name += '_100e_00002lr'
 
         self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'})
 

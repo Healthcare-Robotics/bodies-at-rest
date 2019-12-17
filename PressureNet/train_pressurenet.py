@@ -351,7 +351,6 @@ class PhysicalTrainer():
         self.save_name = '_' + str(opt.net) + '_' + opt.losstype + \
                          '_' + str(self.train_x_tensor.size()[0]) + 'ct' + \
                          '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
-                         '_' + str(self.CTRL_PNL['num_epochs']) + 'e' + \
                          '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pm'
 
 
@@ -416,7 +415,9 @@ class PhysicalTrainer():
         if GPU == True:
             self.model = self.model.cuda()
 
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.00002, weight_decay=0.0005) #start with .00005
+        learning_rate = 0.00002
+
+        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=0.0005) #start with .00005
 
         # train the model one epoch at a time
         for epoch in range(1, self.CTRL_PNL['num_epochs'] + 1):
@@ -431,9 +432,9 @@ class PhysicalTrainer():
 
             if epoch == self.CTRL_PNL['num_epochs']:
                 print "saving convnet."
-                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'.pt')
+                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
                 print "saved convnet."
-                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e.p', 'wb'))
+                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.p', 'wb'))
                 print "saved losses."
 
         print self.train_val_losses, 'trainval'
@@ -736,14 +737,14 @@ if __name__ == "__main__":
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=20, metavar='N',
+    p.add_option('--log_interval', type=int, default=2, metavar='N',
                  help='number of batches between logging train status') #if you visualize too often it will slow down training.
 
     opt, args = p.parse_args()
 
 
-    data_fp_prefix = '../../../data/'
-    #data_fp_prefix = '../../../data_BR/'
+    #data_fp_prefix = '../../../data/'
+    data_fp_prefix = '../../../data_BR/'
     #data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
@@ -757,12 +758,14 @@ if __name__ == "__main__":
         else:
             data_fp_suffix += '_184000ct'
 
-        data_fp_suffix += '_128b_100e_x5pm_tnh'
+        data_fp_suffix += '_128b_x5pm_tnh'
 
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
             data_fp_suffix += '_clns10p'
+
+        data_fp_suffix += '_100e_00002lr'
     else:
         print "Please choose a valid network. You can specify '--net 1' or '--net 2'."
         sys.exit()
