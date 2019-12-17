@@ -9,7 +9,11 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-Link to PressurePose dataset: XXXXXXX. Make a new folder on your desktop, `~/data_BR/`, and unzip it there.
+Link to PressurePose synthetic dataset: XXXXXXX. Make a new folder, `~/data_BR/synth`, and unzip the files there.
+
+Link to PressurePose real dataset: XXXXXXX. Make a new folder, `~/data_BR/real`, and unzip the files there.
+
+Clone this repository into your `~/git/` folder to get started with inspecting PressurePose and training PressureNet.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
@@ -19,15 +23,32 @@ Link to PressurePose dataset: XXXXXXX. Make a new folder on your desktop, `~/dat
 
 This repository: 
 
-* Allows you to visualize both synthetic and real data in the PressurePose dataset. This is to help you get started. The synthetic dataset includes 206,000 fully labeled pressure images, meaning that each pressure image has a corresponding SMPL human mesh parameterized by body shape (10 PCA parameters), pose (69 joint angles), posture (6 DOF global transform), gender, height, and weight. The real dataset includes 1051 pressure images with co-registered point cloud data, RGB data, gender, height, and weight. 
-* Has the code for PressureNet. That gives you a jumping point if you are interested in considering other architectures. There are switches inside of the PressureNet code to modify how it is trained, e.g. to include height and weight during training or not. 
+* Allows you to visualize both synthetic and real data in the PressurePose dataset. The synthetic dataset includes 206,000 fully labeled pressure images, meaning that each pressure image has a corresponding SMPL human mesh parameterized by body shape (10 PCA parameters), pose (69 joint angles), posture (6 DOF global transform), gender, height, and weight. The real dataset includes 1051 pressure images with co-registered point cloud data, RGB data, gender, height, and weight. 
+* Has the code for PressureNet. Below we describe step-by-step how to train PressureNet. 
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break2.JPG?raw=true" alt="None"/>
 </p>
 
 ## PressurePose dataset visualization
+First, install the linux packages listed further down the page.
+
 For the synthetic data, when you run the following code, you will see something like the pictures below. There are flags in the code that allow you to segment based on the limbs and also to cut out mesh vertices that aren't facing the camera. The camera is positioned in the synthetic dataset at the same location as the real one, so cutting out the non-camera facing vertices will allow you to better compare the synthetic data to the real point cloud data.
+
+
+
+
+For the real data, when you run the following code `python viz_real_cvpr_release.py` you will see two pop up boxes: one for 2D data that includes RGB, depth, and pressure; the other for a 3D point cloud and pressure image rendering in pyrender that you can flip around to inspect. Make sure you include flags to specify the participant number and the type of real pose dataset. For example, you might use `--p_idx 1 --pose_type 'prescribed'` to specify the first participant in the list and the set of 48 prescribed poses. You can use numbers 1 through 20 to specify the participant, because there are 20, and pose types of `'prescribed'` and `'p_select'`, with the latter used to specify participant selected poses. Here is what you should see when you run this code:
+
+
+<p align="center">
+  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_2D.png?raw=true" alt="None"/>
+  <img width="17%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_1.png?raw=true" alt="None"/>
+  <img width="14%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_2.png?raw=true" alt="None"/>
+  <img width="16%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_3.png?raw=true" alt="None"/>
+</p>
+
+The real dataset is captured with a Kinect V2 and is already calibrated, and the pressure image is spatially co-registered with RGB, depth, and point cloud. The depth image is unfiltered and noisy while the point cloud is pre-packaged as a set of 3D coordinates that has white colors filtered out - so the only points there are ones representing the person in the bed. See the paper for details.
 
 
 <p align="center">
@@ -58,12 +79,14 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 </p>
 
 ## What other packages do I need?
-* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/
+* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it's quick. Unzip it in `~/git/`.
 * PyRender - https://github.com/mmatl/pyrender
 * Trimesh - https://github.com/mikedh/trimesh
 * PyTorch - https://pytorch.org/
-* PyTorch HMR - https://github.com/MandyMo/pytorch_HMR
-* LateX packages - `sudo apt-get install dvipng texlive-fonts-recommended texlive-fonts-extra`
+* PyTorch HMR - https://github.com/MandyMo/pytorch_HMR. Clone this and put it in `~/git/`.
+* OpenCV - `pip install python-opencv`
+* Open3D - `pip install open3d-python`
+* LateX packages - `apt-get install dvipng texlive-fonts-recommended texlive-fonts-extra`
 * Matplotlib, PyGlet, some others .... 
 
 
