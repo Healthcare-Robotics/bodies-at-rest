@@ -37,7 +37,7 @@ For the real data, when you run the following code `python viz_real_cvpr_release
 
 <p align="center">
   <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_2D.png?raw=true" alt="None"/>
-  <img width="16%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_1.png?raw=true" alt="None"/>
+  <img width="18%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_1.png?raw=true" alt="None"/>
   <img width="15%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_2.png?raw=true" alt="None"/>
   <img width="15%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_3.png?raw=true" alt="None"/>
 </p>
