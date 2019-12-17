@@ -518,8 +518,6 @@ class CNN(nn.Module):
 
 
         for joint_num in range(24):
-            #print scores[:, 10+joint_num].size(), 'score size'
-            #print synth_real_switch.size(), 'switch size'
             if joint_num in [0, 1, 2, 6, 9, 10, 11, 12, 13, 14, 16, 17, 22, 23]: #torso is 3 but forget training it
                 scores[:, 10+joint_num+OSA] = torch.mul(synth_real_switch,
                                                     (scores[:, 106+add_idx+joint_num*3+OSA] +
@@ -531,27 +529,12 @@ class CNN(nn.Module):
                                            scores[:, 107+add_idx+joint_num*3+OSA] +
                                            scores[:, 108+add_idx+joint_num*3+OSA]).sqrt()
 
-                #print scores[:, 10+joint_num], 'score size'
-                #print synth_real_switch, 'switch size'
-
-
 
         scores = scores.unsqueeze(0)
         scores = scores.unsqueeze(0)
         scores = F.pad(scores, (0, -151, 0, 0))
         scores = scores.squeeze(0)
         scores = scores.squeeze(0)
-
-        #here multiply by 24/10 when you are regressing to real data so it balances with the synthetic data
-        #scores = torch.mul(torch.add(1.0, torch.mul(1.4, torch.sub(1, synth_real_switch))).unsqueeze(1), scores)
-        #scores = torch.mul(torch.add(1.0, torch.mul(1.937984, torch.sub(1, synth_real_switch))).unsqueeze(1), scores) #data bag ratio. if you duplicate things get rid of this
-        #scores = torch.mul(torch.mul(2.4, torch.sub(1, synth_real_switch)).unsqueeze(1), scores)
-
-        # here multiply by 5 when you are regressing to real data because there is only 1/5 the amount of it
-        #scores = torch.mul(torch.mul(5.0, torch.sub(1, synth_real_switch)).unsqueeze(1), scores)
-
-        #print scores[0, :]
-        #print scores[7, :]
 
 
         scores[:, 0:10] = torch.mul(scores[:, 0:10].clone(), (1/1.728158146914805))#1.7312621950698526)) #weight the betas by std

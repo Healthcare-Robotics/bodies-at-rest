@@ -33,6 +33,10 @@ def load_pickle(filename):
 
 
 
+import sys
+sys.path.insert(0, '../lib_py')
+
+
 class pyRenderMesh():
     def __init__(self, render):
 
@@ -84,7 +88,7 @@ class pyRenderMesh():
 
                 pmat_xyz[j, i, 1] = i * 0.0286# /1.06# * 1.02 #1.0926 - 0.02
                 pmat_xyz[j, i, 0] = ((64 - j) * 0.0286) #* 1.04 #/1.04#1.1406 + 0.05 #only adjusts pmat NOT the SMPL person
-                pmat_xyz[j, i, 2] = 0.0# 0.075#0.12 + 0.075
+                pmat_xyz[j, i, 2] = 0.075#0.12 + 0.075
 
                 if j < 64 and i < 27:
                     coord1 = j * 28 + i
@@ -168,7 +172,7 @@ class pyRenderMesh():
     def get_human_mesh_parts(self, smpl_verts, smpl_faces, segment_limbs = False):
 
         if segment_limbs == True:
-            segmented_dict = load_pickle('segmented_mesh_idx_faces.p')
+            segmented_dict = load_pickle('../lib_py/segmented_mesh_idx_faces.p')
             human_mesh_vtx_parts = [smpl_verts[segmented_dict['l_lowerleg_idx_list'], :],
                                     smpl_verts[segmented_dict['r_lowerleg_idx_list'], :],
                                     smpl_verts[segmented_dict['l_upperleg_idx_list'], :],
@@ -199,7 +203,7 @@ class pyRenderMesh():
 
 
 
-    def render_3D_data(self, camera_point, pmat, pc = None, smpl_verts_gt = None, smpl_faces = None):
+    def render_3D_data(self, camera_point, pmat, pc = None, smpl_verts_gt = None, smpl_faces = None, segment_limbs = False):
 
         #this is for the pressure mat
         if pmat is not None:
@@ -230,7 +234,7 @@ class pyRenderMesh():
 
             smpl_verts_A_GT = np.swapaxes(np.matmul(transform_A, smpl_verts_quad_GT), 0, 1)[:, 0:3] #gt over pressure mat
 
-            human_mesh_vtx_GT, human_mesh_face_GT = self.get_human_mesh_parts(smpl_verts_A_GT, smpl_faces, segment_limbs=False)
+            human_mesh_vtx_GT, human_mesh_face_GT = self.get_human_mesh_parts(smpl_verts_A_GT, smpl_faces, segment_limbs=segment_limbs)
 
 
             # only use the vertices that are facing the camera
@@ -256,7 +260,7 @@ class pyRenderMesh():
 
 
             for idx in range(len(tm_list_seg)):
-                mesh_list_seg.append(pyrender.Mesh.from_trimesh(tm_list_seg[idx], material = self.mesh_parts_mat_list[idx], wireframe = True))
+                mesh_list_seg.append(pyrender.Mesh.from_trimesh(tm_list_seg[idx], material = self.mesh_parts_mat_list[idx], wireframe = segment_limbs))
                 #mesh_list_seg.append(pyrender.Mesh.from_trimesh(tm_list_seg[idx], smooth = False))
 
 

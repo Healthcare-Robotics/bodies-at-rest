@@ -10,7 +10,7 @@ import os
 import time
 import numpy as np
 
-import lib_pyrender_ez as libPyRender
+import lib_pyrender_br as libPyRender
 
 # PyTorch libraries. we use pytorch to load in the data. there are better ways to do it but this is what I've done--
 # the data here is loaded the same as it is for PressureNet training.
@@ -37,8 +37,8 @@ def load_pickle(filename):
 import sys
 sys.path.insert(0, '../lib_py')
 
-from preprocessing_lib_ez import PreprocessingLib
-from tensorprep_lib_ez import TensorPrepLib
+from preprocessing_lib_br import PreprocessingLib
+from tensorprep_lib_br import TensorPrepLib
 
 import cPickle as pkl
 import random
@@ -82,7 +82,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['dropout'] = False
         self.CTRL_PNL['lock_root'] = False
-        self.CTRL_PNL['num_input_channels'] = 3
+        self.CTRL_PNL['num_input_channels'] = 2
         self.CTRL_PNL['GPU'] = False
         self.CTRL_PNL['regr_angles'] = False
         self.CTRL_PNL['aws'] = False
@@ -95,7 +95,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
-        self.CTRL_PNL['normalize_input'] = True
+        self.CTRL_PNL['normalize_input'] = False
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['L2_contact'] = True
         self.CTRL_PNL['pmat_mult'] = int(1)
@@ -131,7 +131,7 @@ class PhysicalTrainer():
                                              1./16.69545796387731,  #pos est depth
                                              1./45.08513083167194,  #neg est depth
                                              1./43.55800622930469,  #cm est
-                                             1./pmat_std_from_mult[int(self.CTRL_PNL['pmat_mult'])], #pmat x5
+                                             1./pmat_std_from_mult[int(self.CTRL_PNL['pmat_mult'])], #pmat
                                              1./sobel_std_from_mult[int(self.CTRL_PNL['pmat_mult'])], #pmat sobel
                                              1./1.0,                #bed height mat
                                              1./1.0,                #OUTPUT DO NOTHING
@@ -146,23 +146,23 @@ class PhysicalTrainer():
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
 
 
+
+
+
         #################################### PREP TRAINING DATA ##########################################
-        #load training ysnth data
-        dat_f_synth = TensorPrepLib().load_files_to_database(training_database_file_f, 'synth')
-        dat_m_synth = TensorPrepLib().load_files_to_database(training_database_file_m, 'synth')
+
+        dat_f_synth = TensorPrepLib().load_files_to_database(training_database_file_f, creation_type = 'synth', reduce_data = False)
+        dat_m_synth = TensorPrepLib().load_files_to_database(training_database_file_m, creation_type = 'synth', reduce_data = False)
 
 
         self.train_x_flat = []  # Initialize the testing pressure mat list
         self.train_x_flat = TensorPrepLib().prep_images(self.train_x_flat, dat_f_synth, dat_m_synth, num_repeats = 1)
         self.train_x_flat = list(np.clip(np.array(self.train_x_flat) * float(self.CTRL_PNL['pmat_mult']), a_min=0, a_max=100))
 
-        if self.CTRL_PNL['cal_noise'] == False:
-            self.train_x_flat = PreprocessingLib().preprocessing_blur_images(self.train_x_flat, self.mat_size, sigma=0.5)
+        #if self.CTRL_PNL['cal_noise'] == False:
+        #    self.train_x_flat = PreprocessingLib().preprocessing_blur_images(self.train_x_flat, self.mat_size, sigma=0.5)
 
         if len(self.train_x_flat) == 0: print("NO TRAINING DATA INCLUDED")
-
-        self.train_a_flat = []  # Initialize the training pressure mat angle list
-        self.train_a_flat = TensorPrepLib().prep_angles(self.train_a_flat, dat_f_synth, dat_m_synth, num_repeats = 1)
 
         if self.CTRL_PNL['depth_map_labels'] == True:
             self.depth_contact_maps = [] #Initialize the precomputed depth and contact maps. only synth has this label.
@@ -174,13 +174,11 @@ class PhysicalTrainer():
             self.depth_contact_maps_input_est = [] #Initialize the precomputed depth and contact map input estimates
             self.depth_contact_maps_input_est = TensorPrepLib().prep_depth_contact_input_est(self.depth_contact_maps_input_est,
                                                                                              dat_f_synth, dat_m_synth, num_repeats = 1)
-
         else:
             self.depth_contact_maps_input_est = None
 
         #stack the bed height array on the pressure image as well as a sobel filtered image
         train_xa = PreprocessingLib().preprocessing_create_pressure_angle_stack(self.train_x_flat,
-                                                                                self.train_a_flat,
                                                                                 self.mat_size,
                                                                                 self.CTRL_PNL)
 
@@ -215,12 +213,12 @@ class PhysicalTrainer():
 
         self.train_y_tensor = torch.Tensor(train_y_flat)
 
+        print self.train_x_tensor.shape, 'Input training tensor shape'
+        print self.train_y_tensor.shape, 'Output training tensor shape'
+
 
         self.train_dataset = torch.utils.data.TensorDataset(self.train_x_tensor, self.train_y_tensor)
         self.train_loader = torch.utils.data.DataLoader(self.train_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
-
-
-
 
 
     def val_convnet_general(self):
@@ -233,13 +231,16 @@ class PhysicalTrainer():
         # This will loop a total = training_images/batch_size times
         for batch_idx, batch in enumerate(self.train_loader):
 
+            if batch_idx in [0, 1]: continue
+
             betas_gt = torch.mean(batch[1][:, 72:82], dim = 0).numpy()
             angles_gt = torch.mean(batch[1][:, 82:154], dim = 0).numpy()
             root_shift_est_gt = torch.mean(batch[1][:, 154:157], dim = 0).numpy()
 
 
 
-            pmat = batch[0][0, 1, :, :].clone().numpy()* 11.70153502792190
+            pmat = batch[0][0, 1, :, :].clone().numpy()#* 11.70153502792190
+
 
             for beta in range(betas_gt.shape[0]):
                 self.m.betas[beta] = betas_gt[beta]
@@ -266,37 +267,47 @@ class PhysicalTrainer():
                 joint_cart_gt[:, s] += (root_shift_est_gt[s] - float(self.m.J_transformed[0, s]))
 
 
+            if opt.red_verts == False:
             #this code renders the whole ground truth mesh.
-            #self.pyRender.render_3D_data(camera_point = None, pmat = pmat, smpl_verts_gt = smpl_verts_gt,
-            #                             smpl_faces = smpl_faces)
+                self.pyRender.render_3D_data(camera_point = None, pmat = pmat, smpl_verts_gt = smpl_verts_gt,
+                                             smpl_faces = smpl_faces, segment_limbs = opt.seg_limbs)
+            else:
+                #this code renders only camera-facing vertices in the mesh
+                camera_point = [1.09898028, 0.46441343, -CAM_BED_DIST]
+                self.pyRender.render_3D_data(camera_point=camera_point, pmat=pmat, smpl_verts_gt=smpl_verts_gt,
+                                             smpl_faces=smpl_faces, segment_limbs = opt.seg_limbs)
 
-
-            #this code renders only camera-facing vertices in the mesh
-            camera_point = [1.09898028, 0.46441343, -CAM_BED_DIST]
-            self.pyRender.render_3D_data(camera_point=camera_point, pmat=pmat, smpl_verts_gt=smpl_verts_gt,
-                                         smpl_faces=smpl_faces)
-
-            time.sleep(2)
+            time.sleep(1000)
 
 if __name__ == "__main__":
 
-    filepath_prefix = '/media/henry/multimodal_data_2/data/'
+    import optparse
+
+    p = optparse.OptionParser()
+    p.add_option('--red', action='store_true', dest='red_verts', default=False,
+                 help='Do a quick test.')
+    p.add_option('--seg', action='store_true', dest='seg_limbs', default=False,
+                 help='Do a quick test.')
+
+    opt, args = p.parse_args()
 
 
-    GENDER = "f"
+
+    filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
+    GENDER = "m"
 
     #Replace this with some subset of data of your choice
-    TESTING_FILENAME = "test_roll0_plo_"+GENDER+"_lay_set14_1500"
+    TESTING_FILENAME = "general_supine/test_roll0_plo_"+GENDER+"_lay_set14_1500"
 
 
     test_database_file_f = []
     test_database_file_m = []
 
     if GENDER == "f":
-        test_database_file_f.append(filepath_prefix+'synth/random3/'+TESTING_FILENAME+'.p')
+        test_database_file_f.append(filepath_prefix+TESTING_FILENAME+'.p')
         model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
     else:
-        test_database_file_m.append(filepath_prefix+'synth/random3/'+TESTING_FILENAME+'.p')
+        test_database_file_m.append(filepath_prefix+TESTING_FILENAME+'.p')
         model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
 
 

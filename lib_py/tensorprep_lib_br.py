@@ -302,7 +302,11 @@ class TensorPrepLib():
             if CTRL_PNL['cal_noise'] == True: normalizing_std_constants = normalizing_std_constants[1:] #here we don't precompute the contact
 
             for i in range(x.shape[1]):
+                print "normalizing idx", i
                 x[:, i, :, :] *= normalizing_std_constants[i]
+
+            for i in range(x.shape[0]):
+                print torch.m
 
         return x
 
