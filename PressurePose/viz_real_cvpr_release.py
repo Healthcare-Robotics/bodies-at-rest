@@ -132,7 +132,7 @@ class Viz3DPose():
 
 
         #for im_num in range(29, 100):
-        for im_num in range(11, len(dat['images'])):#self.color_all.shape[0]):
+        for im_num in range(0, len(dat['images'])):#self.color_all.shape[0]):
 
             all_image_list = []
 
@@ -211,15 +211,28 @@ class Viz3DPose():
             self.pyRender.render_3D_data(camera_point, pmat = pmat, pc = pc_autofil_red)
 
             self.point_cloud_array = None
-            sleep(1000)
+            sleep(1)
 
 
 
 
 if __name__ ==  "__main__":
 
+    import optparse
 
-    participant_list = ["S196",
+    p = optparse.OptionParser()
+    p.add_option('--pose_type', action='store', type='string', dest='pose_type', default='none',
+                 help='Choose a pose type, either `prescribed` or `p_select`.')
+
+    p.add_option('--p_idx', action='store', type='int', dest='p_idx', default=0,
+                 # PMR parameter to adjust loss function 2
+                 help='Choose a participant. Enter a number from 1 to 20.')
+
+
+    opt, args = p.parse_args()
+
+
+    participant_list = ["S103",
                         "S104",
                         "S107",
                         "S114",
@@ -241,21 +254,29 @@ if __name__ ==  "__main__":
                         "S188",
                         "S196", ]
 
+    if opt.p_idx == 0:
+        print "Please choose a participant with flag `--p_idx #`. Enter a number from 1 to 20."
+        sys.exit()
+    else:
+        PARTICIPANT = participant_list[opt.p_idx - 1]
+
     V3D = Viz3DPose()
 
-    for PARTICIPANT in participant_list:
+    participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
+    #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
 
+    V3D.load_new_participant_info(participant_directory)
 
-        #participant_directory = "/media/henry/multimodal_data_2/CVPR2020_study/public_real_data/"+PARTICIPANT
-        participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
-        #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
-
-        V3D.load_new_participant_info(participant_directory)
-
-        #dat = load_pickle(participant_directory+"/prescribed.p")
+    if opt.pose_type == "prescribed":
         dat = load_pickle(participant_directory+"/prescribed.p")
+    elif opt.pose_type == "p_select":
+        dat = load_pickle(participant_directory+"/p_select.p")
+    else:
+        print "Please choose a pose type - either prescribed poses, " \
+              "'--pose_type prescribed', or participant selected poses, '--pose_type p_select'."
+        sys.exit()
 
-        F_eval = V3D.evaluate_data(dat)
+    F_eval = V3D.evaluate_data(dat)
 
 
 
