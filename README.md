@@ -36,6 +36,12 @@ First, install the linux packages listed further down the page.
 For the synthetic data, when you run the following code, you will see something like the pictures below. There are flags in the code that allow you to segment based on the limbs and also to cut out mesh vertices that aren't facing the camera. The camera is positioned in the synthetic dataset at the same location as the real one, so cutting out the non-camera facing vertices will allow you to better compare the synthetic data to the real point cloud data.
 
 
+<p align="center">
+  <img width="15%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/front_synth.png?raw=true" alt="None"/>
+  <img width="15%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/side_synth.png?raw=true" alt="None"/>
+  <img width="15%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/front_synth_cut.png?raw=true" alt="None"/>
+  <img width="15%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/side_synth_cut.png?raw=true" alt="None"/>
+</p>
 
 
 For the real data, when you run the following code `python viz_real_cvpr_release.py` you will see two pop up boxes: one for 2D data that includes RGB, depth, and pressure; the other for a 3D point cloud and pressure image rendering in pyrender that you can flip around to inspect. Make sure you include flags to specify the participant number and the type of real pose dataset. For example, you might use `--p_idx 1 --pose_type 'prescribed'` to specify the first participant in the list and the set of 48 prescribed poses. You can use numbers 1 through 20 to specify the participant, because there are 20, and pose types of `'prescribed'` and `'p_select'`, with the latter used to specify participant selected poses. Here is what you should see when you run this code:
