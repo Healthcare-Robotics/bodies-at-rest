@@ -13,7 +13,7 @@ Link to PressurePose synthetic dataset: XXXXXXX. Make a new folder, `~/data_BR/s
 
 Link to PressurePose real dataset: XXXXXXX. Make a new folder, `~/data_BR/real`, and unzip the files there.
 
-Clone this repository into your `~/git/` folder to get started.
+Clone this repository into your `~/git/` folder to get started with inspecting PressurePose and training PressureNet.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
