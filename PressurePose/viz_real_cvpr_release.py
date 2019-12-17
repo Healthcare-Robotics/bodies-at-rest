@@ -118,7 +118,7 @@ class Viz3DPose():
         pressure_reshaped_temp2[start_low_pt[0]:start_low_pt[0]+pmat_reshaped_size[0], \
                                 start_low_pt[1]:start_low_pt[1]+pmat_reshaped_size[1], :] = pressure_reshaped
 
-        pressure_reshaped_temp2[start_low_pt[0]-2:start_low_pt[0]+2,start_low_pt[1]-2:start_low_pt[1]+2,: ] = 255
+        #pressure_reshaped_temp2[start_low_pt[0]-2:start_low_pt[0]+2,start_low_pt[1]-2:start_low_pt[1]+2,: ] = 255
 
         pressure_reshaped = pressure_reshaped_temp2
 
@@ -132,7 +132,7 @@ class Viz3DPose():
 
 
         #for im_num in range(29, 100):
-        for im_num in range(len(dat['images'])):#self.color_all.shape[0]):
+        for im_num in range(11, len(dat['images'])):#self.color_all.shape[0]):
 
             all_image_list = []
 
@@ -160,7 +160,12 @@ class Viz3DPose():
 
             self.pressure = dat['images'][im_num]
             #PRESSURE
-            self.pressure = np.clip(self.pressure*1, 0, 100)
+
+
+            #because we used a sheet on the bed the overall pressure is lower than calibration, which was done without a sheet. bump it up here.
+            bedsheet_norm_factor = float(4)
+
+            self.pressure = np.clip(self.pressure*bedsheet_norm_factor, 0, 100)
             pressure_reshaped, pressure_size = self.pressure_image(self.pressure, rgb.shape, pmat_corners)
 
             #pressure_reshaped = pressure_reshaped[pre_VERT_CUT:-pre_VERT_CUT,  HORIZ_CUT : 540 - HORIZ_CUT, :]
@@ -196,7 +201,7 @@ class Viz3DPose():
 
 
             #now do 3D rendering
-            pmat = np.clip(self.pressure.reshape(MAT_SIZE)*float(1), a_min=0, a_max=100)
+            pmat = np.clip(self.pressure.reshape(MAT_SIZE), a_min=0, a_max=100)
 
             pc_autofil_red = dat['pc'][im_num]
 
@@ -206,7 +211,7 @@ class Viz3DPose():
             self.pyRender.render_3D_data(camera_point, pmat = pmat, pc = pc_autofil_red)
 
             self.point_cloud_array = None
-            sleep(1)
+            sleep(1000)
 
 
 
@@ -214,7 +219,7 @@ class Viz3DPose():
 if __name__ ==  "__main__":
 
 
-    participant_list = ["S103",
+    participant_list = ["S196",
                         "S104",
                         "S107",
                         "S114",
@@ -248,7 +253,7 @@ if __name__ ==  "__main__":
         V3D.load_new_participant_info(participant_directory)
 
         #dat = load_pickle(participant_directory+"/prescribed.p")
-        dat = load_pickle(participant_directory+"/p_select.p")
+        dat = load_pickle(participant_directory+"/prescribed.p")
 
         F_eval = V3D.evaluate_data(dat)
 

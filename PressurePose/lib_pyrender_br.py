@@ -83,8 +83,8 @@ class pyRenderMesh():
             for i in range(28):
 
                 pmat_xyz[j, i, 1] = i * 0.0286# /1.06# * 1.02 #1.0926 - 0.02
-                pmat_xyz[j, i, 0] = ((64 - j) * 0.0286) * 1.04 #/1.04#1.1406 + 0.05 #only adjusts pmat NOT the SMPL person
-                pmat_xyz[j, i, 2] = 0.075#0.12 + 0.075
+                pmat_xyz[j, i, 0] = ((64 - j) * 0.0286) #* 1.04 #/1.04#1.1406 + 0.05 #only adjusts pmat NOT the SMPL person
+                pmat_xyz[j, i, 2] = 0.0# 0.075#0.12 + 0.075
 
                 if j < 64 and i < 27:
                     coord1 = j * 28 + i
