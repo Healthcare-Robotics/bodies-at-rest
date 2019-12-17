@@ -31,6 +31,8 @@ This repository:
 </p>
 
 ## PressurePose dataset visualization
+First, install the linux packages listed further down the page.
+
 For the synthetic data, when you run the following code, you will see something like the pictures below. There are flags in the code that allow you to segment based on the limbs and also to cut out mesh vertices that aren't facing the camera. The camera is positioned in the synthetic dataset at the same location as the real one, so cutting out the non-camera facing vertices will allow you to better compare the synthetic data to the real point cloud data.
 
 
