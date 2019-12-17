@@ -258,9 +258,13 @@ class pyRenderMesh():
                                                #vertex_colors = np.array(norm_colors[idx]))
                 tm_list_seg.append(tm_curr)
 
+            if segment_limbs == True:
+                wf = False
+            else:
+                wf = True
 
             for idx in range(len(tm_list_seg)):
-                mesh_list_seg.append(pyrender.Mesh.from_trimesh(tm_list_seg[idx], material = self.mesh_parts_mat_list[idx], wireframe = segment_limbs))
+                mesh_list_seg.append(pyrender.Mesh.from_trimesh(tm_list_seg[idx], material = self.mesh_parts_mat_list[idx], wireframe = wf))
                 #mesh_list_seg.append(pyrender.Mesh.from_trimesh(tm_list_seg[idx], smooth = False))
 
 

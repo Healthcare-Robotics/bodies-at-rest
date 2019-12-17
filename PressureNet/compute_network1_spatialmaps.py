@@ -43,17 +43,6 @@ from scipy import ndimage
 import scipy.stats as ss
 from scipy.misc import imresize
 from scipy.ndimage.interpolation import zoom
-#from skimage.feature import hog
-#from skimage import data, color, exposure
-
-
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import scale
-from sklearn.preprocessing import normalize
-from sklearn import svm, linear_model, decomposition, kernel_ridge, neighbors
-from sklearn import metrics
-from sklearn.utils import shuffle
-from sklearn.multioutput import MultiOutputRegressor
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -124,7 +113,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
         self.CTRL_PNL['all_tanh_activ'] = True
-        self.CTRL_PNL['normalize_input'] = True
+        self.CTRL_PNL['normalize_std'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
@@ -249,7 +238,7 @@ class PhysicalTrainer():
                                                               mesh_depth_contact_maps = self.depth_contact_maps)
 
         #normalize the input
-        if self.CTRL_PNL['normalize_input'] == True:
+        if self.CTRL_PNL['normalize_std'] == True:
             test_xa = TensorPrepLib().normalize_network_input(test_xa, self.CTRL_PNL)
 
         self.test_x_tensor = torch.Tensor(test_xa)
@@ -276,7 +265,7 @@ class PhysicalTrainer():
                                                     loss_vector_type = self.CTRL_PNL['loss_vector_type'],
                                                     initial_angle_est = self.CTRL_PNL['adjust_ang_from_est'])
 
-        if self.CTRL_PNL['normalize_input'] == True:
+        if self.CTRL_PNL['normalize_std'] == True:
             test_y_flat = TensorPrepLib().normalize_wt_ht(test_y_flat, self.CTRL_PNL)
 
         self.test_y_tensor = torch.Tensor(test_y_flat)
@@ -424,6 +413,9 @@ if __name__ == "__main__":
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')
 
+    p.add_option('--qt', action='store_true', dest='quick_test', default=False,
+                 help='Do a quick test.')
+
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
 
@@ -440,56 +432,59 @@ if __name__ == "__main__":
 
     network_design = True
 
-    #filename_list_f = [ 'data/synth/random3_supp/test_roll0_plo_hbh_f_lay_set4_500',
-    #                    'data/synth/random3_supp/test_roll0_plo_phu_f_lay_set1pa3_500',
-    #                    'data/synth/random3_supp/test_roll0_sl_f_lay_set1both_500',
-    #                    'data/synth/random3_supp/test_roll0_xl_f_lay_set1both_500',
-    #                   'data/synth/random3_supp/train_roll0_plo_phu_f_lay_set2pl4_4000',
-    #                    'data/synth/random3_supp/train_roll0_sl_f_lay_set2pl3pa1_4000',
-    #                   'data/synth/random3_supp/train_roll0_xl_f_lay_set2both_4000',
-    #                    'data/synth/random3_supp/train_roll0_plo_hbh_f_lay_set1to2_2000']
+    if opt.quick_test == True:
+        filename_list_f = ['data_BR/synth/quick_test/test_rollpi_f_lay_set23to24_3000']
+        filename_list_m = []
+    else:
+        filename_list_f = ['data_BR/synth/general_supine/test_roll0_f_lay_set14_1500',
+                           'data_BR/synth/general_supine/test_roll0_plo_f_lay_set14_1500',
+                           'data_BR/synth/general/test_rollpi_plo_f_lay_set23to24_3000',
+                           'data_BR/synth/general/test_rollpi_f_lay_set23to24_3000',
 
-    filename_list_f = [#'data/synth/random3/test_roll0_f_lay_set14_1500',
-    #                   'data/synth/random3/test_roll0_plo_f_lay_set14_1500',
-    #                   'data/synth/random3/test_rollpi_plo_f_lay_set23to24_3000',
-                       'data_BR/synth/test_rollpi_f_lay_set23to24_3000',
-    #                   'data/synth/random3/train_roll0_f_lay_set5to7_5000',
-    #                   'data/synth/random3/train_roll0_f_lay_set10to13_8000',
-    #                   'data/synth/random3/train_roll0_plo_f_lay_set5to7_5000',
-    #                   'data/synth/random3/train_roll0_plo_f_lay_set10to13_8000',
-    #                   'data/synth/random3/train_rollpi_f_lay_set10to17_16000',
-    #                   'data/synth/random3/train_rollpi_f_lay_set18to22_10000',
-    #                   'data/synth/random3/train_rollpi_plo_f_lay_set10to17_16000',
-    #                   'data/synth/random3/train_rollpi_plo_f_lay_set18to22_10000',
-                        ]
+                           'data_BR/synth/general_supine/train_roll0_f_lay_set5to7_5000',
+                           'data_BR/synth/general_supine/train_roll0_f_lay_set10to13_8000',
+                           'data_BR/synth/general_supine/train_roll0_plo_f_lay_set5to7_5000',
+                           'data_BR/synth/general_supine/train_roll0_plo_f_lay_set10to13_8000',
+                           'data_BR/synth/general/train_rollpi_f_lay_set10to17_16000',
+                           'data_BR/synth/general/train_rollpi_f_lay_set18to22_10000',
+                           'data_BR/synth/general/train_rollpi_plo_f_lay_set10to17_16000',
+                           'data_BR/synth/general/train_rollpi_plo_f_lay_set18to22_10000',
 
-    filename_list_m = []
-    #filename_list_m = ['data/synth/random3/test_roll0_m_lay_set14_1500',
-    #                   'data/synth/random3/test_roll0_plo_m_lay_set14_1500',
-    #                   'data/synth/random3/test_rollpi_m_lay_set23to24_3000',
-    #                   'data/synth/random3/test_rollpi_plo_m_lay_set23to24_3000',
-    #                   'data/synth/random3/train_roll0_m_lay_set5to7_5000',
-    #                   'data/synth/random3/train_roll0_m_lay_set10to13_8000',
-    #                   'data/synth/random3/train_roll0_plo_m_lay_set5to7_5000',
-    #                   'data/synth/random3/train_roll0_plo_m_lay_set10to13_8000',
-    #                   'data/synth/random3/train_rollpi_m_lay_set10to17_16000',
-    #                   'data/synth/random3/train_rollpi_m_lay_set18to22_10000',
-    #                   'data/synth/random3/train_rollpi_plo_m_lay_set10to17_16000',
-    #                   'data/synth/random3/train_rollpi_plo_m_lay_set18to22_10000'
-    #                   ]
+                           'data_BR/synth/hands_behind_head/test_roll0_plo_hbh_f_lay_set4_500',
+                           'data_BR/synth/prone_hands_up/test_roll0_plo_phu_f_lay_set1pa3_500',
+                           'data_BR/synth/straight_limbs/test_roll0_sl_f_lay_set1both_500',
+                           'data_BR/synth/crossed_legs/test_roll0_xl_f_lay_set1both_500',
+
+                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_f_lay_set1to2_2000'
+                           'data_BR/synth/prone_hands_up/train_roll0_plo_phu_f_lay_set2pl4_4000',
+                           'data_BR/synth/straight_limbs/train_roll0_sl_f_lay_set2pl3pa1_4000',
+                           'data_BR/synth/crossed_legs/train_roll0_xl_f_lay_set2both_4000',]
+
+        filename_list_m = ['data_BR/synth/general_supine/test_roll0_m_lay_set14_1500',
+                           'data_BR/synth/general_supine/test_roll0_plo_m_lay_set14_1500',
+                           'data_BR/synth/general/test_rollpi_m_lay_set23to24_3000',
+                           'data_BR/synth/general/test_rollpi_plo_m_lay_set23to24_3000',
+
+                           'data_BR/synth/general_supine/train_roll0_m_lay_set5to7_5000',
+                           'data_BR/synth/general_supine/train_roll0_m_lay_set10to13_8000',
+                           'data_BR/synth/general_supine/train_roll0_plo_m_lay_set5to7_5000',
+                           'data_BR/synth/general_supine/train_roll0_plo_m_lay_set10to13_8000',
+                           'data_BR/synth/general/train_rollpi_m_lay_set10to17_16000',
+                           'data_BR/synth/general/train_rollpi_m_lay_set18to22_10000',
+                           'data_BR/synth/general/train_rollpi_plo_m_lay_set10to17_16000',
+                           'data_BR/synth/general/train_rollpi_plo_m_lay_set18to22_10000'
+                           
+                           'data_BR/synth/hands_behind_head/test_roll0_plo_hbh_m_lay_set1_500',
+                           'data_BR/synth/prone_hands_up/test_roll0_plo_phu_m_lay_set1pa3_500',
+                           'data_BR/synth/straight_limbs/test_roll0_sl_m_lay_set1both_500',
+                           'data_BR/synth/crossed_legs/test_roll0_xl_m_lay_set1both_500',
+
+                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_m_lay_set2pa1_2000'
+                           'data_BR/synth/prone_hands_up/train_roll0_plo_phu_m_lay_set2pl4_4000',
+                           'data_BR/synth/straight_limbs/train_roll0_sl_m_lay_set2pa1_4000',
+                           'data_BR/synth/crossed_legs/train_roll0_xl_m_lay_set2both_4000',]
 
 
-    #filename_list_m = [ 'data/synth/random3_supp/test_roll0_plo_hbh_m_lay_set1_500',
-    #                    'data/synth/random3_supp/test_roll0_plo_phu_m_lay_set1pa3_500',
-    #                    'data/synth/random3_supp/test_roll0_sl_m_lay_set1both_500',
-    #                    'data/synth/random3_supp/test_roll0_xl_m_lay_set1both_500',
-    #                    'data/synth/random3_supp/train_roll0_plo_phu_m_lay_set2pl4_4000',
-    #                    'data/synth/random3_supp/train_roll0_sl_m_lay_set2pa1_4000',
-    #                    'data/synth/random3_supp/train_roll0_xl_m_lay_set2both_4000',
-    #                    'data/synth/random3_supp/train_roll0_plo_hbh_m_lay_set2pa1_2000']
-
-
-    #filename_list_f = ['data/synth/random/test_roll0_f_lay_1000_none_stiff']
 
     for filename in filename_list_m:
 

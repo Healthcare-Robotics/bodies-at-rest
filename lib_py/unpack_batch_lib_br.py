@@ -98,13 +98,15 @@ class UnpackBatchLib():
 
         INPUT_DICT['batch_images'] = np.copy(images_up_non_tensor)
 
+
         #here perform synthetic calibration noise over pmat and sobel filtered pmat.
         if CTRL_PNL['cal_noise'] == True:
             images_up_non_tensor = PreprocessingLib().preprocessing_add_calibration_noise(images_up_non_tensor,
                                                                                           pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
                                                                                           norm_std_coeffs = CTRL_PNL['norm_std_coeffs'],
                                                                                           is_training = is_training,
-                                                                                          noise_amount = CTRL_PNL['cal_noise_amt'])
+                                                                                          noise_amount = CTRL_PNL['cal_noise_amt'],
+                                                                                          normalize_per_image = CTRL_PNL['normalize_per_image'])
 
 
         #print np.shape(images_up_non_tensor)
@@ -158,6 +160,7 @@ class UnpackBatchLib():
             INPUT_DICT['batch_mdm'] = None
             INPUT_DICT['batch_cm'] = None
 
+
         scores, OUTPUT_DICT = model.forward_kinematic_angles(images=images_up,
                                                              gender_switch=gender_switch,
                                                              synth_real_switch=synth_real_switch,
@@ -174,7 +177,9 @@ class UnpackBatchLib():
         INPUT_DICT['batch_images'] = images_up.data
         INPUT_DICT['batch_targets'] = targets.data
 
-        print "ConvNet input size: ", INPUT_DICT['batch_images'].size()
+        for i in range(INPUT_DICT['batch_images'].size()[1]):
+            print torch.max(INPUT_DICT['batch_images'][0, i, :, :]).cpu().data.numpy(),
+        print
 
         return scores, INPUT_DICT, OUTPUT_DICT
 

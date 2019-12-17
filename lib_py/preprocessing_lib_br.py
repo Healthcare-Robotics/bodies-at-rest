@@ -71,12 +71,13 @@ class PreprocessingLib():
 
         #clip noise so we dont go outside sensor limits
         #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100/11.70153502792190)
-        images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
+        #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
+        images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 10000.)
         #images[:, pmat_chan_idx+1, :, :] = np.clip(images[:, pmat_chan_idx+1, :, :], 0, 10000)
         return images
 
 
-    def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training, noise_amount):
+    def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training, noise_amount, normalize_per_image):
         if is_training == True:
             variation_amount = float(noise_amount)
             print "ADDING CALIB NOISE", variation_amount
@@ -103,8 +104,13 @@ class PreprocessingLib():
                 # then add
                 #amount_to_add_im = random.normalvariate(mu = 0.0, sigma = (1./11.70153502792190)*(98.666 - 0.0)*0.1) #add a variation of 10% of the range
                 #amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = (1./45.61635847182483)*(386.509 - 0.0)*0.1) #add a variation of 10% of the range
-                amount_to_add_im = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[4]*(98.666 - 0.0)*variation_amount) #add a variation of 10% of the range
-                amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[5]*(386.509 - 0.0)*variation_amount) #add a variation of 10% of the range
+
+                if normalize_per_image == True:
+                    amount_to_add_im = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[4]*(70. - 0.0)*variation_amount) #add a variation of 10% of the range
+                    amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[5]*(70. - 0.0)*variation_amount) #add a variation of 10% of the range
+                else:
+                    amount_to_add_im = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[4]*(98.666 - 0.0)*variation_amount) #add a variation of 10% of the range
+                    amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[5]*(386.509 - 0.0)*variation_amount) #add a variation of 10% of the range
 
                 images[map_index, pmat_chan_idx, :, :] = images[map_index, pmat_chan_idx, :, :] + amount_to_add_im
                 images[map_index, pmat_chan_idx+1, :, :] = images[map_index, pmat_chan_idx+1, :, :] + amount_to_add_sobel
@@ -122,9 +128,6 @@ class PreprocessingLib():
                 images[map_index, pmat_chan_idx+1, :, :] = gaussian_filter(images[map_index, pmat_chan_idx+1, :, :], sigma= amount_to_gauss_filter_sobel) #sobel #NOW
 
 
-            #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100/11.70153502792190)
-            images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
-
         else:  #if its NOT training we should still blur things by 0.5
             for map_index in range(images.shape[0]):
                 images[map_index, pmat_chan_idx, :, :] = gaussian_filter(images[map_index, pmat_chan_idx, :, :], sigma= 0.5) #pmap
@@ -133,7 +136,10 @@ class PreprocessingLib():
 
 
         #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100/11.70153502792190)
-        images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100*norm_std_coeffs[4])
+            if normalize_per_image == False:
+                images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
+            else:
+                images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 10000.)
 
         #now calculate the contact map AFTER we've blurred it
         pmat_contact = np.copy(images[:, pmat_chan_idx:pmat_chan_idx+1, :, :])
@@ -179,6 +185,9 @@ class PreprocessingLib():
 
             p_map = np.reshape(x_data[map_index], mat_size)
 
+            if CTRL_PNL['normalize_per_image'] == True:
+                p_map = p_map * (10000./np.sum(p_map))
+
             if mat_size == (84, 47):
                 p_map = p_map[10:74, 10:37]
 
@@ -188,11 +197,11 @@ class PreprocessingLib():
             p_map_inter = np.hypot(sx, sy)
             if CTRL_PNL['clip_sobel'] == True:
                 p_map_inter = np.clip(p_map_inter, a_min=0, a_max = 100)
-            p_map_dataset.append([p_map, p_map_inter])
 
-        if CTRL_PNL['verbose']: print len(x_data[0]), 'x', 1, 'size of an incoming pressure map'
-        if CTRL_PNL['verbose']: print len(p_map_dataset[0][0]), 'x', len(p_map_dataset[0][0][0]), 'size of a resized pressure map'
-        if CTRL_PNL['verbose']: print len(p_map_dataset[0][1]), 'x', len(p_map_dataset[0][1][0]), 'size of sobel filtered map'
+            if CTRL_PNL['normalize_per_image'] == True:
+                p_map_inter = p_map_inter * (10000. / np.sum(p_map_inter))
+
+            p_map_dataset.append([p_map, p_map_inter])
 
         return p_map_dataset
 
@@ -224,3 +233,36 @@ class PreprocessingLib():
         padded[:,10:74,10:37] = NxHxWimages
         NxHxWimages = padded
         return NxHxWimages
+
+
+    def preprocessing_per_im_norm(self, images, CTRL_PNL):
+
+        if CTRL_PNL['depth_map_input_est'] == True:
+            pmat_sum = 1./(torch.sum(torch.sum(images[:, 4, :, :], dim=1), dim=1)/100000.)
+            sobel_sum = 1./(torch.sum(torch.sum(images[:, 5, :, :], dim=1), dim=1)/100000.)
+
+            print "ConvNet input size: ", images.size(), pmat_sum.size()
+            for i in range(images.size()[1]):
+                print i, torch.min(images[0, i, :, :]), torch.max(images[0, i, :, :])
+
+            images[:, 4, :, :] = (images[:, 4, :, :].permute(1, 2, 0)*pmat_sum).permute(2, 0, 1)
+            images[:, 5, :, :] = (images[:, 5, :, :].permute(1, 2, 0)*sobel_sum).permute(2, 0, 1)
+
+        else:
+            pmat_sum = 1./(torch.sum(torch.sum(images[:, 1, :, :], dim=1), dim=1)/100000.)
+            sobel_sum = 1./(torch.sum(torch.sum(images[:, 2, :, :], dim=1), dim=1)/100000.)
+
+            print "ConvNet input size: ", images.size(), pmat_sum.size()
+            for i in range(images.size()[1]):
+                print i, torch.min(images[0, i, :, :]), torch.max(images[0, i, :, :])
+
+
+            images[:, 1, :, :] = (images[:, 1, :, :].permute(1, 2, 0)*pmat_sum).permute(2, 0, 1)
+            images[:, 2, :, :] = (images[:, 2, :, :].permute(1, 2, 0)*sobel_sum).permute(2, 0, 1)
+
+
+
+        #do this ONLY to pressure and sobel. scale the others to get them in a reasonable range, by a constant factor.
+
+
+        return images
