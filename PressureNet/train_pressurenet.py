@@ -779,8 +779,8 @@ if __name__ == "__main__":
 
     if opt.quick_test == True:
         #run a quick test
-        training_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
     else:
         #General partition - 104,000 train + 12,000 test
