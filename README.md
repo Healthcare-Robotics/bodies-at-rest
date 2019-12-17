@@ -79,7 +79,7 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 </p>
 
 ## What other packages do I need?
-* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it doesn't take too long. Unzip it in `~/git/`.
+* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it's quick. Unzip it in `~/git/`.
 * PyRender - https://github.com/mmatl/pyrender
 * Trimesh - https://github.com/mikedh/trimesh
 * PyTorch - https://pytorch.org/
