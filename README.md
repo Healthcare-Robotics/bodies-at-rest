@@ -11,6 +11,8 @@ Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
 Link to PressurePose dataset: XXXXXXX. Make a new folder on your desktop, `~/data_BR/`, and unzip it there.
 
+Clone this repository into your `~/git/` folder.
+
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
 </p>
@@ -71,7 +73,7 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 </p>
 
 ## What other packages do I need?
-* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/
+* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it doesn't take too long. Unzip it in `~/git/`.
 * PyRender - https://github.com/mmatl/pyrender
 * Trimesh - https://github.com/mikedh/trimesh
 * PyTorch - https://pytorch.org/
