@@ -84,7 +84,9 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 * Trimesh - https://github.com/mikedh/trimesh
 * PyTorch - https://pytorch.org/
 * PyTorch HMR - https://github.com/MandyMo/pytorch_HMR. Clone this and put it in `~/git/`.
-* LateX packages - `sudo apt-get install dvipng texlive-fonts-recommended texlive-fonts-extra`
+* OpenCV - `pip install python-opencv`
+* Open3D - `pip install open3d-python`
+* LateX packages - `apt-get install dvipng texlive-fonts-recommended texlive-fonts-extra`
 * Matplotlib, PyGlet, some others .... 
 
 
