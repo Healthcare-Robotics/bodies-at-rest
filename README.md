@@ -40,8 +40,8 @@ For the synthetic data, when you run the following code, you will see something 
   <img width="18%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/front_synth.png?raw=true" alt="None"/>
   <img width="14%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/side_synth.png?raw=true" alt="None"/>
   <img width="18%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/front_synth_cut.png?raw=true" alt="None"/>
-  <img width="13%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/side_synth_cut.png?raw=true" alt="None"/>
-  <img width="20%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/front_synth_seg.png?raw=true" alt="None"/>
+  <img width="12%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/side_synth_cut.png?raw=true" alt="None"/>
+  <img width="25%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/front_synth_seg.png?raw=true" alt="None"/>
 </p>
 
 
