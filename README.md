@@ -9,9 +9,9 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-PressurePose synthetic dataset: XXXXXXX. Make a new folder, `~/data_BR/synth`, and unzip the files there.
+PressurePose synthetic dataset: XXXXXXX. Make a new folder, `~/data_BR/synth`, and unzip the files there. For a quick start up, only download the `quick_test.zip` file, which is 3K images instead of 184K.
 
-PressurePose real dataset: XXXXXXX. Make a new folder, `~/data_BR/real`, and unzip the files there.
+PressurePose real dataset: XXXXXXX. Make a new folder, `~/data_BR/real`, and unzip the files there. For a quick start up, only download the first participant file (`S103.zip`).
 
 Clone this repository into your `~/git/` folder to get started with inspecting PressurePose and training PressureNet.
 
