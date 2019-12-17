@@ -46,7 +46,7 @@ For the real data, when you run the following code `python viz_real_cvpr_release
   <img width="16%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/viz_real_3D_3.png?raw=true" alt="None"/>
 </p>
 
-The real dataset is captured with a Kinect V2 and is already calibrated, and the pressure image is spatially co-registered with RGB, depth, and point cloud. The depth is image unfiltered and noisy while the point cloud is pre-packaged as a set of 3D coordinates that has white colors filtered out - so the only points there are ones representing the person in the bed. See the paper for details.
+The real dataset is captured with a Kinect V2 and is already calibrated, and the pressure image is spatially co-registered with RGB, depth, and point cloud. The depth image is unfiltered and noisy while the point cloud is pre-packaged as a set of 3D coordinates that has white colors filtered out - so the only points there are ones representing the person in the bed. See the paper for details.
 
 
 <p align="center">
