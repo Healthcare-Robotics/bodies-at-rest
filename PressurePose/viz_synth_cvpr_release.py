@@ -221,7 +221,7 @@ class PhysicalTrainer():
         self.train_loader = torch.utils.data.DataLoader(self.train_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
 
 
-    def val_convnet_general(self):
+    def val_general(self):
 
         self.m = load_model(model_path)
 
@@ -277,7 +277,7 @@ class PhysicalTrainer():
                 self.pyRender.render_3D_data(camera_point=camera_point, pmat=pmat, smpl_verts_gt=smpl_verts_gt,
                                              smpl_faces=smpl_faces, segment_limbs = opt.seg_limbs)
 
-            time.sleep(1)
+            time.sleep(1000)
 
 if __name__ == "__main__":
 
@@ -293,12 +293,11 @@ if __name__ == "__main__":
 
 
 
-    #filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
-    filepath_prefix = '../../../data_BR/synth/'
-    GENDER = "f"
+    filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
+    GENDER = "m"
 
     #Replace this with some subset of data of your choice
-    TESTING_FILENAME = "quick_test/test_rollpi_"+GENDER+"_lay_set23to24_3000"
+    TESTING_FILENAME = "general_supine/test_roll0_plo_"+GENDER+"_lay_set14_1500"
 
 
     test_database_file_f = []
@@ -314,4 +313,4 @@ if __name__ == "__main__":
 
     p = PhysicalTrainer(test_database_file_f, test_database_file_m)
 
-    p.val_convnet_general()
+    p.val_general()
