@@ -111,8 +111,6 @@ class UnpackBatchLib():
 
         #print np.shape(images_up_non_tensor)
 
-        images_up_non_tensor = PreprocessingLib().preprocessing_pressure_map_upsample(images_up_non_tensor, multiple=2)
-
         if is_training == True: #only add noise to training images
             if CTRL_PNL['cal_noise'] == False:
                 images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
@@ -122,6 +120,8 @@ class UnpackBatchLib():
                 images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
                                                                                     pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-1),
                                                                                     norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
+
+        images_up_non_tensor = PreprocessingLib().preprocessing_pressure_map_upsample(images_up_non_tensor, multiple=2)
 
         images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
 

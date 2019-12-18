@@ -186,7 +186,7 @@ class PreprocessingLib():
             p_map = np.reshape(x_data[map_index], mat_size)
 
             if CTRL_PNL['normalize_per_image'] == True:
-                p_map = p_map * (10000./np.sum(p_map))
+                p_map = p_map * (20000./np.sum(p_map))
 
             if mat_size == (84, 47):
                 p_map = p_map[10:74, 10:37]
@@ -199,7 +199,7 @@ class PreprocessingLib():
                 p_map_inter = np.clip(p_map_inter, a_min=0, a_max = 100)
 
             if CTRL_PNL['normalize_per_image'] == True:
-                p_map_inter = p_map_inter * (10000. / np.sum(p_map_inter))
+                p_map_inter = p_map_inter * (20000. / np.sum(p_map_inter))
 
             p_map_dataset.append([p_map, p_map_inter])
 
