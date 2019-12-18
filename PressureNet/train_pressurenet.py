@@ -732,7 +732,7 @@ if __name__ == "__main__":
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=100, metavar='N',
+    p.add_option('--log_interval', type=int, default=5, metavar='N',
                  help='number of batches between logging train status') #if you visualize too often it will slow down training.
 
     opt, args = p.parse_args()

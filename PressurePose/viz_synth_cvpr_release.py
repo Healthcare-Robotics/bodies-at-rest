@@ -10,7 +10,7 @@ import os
 import time
 import numpy as np
 
-import lib_pyrender_br as libPyRender
+import lib_pyrender_basic as libPyRender
 
 # PyTorch libraries. we use pytorch to load in the data. there are better ways to do it but this is what I've done--
 # the data here is loaded the same as it is for PressureNet training.
