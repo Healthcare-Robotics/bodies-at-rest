@@ -197,12 +197,12 @@ class CNN(nn.Module):
             scores = torch.mul(scores.clone(), 0.01)
 
         #normalize the output of the network based on the range of the parameters
-        #if self.GPU == True:
-        #    output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + 6*[2.0] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[3:, 1] - self.meshDepthLib.bounds.view(72,2)[3:, 0]).cpu().numpy())
-        #else:
-        #    output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + 6*[2.0] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[3:, 1] - self.meshDepthLib.bounds.view(72, 2)[3:, 0]).numpy())
-        #for i in range(88):
-        #    scores[:, i] = torch.mul(scores[:, i].clone(), output_norm[i])
+        if self.GPU == True:
+            output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[:, 1] - self.meshDepthLib.bounds.view(72,2)[:, 0]).cpu().numpy())
+        else:
+            output_norm = 10*[6.0] + [0.91, 1.98, 0.15] + list(torch.abs(self.meshDepthLib.bounds.view(72, 2)[:, 1] - self.meshDepthLib.bounds.view(72, 2)[:, 0]).numpy())
+        for i in range(85):
+            scores[:, i] = torch.mul(scores[:, i].clone(), output_norm[i])
 
 
         #add a factor so the model starts close to the home position. Has nothing to do with weighting.
