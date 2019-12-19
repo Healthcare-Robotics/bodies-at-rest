@@ -1,5 +1,4 @@
 
-
 try:
     import open3d as o3d
 except:
@@ -13,13 +12,13 @@ import numpy as np
 import random
 import copy
 from smpl.smpl_webuser.serialization import load_model
-from util import batch_global_rigid_transformation, batch_rodrigues, batch_lrotmin, reflect_pose
+
+import sys
+sys.path.insert(0, '../lib_py')
 
 #volumetric pose gen libraries
-import lib_visualization as libVisualization
-import lib_kinematics as libKinematics
-from process_yash_data import ProcessYashData
-#import dart_skel_sim
+import lib_visualization_br as libVisualization
+import lib_kinematics_br as libKinematics
 from time import sleep
 
 #ROS
@@ -34,13 +33,10 @@ from random import shuffle
 import torch
 import torch.nn as nn
 
-import tensorflow as tensorflow
+
+
 import cPickle as pickle
 
-
-#IKPY
-from ikpy.chain import Chain
-from ikpy.link import OriginLink, URDFLink
 
 #MISC
 import time as time
@@ -58,7 +54,6 @@ def load_pickle(filename):
         return pickle.load(f)
 
 import os
-
 
 
 

@@ -17,11 +17,11 @@ def load_pickle(filename):
 import sys
 sys.path.insert(0, '../lib_py')
 
+print 'got here'
 import lib_pyrender_br as libPyRender
 from visualization_lib_br import VisualizationLib
 from preprocessing_lib_br import PreprocessingLib
 from smpl.smpl_webuser.serialization import load_model
-
 
 
 
