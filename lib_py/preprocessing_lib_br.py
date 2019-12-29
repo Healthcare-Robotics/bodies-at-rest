@@ -78,6 +78,7 @@ class PreprocessingLib():
 
 
     def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training, noise_amount, normalize_per_image):
+
         if is_training == True:
             variation_amount = float(noise_amount)
             print "ADDING CALIB NOISE", variation_amount
@@ -130,16 +131,17 @@ class PreprocessingLib():
 
         else:  #if its NOT training we should still blur things by 0.5
             for map_index in range(images.shape[0]):
+                print pmat_chan_idx, images.shape, 'SHAPE'
                 images[map_index, pmat_chan_idx, :, :] = gaussian_filter(images[map_index, pmat_chan_idx, :, :], sigma= 0.5) #pmap
                 images[map_index, pmat_chan_idx+1, :, :] = gaussian_filter(images[map_index, pmat_chan_idx+1, :, :], sigma= 0.5) #sobel
-
-
 
         #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100/11.70153502792190)
             if normalize_per_image == False:
                 images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
             else:
                 images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 10000.)
+
+
 
         #now calculate the contact map AFTER we've blurred it
         pmat_contact = np.copy(images[:, pmat_chan_idx:pmat_chan_idx+1, :, :])
@@ -152,6 +154,8 @@ class PreprocessingLib():
         #                                              images[i, 1, :, :] * 20., None, None,
         #                                              block=False)
         #    time.sleep(0.5)
+
+
 
         return images
 
@@ -177,6 +181,7 @@ class PreprocessingLib():
         if CTRL_PNL['verbose']: print np.max(x_data)
         x_data = np.clip(x_data, 0, 100)
 
+        print "normalizing per image", CTRL_PNL['normalize_per_image']
 
         p_map_dataset = []
         for map_index in range(len(x_data)):
@@ -201,6 +206,7 @@ class PreprocessingLib():
             if CTRL_PNL['normalize_per_image'] == True:
                 p_map_inter = p_map_inter * (20000. / np.sum(p_map_inter))
 
+            print np.sum(p_map), 'sum after norm'
             p_map_dataset.append([p_map, p_map_inter])
 
         return p_map_dataset

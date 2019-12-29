@@ -96,6 +96,7 @@ class UnpackBatchLib():
         images_up_non_tensor = np.array(batch[0].numpy())
 
 
+
         INPUT_DICT['batch_images'] = np.copy(images_up_non_tensor)
 
 

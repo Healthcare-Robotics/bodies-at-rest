@@ -387,11 +387,12 @@ class PhysicalTrainer():
         if self.CTRL_PNL['full_body_rot'] == True:
             fc_output_size += 3
 
-        self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                 verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
+        #self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
+        #                         verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
 
         #load in a model instead if one is partially trained
         #self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
+        self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_2_anglesDC_184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh_clns10p_100e_2e-05lr.pt', map_location='cpu')
 
         pp = 0
         for p in list(self.model.parameters()):
@@ -494,8 +495,8 @@ class PhysicalTrainer():
 
 
 
-                loss.backward()
-                self.optimizer.step()
+                #loss.backward()
+                #self.optimizer.step()
                 loss *= 1000
 
 
@@ -693,8 +694,6 @@ if __name__ == "__main__":
 
     import optparse
     p = optparse.OptionParser()
-    p.add_option('--computer', action='store', type = 'string', dest='computer', default='lab_harddrive',
-                 help='Set path to the training database on lab harddrive.')
 
     p.add_option('--losstype', action='store', type = 'string', dest='losstype', default='anglesDC',
                  help='Choose direction cosine or euler angle regression.')
