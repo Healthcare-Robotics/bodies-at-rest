@@ -117,7 +117,7 @@ class PhysicalTrainer():
             self.CTRL_PNL['normalize_std'] = False
         self.CTRL_PNL['normalize_per_image'] = opt.nperim
         self.CTRL_PNL['all_tanh_activ'] = True
-        self.CTRL_PNL['pmat_mult'] = int(5)
+        self.CTRL_PNL['pmat_mult'] = int(1)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['double_network_size'] = False
@@ -732,7 +732,7 @@ if __name__ == "__main__":
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=5, metavar='N',
+    p.add_option('--log_interval', type=int, default=100, metavar='N',
                  help='number of batches between logging train status') #if you visualize too often it will slow down training.
 
     opt, args = p.parse_args()
@@ -753,14 +753,14 @@ if __name__ == "__main__":
         else:
             data_fp_suffix += '_184000ct'
 
-        data_fp_suffix += '_128b_x5pm_tnh'
+        data_fp_suffix += '_128b_x1pm_tnh'
 
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
             data_fp_suffix += '_clns10p'
 
-        data_fp_suffix += '_100e_00002lr'
+        data_fp_suffix += '_100e_'+str(0.00002)+'lr'
     else:
         print "Please choose a valid network. You can specify '--net 1' or '--net 2'."
         sys.exit()

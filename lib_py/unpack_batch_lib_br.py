@@ -178,7 +178,10 @@ class UnpackBatchLib():
         INPUT_DICT['batch_targets'] = targets.data
 
         for i in range(INPUT_DICT['batch_images'].size()[1]):
-            print torch.max(INPUT_DICT['batch_images'][0, i, :, :]).cpu().data.numpy(),
+            print 'max: ', torch.max(INPUT_DICT['batch_images'][0, i, :, :]).cpu().data.numpy(),
+        print
+        for i in range(INPUT_DICT['batch_images'].size()[1]):
+            print 'sum: ', torch.sum(INPUT_DICT['batch_images'][0, i, :, :]).cpu().data.numpy(),
         print
 
         return scores, INPUT_DICT, OUTPUT_DICT

@@ -112,9 +112,13 @@ class PhysicalTrainer():
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
+        if opt.nperim == False:
+            self.CTRL_PNL['normalize_std'] = True
+        else:
+            self.CTRL_PNL['normalize_std'] = False
+        self.CTRL_PNL['normalize_per_image'] = opt.nperim
         self.CTRL_PNL['all_tanh_activ'] = True
-        self.CTRL_PNL['normalize_std'] = True
-        self.CTRL_PNL['pmat_mult'] = int(5)
+        self.CTRL_PNL['pmat_mult'] = int(1)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['double_network_size'] = False
@@ -159,6 +163,10 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
+        if self.CTRL_PNL['normalize_std'] == False:
+            for i in range(10):
+                self.CTRL_PNL['norm_std_coeffs'][i] *= 0.
+                self.CTRL_PNL['norm_std_coeffs'][i] += 1.
 
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
@@ -291,12 +299,12 @@ class PhysicalTrainer():
         if self.opt.small == True: self.model_name += '_46000ct'
         else: self.model_name += '_184000ct'
 
-        self.model_name += '_128b_x5pm_tnh'
+        self.model_name += '_128b_x'+str(self.CTRL_PNL['pmat_mult'])+'pm_tnh'
 
         if self.opt.htwt == True: self.model_name += '_htwt'
         if self.opt.calnoise == True: self.model_name += '_clns10p'
 
-        self.model_name += '_100e_00002lr'
+        self.model_name += '_100e_'+str(0.00002)+'lr'
 
         self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'})
 
@@ -410,6 +418,9 @@ if __name__ == "__main__":
     p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
 
+    p.add_option('--nperim', action='store_true', dest='nperim', default=False,
+                 help='Normalize per image.')
+
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')
 
@@ -455,7 +466,7 @@ if __name__ == "__main__":
                            'data_BR/synth/straight_limbs/test_roll0_sl_f_lay_set1both_500',
                            'data_BR/synth/crossed_legs/test_roll0_xl_f_lay_set1both_500',
 
-                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_f_lay_set1to2_2000'
+                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_f_lay_set1to2_2000',
                            'data_BR/synth/prone_hands_up/train_roll0_plo_phu_f_lay_set2pl4_4000',
                            'data_BR/synth/straight_limbs/train_roll0_sl_f_lay_set2pl3pa1_4000',
                            'data_BR/synth/crossed_legs/train_roll0_xl_f_lay_set2both_4000',]
@@ -472,14 +483,14 @@ if __name__ == "__main__":
                            'data_BR/synth/general/train_rollpi_m_lay_set10to17_16000',
                            'data_BR/synth/general/train_rollpi_m_lay_set18to22_10000',
                            'data_BR/synth/general/train_rollpi_plo_m_lay_set10to17_16000',
-                           'data_BR/synth/general/train_rollpi_plo_m_lay_set18to22_10000'
+                           'data_BR/synth/general/train_rollpi_plo_m_lay_set18to22_10000',
                            
                            'data_BR/synth/hands_behind_head/test_roll0_plo_hbh_m_lay_set1_500',
                            'data_BR/synth/prone_hands_up/test_roll0_plo_phu_m_lay_set1pa3_500',
                            'data_BR/synth/straight_limbs/test_roll0_sl_m_lay_set1both_500',
                            'data_BR/synth/crossed_legs/test_roll0_xl_m_lay_set1both_500',
 
-                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_m_lay_set2pa1_2000'
+                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_m_lay_set2pa1_2000',
                            'data_BR/synth/prone_hands_up/train_roll0_plo_phu_m_lay_set2pl4_4000',
                            'data_BR/synth/straight_limbs/train_roll0_sl_m_lay_set2pa1_4000',
                            'data_BR/synth/crossed_legs/train_roll0_xl_m_lay_set2both_4000',]
