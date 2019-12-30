@@ -111,11 +111,11 @@ class PhysicalTrainer():
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
-        if opt.nperim == False:
+        self.CTRL_PNL['normalize_per_image'] = False
+        if self.CTRL_PNL['normalize_per_image'] == False:
             self.CTRL_PNL['normalize_std'] = True
         else:
             self.CTRL_PNL['normalize_std'] = False
-        self.CTRL_PNL['normalize_per_image'] = opt.nperim
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
@@ -716,9 +716,6 @@ if __name__ == "__main__":
 
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
-
-    p.add_option('--nperim', action='store_true', dest='nperim', default=False,
-                 help='Normalize per image.')
 
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
