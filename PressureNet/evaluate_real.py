@@ -306,7 +306,7 @@ class Viz3DPose():
 
 
             #because we used a sheet on the bed the overall pressure is lower than calibration, which was done without a sheet. bump it up here.
-            bedsheet_norm_factor = float(1)
+            bedsheet_norm_factor = float(4)
 
             self.pressure = np.clip(self.pressure*bedsheet_norm_factor, 0, 100)
 
@@ -393,12 +393,12 @@ class Viz3DPose():
                                                                                     CTRL_PNL = self.CTRL_PNL)
 
 
-        mdm_est_pos = OUTPUT_DICT['batch_mdm_est'].clone().unsqueeze(1)# / 16.69545796387731
-        mdm_est_neg = OUTPUT_DICT['batch_mdm_est'].clone().unsqueeze(1)# / 45.08513083167194
+        mdm_est_pos = OUTPUT_DICT['batch_mdm_est'].clone().unsqueeze(1) / 16.69545796387731
+        mdm_est_neg = OUTPUT_DICT['batch_mdm_est'].clone().unsqueeze(1) / 45.08513083167194
         mdm_est_pos[mdm_est_pos < 0] = 0
         mdm_est_neg[mdm_est_neg > 0] = 0
         mdm_est_neg *= -1
-        cm_est = OUTPUT_DICT['batch_cm_est'].clone().unsqueeze(1) * 100# / 43.55800622930469
+        cm_est = OUTPUT_DICT['batch_cm_est'].clone().unsqueeze(1) * 100 / 43.55800622930469
 
         # 1. / 16.69545796387731,  # pos est depth
         # 1. / 45.08513083167194,  # neg est depth

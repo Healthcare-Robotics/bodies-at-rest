@@ -191,7 +191,6 @@ class PreprocessingLib():
             if mat_size == (84, 47):
                 p_map = p_map[10:74, 10:37]
 
-            a_map = np.zeros(np.shape(p_map)).astype(np.float32)
 
             # this makes a sobel edge on the image
             sx = ndimage.sobel(p_map, axis=0, mode='constant')
@@ -203,7 +202,7 @@ class PreprocessingLib():
             if CTRL_PNL['normalize_per_image'] == True:
                 p_map_inter = p_map_inter * (20000. / np.sum(p_map_inter))
 
-            p_map_dataset.append([p_map, p_map_inter, a_map])
+            p_map_dataset.append([p_map, p_map_inter])
 
         return p_map_dataset
 

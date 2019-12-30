@@ -234,7 +234,7 @@ class VisualizationLib():
 
         # set options
         num_subplots = 5
-        if pmap_recon_gt is not None:
+        if pmap_recon_in is not None:
             num_subplots += 3
 
 
@@ -312,7 +312,7 @@ class VisualizationLib():
             ax18.set_title(r'$\hat{Q}^{+}_1$')
 
 
-        if pmap_recon_gt is not None:
+        if pmap_recon is not None:
             q_out_subscr = str(1)
             if pmap_recon_in is not None:
                 q_out_subscr = str(2)
@@ -339,8 +339,7 @@ class VisualizationLib():
             ax25.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom = False, top = False)
             ax25.set_title(r'$\hat{Q}^{+}_'+q_out_subscr+'$')
 
-
-
+        if pmap_recon_gt is not None:
             ax27 = fig.add_subplot(gs[1, 6])
             ax27.set_xlim([-1.0, 27.0])
             ax27.set_ylim([64.0, -1.0])
@@ -365,6 +364,7 @@ class VisualizationLib():
 
         #fig.savefig('/home/henry/data/blah.png', dpi=400)
         plt.show(block=block)
+
 
 
 

@@ -126,6 +126,12 @@ class UnpackBatchLib():
         images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
 
 
+        #print images_up.size()
+        bed_ht_zero = torch.zeros(images_up.size()[0], 1, images_up.size()[2], images_up.size()[3])
+        #print bed_ht_zero.size()
+        images_up = torch.cat((images_up, bed_ht_zero), 1)
+
+
         if CTRL_PNL['incl_ht_wt_channels'] == True: #make images full of stuff
             weight_input = torch.ones((images_up.size()[0], images_up.size()[2] * images_up.size()[3])).type(CTRL_PNL['dtype'])
             weight_input *= batch[7].type(CTRL_PNL['dtype'])

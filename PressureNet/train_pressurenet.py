@@ -340,9 +340,9 @@ class PhysicalTrainer():
 
 
         self.save_name = '_' + str(opt.net) + '_' + opt.losstype + \
-                         '_' + str(self.train_x_tensor.size()[0]) + 'ct' + \
+                         '_synth_' + str(self.train_x_tensor.size()[0]) + \
                          '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
-                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pm'
+                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pmult'
 
 
         if self.CTRL_PNL['depth_map_labels'] == True:
@@ -352,11 +352,11 @@ class PhysicalTrainer():
         if self.CTRL_PNL['adjust_ang_from_est'] == True:
             self.save_name += '_angleadj'
         if self.CTRL_PNL['all_tanh_activ'] == True:
-            self.save_name += '_tnh'
+            self.save_name += '_tnhFIXN'
         if self.CTRL_PNL['incl_ht_wt_channels'] == True:
             self.save_name += '_htwt'
         if self.CTRL_PNL['cal_noise'] == True:
-            self.save_name += '_clns'+str(int(self.CTRL_PNL['cal_noise_amt']*100)) + 'p'
+            self.save_name += '_calnoise'
         if self.CTRL_PNL['double_network_size'] == True:
             self.save_name += '_dns'
 
@@ -423,9 +423,9 @@ class PhysicalTrainer():
 
             if epoch == self.CTRL_PNL['num_epochs']:
                 print "saving convnet."
-                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
+                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.pt')
                 print "saved convnet."
-                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.p', 'wb'))
+                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.p', 'wb'))
                 print "saved losses."
 
         print self.train_val_losses, 'trainval'
