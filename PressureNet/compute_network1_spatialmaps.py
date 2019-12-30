@@ -113,7 +113,11 @@ class PhysicalTrainer():
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
         self.CTRL_PNL['all_tanh_activ'] = True
-        self.CTRL_PNL['normalize_std'] = True
+        self.CTRL_PNL['normalize_per_image'] = False
+        if self.CTRL_PNL['normalize_per_image'] == False:
+            self.CTRL_PNL['normalize_std'] = True
+        else:
+            self.CTRL_PNL['normalize_std'] = False
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
@@ -159,6 +163,11 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
+
+        if self.CTRL_PNL['normalize_std'] == False:
+            for i in range(10):
+                self.CTRL_PNL['norm_std_coeffs'][i] *= 0.
+                self.CTRL_PNL['norm_std_coeffs'][i] += 1.
 
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
