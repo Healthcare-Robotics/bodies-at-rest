@@ -11,14 +11,14 @@ from scipy import ndimage
 import numpy as np
 import random
 import copy
+
 from smpl.smpl_webuser.serialization import load_model
 
-import sys
-sys.path.insert(0, '../lib_py')
-
 #volumetric pose gen libraries
-import lib_visualization_br as libVisualization
-import lib_kinematics_br as libKinematics
+import lib_visualization as libVisualization
+import lib_kinematics as libKinematics
+from process_yash_data import ProcessYashData
+#import dart_skel_sim
 from time import sleep
 
 #ROS
@@ -33,10 +33,13 @@ from random import shuffle
 import torch
 import torch.nn as nn
 
-
-
+import tensorflow as tensorflow
 import cPickle as pickle
 
+
+#IKPY
+from ikpy.chain import Chain
+from ikpy.link import OriginLink, URDFLink
 
 #MISC
 import time as time
@@ -54,6 +57,7 @@ def load_pickle(filename):
         return pickle.load(f)
 
 import os
+
 
 
 
@@ -398,7 +402,8 @@ class pyRenderMesh():
                 human_mesh_vtx_parts = [smpl_verts[segmented_dict['r_leg_idx_list'], :]]
                 human_mesh_face_parts = [segmented_dict['r_leg_face_list']]
             else:
-                segmented_dict = load_pickle('segmented_mesh_idx_faces.p')
+                print "got here"
+                segmented_dict = load_pickle('../lib_py/segmented_mesh_idx_faces.p')
                 human_mesh_vtx_parts = [smpl_verts[segmented_dict['l_lowerleg_idx_list'], :],
                                         smpl_verts[segmented_dict['r_lowerleg_idx_list'], :],
                                         smpl_verts[segmented_dict['l_upperleg_idx_list'], :],
@@ -752,6 +757,8 @@ class pyRenderMesh():
         #smpl_verts[:, 2] += 0.5
         #pc[:, 2] += 0.5
 
+        pmat *= 4.
+
         pc[:, 0] = pc[:, 0] # - 0.17 - 0.036608
         pc[:, 1] = pc[:, 1]# + 0.09
 
@@ -761,7 +768,7 @@ class pyRenderMesh():
         #segment_limbs = True
 
         if pmat is not None:
-            if np.sum(pmat) < 5000:
+            if np.sum(pmat) < 500:
                 smpl_verts = smpl_verts * 0.001
 
 
@@ -1360,7 +1367,7 @@ class pyRenderMesh():
         #segment_limbs = True
 
         if pmat is not None:
-            if np.sum(pmat) < 5000:
+            if np.sum(pmat) < 500:
                 smpl_verts = smpl_verts * 0.001
 
 

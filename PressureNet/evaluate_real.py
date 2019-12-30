@@ -668,8 +668,8 @@ if __name__ ==  "__main__":
         NETWORK_2 = "184000_"
 
 
-    NETWORK_1 += "128b_x5mult_1.0rtojtdpth_tnhFIXN"
-    NETWORK_2 += "128b_x5mult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
+    NETWORK_1 += "128b_x5pmult_1.0rtojtdpth_tnhFIXN"
+    NETWORK_2 += "128b_x5pmult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
 
     if opt.htwt == True:
         NETWORK_1 += "_htwt"
@@ -679,8 +679,8 @@ if __name__ ==  "__main__":
         NETWORK_1 += "_calnoise"
         NETWORK_2 += "_calnoise"
 
-    filename1 = "../../../data_BR/convnets/convnet_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
-    filename2 = "../../../data_BR/convnets/convnet_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
+    filename1 = "../../../data_BR/convnets/convnet_anglesDC_synth_" + NETWORK_1 + "_100e_00002lr.pt"
+    filename2 = "../../../data_BR/convnets/convnet_anglesDC_synth_" + NETWORK_2 + "_100e_00002lr.pt"
     if GPU == True:
         for i in range(0, 8):
             try:

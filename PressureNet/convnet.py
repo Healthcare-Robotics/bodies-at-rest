@@ -13,7 +13,7 @@ sys.path.insert(0, '../lib_py')
 
 from visualization_lib_br import VisualizationLib
 from kinematics_lib_br import KinematicsLib
-from mesh_depth_lib_br import MeshDepthLib
+from mesh_depth_lib import MeshDepthLib
 
 
 class CNN(nn.Module):
@@ -138,7 +138,6 @@ class CNN(nn.Module):
 
     def forward_kinematic_angles(self, images, gender_switch, synth_real_switch, CTRL_PNL, OUTPUT_EST_DICT,
                                  targets=None, is_training = True, betas=None, angles_gt = None, root_shift = None):
-
 
         reg_angles = CTRL_PNL['regr_angles']
 
