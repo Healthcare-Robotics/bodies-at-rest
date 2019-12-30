@@ -661,26 +661,26 @@ if __name__ ==  "__main__":
 
 
     if opt.small == True:
-        NETWORK_1 = "46000ct_"
-        NETWORK_2 = "46000ct_"
+        NETWORK_1 = "46000_"
+        NETWORK_2 = "46000_"
     else:
-        NETWORK_1 = "184000ct_"
-        NETWORK_2 = "184000ct_"
+        NETWORK_1 = "184000_"
+        NETWORK_2 = "184000_"
 
 
-    NETWORK_1 += "128b_x1pm_tnh"
-    NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+    NETWORK_1 += "128b_x5mult_1.0rtojtdpth_tnhFIXN"
+    NETWORK_2 += "128b_x5mult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
 
     if opt.htwt == True:
         NETWORK_1 += "_htwt"
         NETWORK_2 += "_htwt"
 
     if opt.calnoise == True:
-        NETWORK_1 += "_clns10p"
-        NETWORK_2 += "_clns10p"
+        NETWORK_1 += "_calnoise"
+        NETWORK_2 += "_calnoise"
 
-    filename1 = "../../../data_BR/convnets/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
-    filename2 = "../../../data_BR/convnets/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
+    filename1 = "../../../data_BR/convnets/convnet_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
+    filename2 = "../../../data_BR/convnets/convnet_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
     if GPU == True:
         for i in range(0, 8):
             try:
