@@ -112,11 +112,11 @@ class PhysicalTrainer():
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
-        if opt.nperim == False:
+        self.CTRL_PNL['normalize_per_image'] = True
+        if self.CTRL_PNL['normalize_per_image'] == False:
             self.CTRL_PNL['normalize_std'] = True
         else:
             self.CTRL_PNL['normalize_std'] = False
-        self.CTRL_PNL['normalize_per_image'] = opt.nperim
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['pmat_mult'] = int(1)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
@@ -417,9 +417,6 @@ if __name__ == "__main__":
 
     p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
-
-    p.add_option('--nperim', action='store_true', dest='nperim', default=False,
-                 help='Normalize per image.')
 
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')
