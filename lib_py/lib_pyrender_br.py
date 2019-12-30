@@ -402,7 +402,8 @@ class pyRenderMesh():
                 human_mesh_vtx_parts = [smpl_verts[segmented_dict['r_leg_idx_list'], :]]
                 human_mesh_face_parts = [segmented_dict['r_leg_face_list']]
             else:
-                segmented_dict = load_pickle('segmented_mesh_idx_faces.p')
+                print "got here"
+                segmented_dict = load_pickle('../lib_py/segmented_mesh_idx_faces.p')
                 human_mesh_vtx_parts = [smpl_verts[segmented_dict['l_lowerleg_idx_list'], :],
                                         smpl_verts[segmented_dict['r_lowerleg_idx_list'], :],
                                         smpl_verts[segmented_dict['l_upperleg_idx_list'], :],
@@ -756,6 +757,8 @@ class pyRenderMesh():
         #smpl_verts[:, 2] += 0.5
         #pc[:, 2] += 0.5
 
+        pmat *= 4.
+
         pc[:, 0] = pc[:, 0] # - 0.17 - 0.036608
         pc[:, 1] = pc[:, 1]# + 0.09
 
@@ -765,7 +768,7 @@ class pyRenderMesh():
         #segment_limbs = True
 
         if pmat is not None:
-            if np.sum(pmat) < 5000:
+            if np.sum(pmat) < 500:
                 smpl_verts = smpl_verts * 0.001
 
 
@@ -1364,7 +1367,7 @@ class pyRenderMesh():
         #segment_limbs = True
 
         if pmat is not None:
-            if np.sum(pmat) < 5000:
+            if np.sum(pmat) < 500:
                 smpl_verts = smpl_verts * 0.001
 
 

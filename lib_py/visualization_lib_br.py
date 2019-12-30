@@ -365,7 +365,6 @@ class VisualizationLib():
         #fig.savefig('/home/henry/data/blah.png', dpi=400)
         plt.show(block=block)
 
-        time.sleep(100)
 
 
 

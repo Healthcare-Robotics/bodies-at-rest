@@ -114,7 +114,7 @@ class Viz3DPose():
         self.CTRL_PNL['num_epochs'] = 101
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
-        self.CTRL_PNL['incl_ht_wt_channels'] = False
+        self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['num_input_channels'] = 2
         self.CTRL_PNL['GPU'] = GPU
@@ -130,15 +130,15 @@ class Viz3DPose():
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True  # False
-        if opt.nperim == False:
+        self.CTRL_PNL['normalize_per_image'] = True
+        if self.CTRL_PNL['normalize_per_image'] == False:
             self.CTRL_PNL['normalize_std'] = True
         else:
             self.CTRL_PNL['normalize_std'] = False
-        self.CTRL_PNL['normalize_per_image'] = opt.nperim
         self.CTRL_PNL['all_tanh_activ'] = True  # False
         self.CTRL_PNL['L2_contact'] = True  # False
         self.CTRL_PNL['pmat_mult'] = int(1)
-        self.CTRL_PNL['cal_noise'] = True
+        self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['output_only_prev_est'] = False
         self.CTRL_PNL['double_network_size'] = False
@@ -270,6 +270,17 @@ class Viz3DPose():
     def evaluate_data(self, dat, model, model2):
 
 
+        self.RESULTS_DICT = {}
+        self.RESULTS_DICT['body_roll_rad'] = []
+        self.RESULTS_DICT['v_to_gt_err'] = []
+        self.RESULTS_DICT['v_limb_to_gt_err'] = []
+        self.RESULTS_DICT['gt_to_v_err'] = []
+        self.RESULTS_DICT['precision'] = []
+        self.RESULTS_DICT['recall'] = []
+        self.RESULTS_DICT['overlap_d_err'] = []
+        self.RESULTS_DICT['all_d_err'] = []
+        self.RESULTS_DICT['betas'] = []
+
 
         #for im_num in range(29, 100):
         for im_num in range(0, len(dat['images'])):#self.color_all.shape[0]):
@@ -295,7 +306,7 @@ class Viz3DPose():
 
 
             #because we used a sheet on the bed the overall pressure is lower than calibration, which was done without a sheet. bump it up here.
-            bedsheet_norm_factor = float(4)
+            bedsheet_norm_factor = float(1)
 
             self.pressure = np.clip(self.pressure*bedsheet_norm_factor, 0, 100)
 
@@ -317,6 +328,10 @@ class Viz3DPose():
             sleep(100)
 
 
+        pkl.dump(self.RESULTS_DICT, open('../../../data_BR/final_results/results_real_'+PARTICIPANT+'_'+POSE_TYPE+'_'+NETWORK_2+'.p', 'wb'))
+
+
+
     def estimate_pose(self, pmat, pc_autofil_red, model, model2):
 
         bedangle = 0
@@ -324,7 +339,7 @@ class Viz3DPose():
         mat_size = (64, 27)
 
         #pmat = np.fliplr(np.flipud(np.clip(pmat.reshape(MAT_SIZE) * float(self.CTRL_PNL['pmat_mult']), a_min=0, a_max=100)))
-        pmat = np.fliplr(np.clip(pmat.reshape(MAT_SIZE) * float(self.CTRL_PNL['pmat_mult']), a_min=0, a_max=100))
+        pmat = np.clip(pmat.reshape(MAT_SIZE) * float(self.CTRL_PNL['pmat_mult']), a_min=0, a_max=100)
 
         if self.CTRL_PNL['cal_noise'] == False:
             pmat = gaussian_filter(pmat, sigma=0.5)
@@ -443,7 +458,7 @@ class Viz3DPose():
             smpl_verts = OUTPUT_DICT['verts'][0, :, :]
             dropout_variance = None
 
-        #self.RESULTS_DICT['betas'].append(OUTPUT_DICT['batch_betas_est_post_clip'].cpu().numpy()[0])
+        self.RESULTS_DICT['betas'].append(OUTPUT_DICT['batch_betas_est_post_clip'].cpu().numpy()[0])
 
         smpl_verts = np.concatenate(
             (smpl_verts[:, 1:2] - 0.286 + 0.0143, smpl_verts[:, 0:1] - 0.286 + 0.0143, 0.0 - smpl_verts[:, 2:3]),
@@ -464,7 +479,7 @@ class Viz3DPose():
 
         viz_type = "2D"
 
-        #self.RESULTS_DICT['body_roll_rad'].append(float(OUTPUT_DICT['batch_angles_est'][0, 1]))
+        self.RESULTS_DICT['body_roll_rad'].append(float(OUTPUT_DICT['batch_angles_est'][0, 1]))
 
         if viz_type == "2D":
             im_display_idx = 0
@@ -564,6 +579,7 @@ class Viz3DPose():
             # print self.RESULTS_DICT['precision']
             # print np.mean(self.RESULTS_DICT['precision'])
 
+        time.sleep(100)
 
 if __name__ ==  "__main__":
 
@@ -581,8 +597,14 @@ if __name__ ==  "__main__":
                  # PMR parameter to adjust loss function 2
                  help='Choose a participant. Enter a number from 1 to 20.')
 
-    p.add_option('--nperim', action='store_true', dest='nperim', default=False,
-                 help='Normalize per image.')
+    p.add_option('--small', action='store_true', dest='small', default=False,
+                 help='Make the dataset 1/4th of the original size.')
+
+    p.add_option('--htwt', action='store_true', dest='htwt', default=False,
+                 help='Include height and weight info on the input.')
+
+    p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
+                 help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
 
     opt, args = p.parse_args()
@@ -625,8 +647,10 @@ if __name__ ==  "__main__":
 
     if opt.pose_type == "prescribed":
         dat = load_pickle(participant_directory+"/prescribed.p")
+        POSE_TYPE = "2"
     elif opt.pose_type == "p_select":
         dat = load_pickle(participant_directory+"/p_select.p")
+        POSE_TYPE = "1"
     else:
         print "Please choose a pose type - either prescribed poses, " \
               "'--pose_type prescribed', or participant selected poses, '--pose_type p_select'."
@@ -635,11 +659,28 @@ if __name__ ==  "__main__":
 
 
 
-    NETWORK_1 = "tnh_clns10p"
-    NETWORK_2 = "0.5rtojtdpth_depthestin_angleadj_tnh_clns10p"
 
-    filename1 = "../../../data_BR/convnets/convnet_1_anglesDC_184000ct_128b_x1pm_" + NETWORK_1 + "_100e_2e-05lr.pt"
-    filename2 = "../../../data_BR/convnets/convnet_2_anglesDC_184000ct_128b_x1pm_" + NETWORK_2 + "_100e_2e-05lr.pt"
+    if opt.small == True:
+        NETWORK_1 = "46000ct_"
+        NETWORK_2 = "46000ct_"
+    else:
+        NETWORK_1 = "184000ct_"
+        NETWORK_2 = "184000ct_"
+
+
+    NETWORK_1 += "128b_x1pm_tnh"
+    NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+
+    if opt.htwt == True:
+        NETWORK_1 += "_htwt"
+        NETWORK_2 += "_htwt"
+
+    if opt.calnoise == True:
+        NETWORK_1 += "_clns10p"
+        NETWORK_2 += "_clns10p"
+
+    filename1 = "../../../data_BR/convnets/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
+    filename2 = "../../../data_BR/convnets/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
     if GPU == True:
         for i in range(0, 8):
             try:
