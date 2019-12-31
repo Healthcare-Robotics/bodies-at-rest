@@ -116,7 +116,7 @@ class Viz3DPose():
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
-        self.CTRL_PNL['num_input_channels'] = 2
+        self.CTRL_PNL['num_input_channels'] = 3
         self.CTRL_PNL['GPU'] = GPU
         self.CTRL_PNL['dtype'] = dtype
         self.CTRL_PNL['repeat_real_data_ct'] = 1
@@ -138,7 +138,7 @@ class Viz3DPose():
         self.CTRL_PNL['all_tanh_activ'] = True  # False
         self.CTRL_PNL['L2_contact'] = True  # False
         self.CTRL_PNL['pmat_mult'] = int(5)
-        self.CTRL_PNL['cal_noise'] = opt.calnoise
+        self.CTRL_PNL['cal_noise'] = False
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['output_only_prev_est'] = False
         self.CTRL_PNL['double_network_size'] = False
@@ -417,18 +417,11 @@ class Viz3DPose():
             print "Using model 2"
             batch_cor = []
 
-            if self.CTRL_PNL['cal_noise'] == False:
-                batch_cor.append(torch.cat((pmat_stack[:, 0:1, :, :],
+            batch_cor.append(torch.cat((pmat_stack[:, 0:1, :, :],
                                             mdm_est_pos.type(torch.FloatTensor),
                                             mdm_est_neg.type(torch.FloatTensor),
                                             cm_est.type(torch.FloatTensor),
                                             pmat_stack[:, 1:, :, :]), dim=1))
-            else:
-                batch_cor.append(torch.cat((mdm_est_pos.type(torch.FloatTensor),
-                                            mdm_est_neg.type(torch.FloatTensor),
-                                            cm_est.type(torch.FloatTensor),
-                                            pmat_stack[:, 0:, :, :]), dim=1))
-
 
             if self.CTRL_PNL['full_body_rot'] == False:
                 batch_cor.append(torch.cat((batch1,
@@ -443,12 +436,12 @@ class Viz3DPose():
                                             OUTPUT_DICT['batch_root_atan2_est'].cpu()), dim=1))
 
             self.CTRL_PNL['adjust_ang_from_est'] = True
-            self.CTRL_PNL['num_input_channels_batch0'] += 3
+            #self.CTRL_PNL['num_input_channels_batch0'] += 3
 
 
             scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch_cor, is_training=False, model=model2,
                                                                                         CTRL_PNL = self.CTRL_PNL)
-            self.CTRL_PNL['num_input_channels_batch0'] -= 3
+            #self.CTRL_PNL['num_input_channels_batch0'] -= 3
 
         self.CTRL_PNL['first_pass'] = False
 
@@ -594,8 +587,8 @@ if __name__ ==  "__main__":
     p.add_option('--hd', action='store_true', dest='hd', default=False,
                  help='Read and write to data on an external harddrive.')
 
-    p.add_option('--net', action='store', type = 'int', dest='net', default=0,
-                 help='Choose a network.')
+    #p.add_option('--net', action='store', type = 'int', dest='net', default=0,
+    #             help='Choose a network.')
 
     p.add_option('--pose_type', action='store', type='string', dest='pose_type', default='none',
                  help='Choose a pose type, either `prescribed` or `p_select`.')

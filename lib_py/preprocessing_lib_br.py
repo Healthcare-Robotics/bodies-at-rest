@@ -77,9 +77,9 @@ class PreprocessingLib():
         return images
 
 
-    def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training, noise_amount, normalize_per_image):
+    def preprocessing_add_calibration_noise(self, images, pmat_chan_idx, norm_std_coeffs, is_training):
         if is_training == True:
-            variation_amount = float(noise_amount)
+            variation_amount = 0.2
             print "ADDING CALIB NOISE", variation_amount
 
             #pmat_contact_orig = np.copy(images[:, pmat_chan_idx, :, :])
@@ -104,13 +104,8 @@ class PreprocessingLib():
                 # then add
                 #amount_to_add_im = random.normalvariate(mu = 0.0, sigma = (1./11.70153502792190)*(98.666 - 0.0)*0.1) #add a variation of 10% of the range
                 #amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = (1./45.61635847182483)*(386.509 - 0.0)*0.1) #add a variation of 10% of the range
-
-                if normalize_per_image == True:
-                    amount_to_add_im = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[4]*(70. - 0.0)*variation_amount) #add a variation of 10% of the range
-                    amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[5]*(70. - 0.0)*variation_amount) #add a variation of 10% of the range
-                else:
-                    amount_to_add_im = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[4]*(98.666 - 0.0)*variation_amount) #add a variation of 10% of the range
-                    amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[5]*(386.509 - 0.0)*variation_amount) #add a variation of 10% of the range
+                amount_to_add_im = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[4]*(98.666 - 0.0)*variation_amount) #add a variation of 10% of the range
+                amount_to_add_sobel = random.normalvariate(mu = 0.0, sigma = norm_std_coeffs[5]*(386.509 - 0.0)*variation_amount) #add a variation of 10% of the range
 
                 images[map_index, pmat_chan_idx, :, :] = images[map_index, pmat_chan_idx, :, :] + amount_to_add_im
                 images[map_index, pmat_chan_idx+1, :, :] = images[map_index, pmat_chan_idx+1, :, :] + amount_to_add_sobel
@@ -128,6 +123,9 @@ class PreprocessingLib():
                 images[map_index, pmat_chan_idx+1, :, :] = gaussian_filter(images[map_index, pmat_chan_idx+1, :, :], sigma= amount_to_gauss_filter_sobel) #sobel #NOW
 
 
+            #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100/11.70153502792190)
+            images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
+
         else:  #if its NOT training we should still blur things by 0.5
             for map_index in range(images.shape[0]):
                 images[map_index, pmat_chan_idx, :, :] = gaussian_filter(images[map_index, pmat_chan_idx, :, :], sigma= 0.5) #pmap
@@ -136,16 +134,16 @@ class PreprocessingLib():
 
 
         #images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100/11.70153502792190)
-            if normalize_per_image == False:
-                images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100.*norm_std_coeffs[4])
-            else:
-                images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 10000.)
+        images[:, pmat_chan_idx, :, :] = np.clip(images[:, pmat_chan_idx, :, :], 0, 100*norm_std_coeffs[4])
 
         #now calculate the contact map AFTER we've blurred it
         pmat_contact = np.copy(images[:, pmat_chan_idx:pmat_chan_idx+1, :, :])
         #pmat_contact[pmat_contact != 0] = 100./41.80684362163343
         pmat_contact[pmat_contact != 0] = 100.*norm_std_coeffs[0]
+
+        print images.shape
         images = np.concatenate((pmat_contact, images), axis = 1)
+        print images.shape
 
         #for i in range(0, 20):
         #    VisualizationLib().visualize_pressure_map(images[i, 0, :, :] * 20., None, None,

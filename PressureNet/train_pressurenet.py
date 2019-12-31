@@ -17,7 +17,7 @@ from torch.autograd import Variable
 
 import chumpy as ch
 
-import convnet_br as convnet
+import convnet as convnet
 # import tf.transformations as tft
 
 # import hrl_lib.util as ut

@@ -53,6 +53,15 @@ class UnpackBatchLib():
 
     def unpack_batch(self, batch, is_training, model, CTRL_PNL):
 
+
+        bed_ht = torch.zeros(batch[0].size()[0], 1, batch[0].size()[2], batch[0].size()[3])
+        batch[0] = torch.cat((batch[0], bed_ht), 1)
+
+        print "batch 0 shape",
+        print batch[0].size()
+        #print torch.max(batch[0][0, 0, :]), torch.max(batch[0][0, 1, :]), torch.max(batch[0][0, 2, :])
+        print CTRL_PNL['num_input_channels_batch0'], 'num input'
+
         INPUT_DICT = {}
         adj_ext_idx = 0
         # 0:72: positions.
@@ -88,12 +97,27 @@ class UnpackBatchLib():
 
                 #cut off batch 0 so we don't have depth or contact on the input
                 batch[0] = batch[0][:, 0:CTRL_PNL['num_input_channels_batch0'], :, :]
+                print "CLIPPING BATCH 0"
+
+        #print batch[0].size(), 'batch 0 shape'
 
         # cut it off so batch[2] is only the xyz marker targets
         batch[1] = batch[1][:, 0:72]
 
 
+        #if is_training == True: #only do augmentation for real data that is in training mode
+        #    batch[0], batch[1], extra_targets, extra_smpl_angles = SyntheticLib().synthetic_master(batch[0], batch[1], batch[6],
+        #                                                            num_images_manip = (CTRL_PNL['num_input_channels_batch0']-1),
+        #                                                            flip=True, shift=True, scale=False,
+        #                                                            include_inter=CTRL_PNL['incl_inter'],
+        #                                                            loss_vector_type=CTRL_PNL['loss_vector_type'],
+        #                                                            extra_targets=extra_targets,
+        #                                                            extra_smpl_angles = extra_smpl_angles)
+
+
+
         images_up_non_tensor = np.array(batch[0].numpy())
+
 
 
         INPUT_DICT['batch_images'] = np.copy(images_up_non_tensor)
@@ -102,34 +126,36 @@ class UnpackBatchLib():
         #here perform synthetic calibration noise over pmat and sobel filtered pmat.
         if CTRL_PNL['cal_noise'] == True:
             images_up_non_tensor = PreprocessingLib().preprocessing_add_calibration_noise(images_up_non_tensor,
-                                                                                          pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
+                                                                                          pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-3),
                                                                                           norm_std_coeffs = CTRL_PNL['norm_std_coeffs'],
-                                                                                          is_training = is_training,
-                                                                                          noise_amount = CTRL_PNL['cal_noise_amt'],
-                                                                                          normalize_per_image = CTRL_PNL['normalize_per_image'])
+                                                                                          is_training = is_training)
 
 
-        #print np.shape(images_up_non_tensor)
+        print np.shape(images_up_non_tensor)
+
+        images_up_non_tensor = PreprocessingLib().preprocessing_pressure_map_upsample(images_up_non_tensor, multiple=2)
 
         if is_training == True: #only add noise to training images
             if CTRL_PNL['cal_noise'] == False:
                 images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
-                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
+                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-3),
                                                                                     norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
             else:
                 images_up_non_tensor = PreprocessingLib().preprocessing_add_image_noise(np.array(images_up_non_tensor),
-                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-1),
+                                                                                    pmat_chan_idx = (CTRL_PNL['num_input_channels_batch0']-2),
                                                                                     norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
-
-        images_up_non_tensor = PreprocessingLib().preprocessing_pressure_map_upsample(images_up_non_tensor, multiple=2)
 
         images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
 
+        print "checking max 2"
+        for i in range(images_up.size()[1]):
+            print torch.max(images_up[0, i, :, :]).cpu().data.numpy(),
+        print
 
-        #print images_up.size()
-        bed_ht_zero = torch.zeros(images_up.size()[0], 1, images_up.size()[2], images_up.size()[3])
-        #print bed_ht_zero.size()
-        images_up = torch.cat((images_up, bed_ht_zero), 1)
+        for i in range(images_up.size()[1]):
+            print torch.sum(images_up[0, i, :, :]).cpu().data.numpy(),
+        print
+
 
 
         if CTRL_PNL['incl_ht_wt_channels'] == True: #make images full of stuff
@@ -167,6 +193,8 @@ class UnpackBatchLib():
             INPUT_DICT['batch_cm'] = None
 
 
+        print images_up.size()
+
         scores, OUTPUT_DICT = model.forward_kinematic_angles(images=images_up,
                                                              gender_switch=gender_switch,
                                                              synth_real_switch=synth_real_switch,
@@ -180,12 +208,36 @@ class UnpackBatchLib():
                                                              )  # scores is a variable with 27 for 10 euclidean errors and 17 lengths in meters. targets est is a numpy array in mm.
 
 
+        #scores, targets_est_np, targets_est_reduced_np, betas_est_np = model.forward_kinematic_angles(images_up,
+        #                                                                                              gender_switch,
+        #                                                                                              synth_real_switch,
+        #                                                                                              targets,
+        #                                                                                              is_training,
+        #                                                                                              betas,
+        #                                                                                              angles_gt,
+        #                                                                                              root_shift,
+        #                                                                                              False)
+        #OUTPUT_DICT = {}
+        #OUTPUT_DICT['batch_targets_est'] = targets_est_np
+        #OUTPUT_DICT['batch_betas_est'] = betas_est_np
+
+
+        #print INPUT_DICT['batch_images'].size(), "SHAPE INPUT"
+
         INPUT_DICT['batch_images'] = images_up.data
-        INPUT_DICT['batch_targets'] = targets.data
 
         for i in range(INPUT_DICT['batch_images'].size()[1]):
             print torch.max(INPUT_DICT['batch_images'][0, i, :, :]).cpu().data.numpy(),
         print
+
+        for i in range(INPUT_DICT['batch_images'].size()[1]):
+            print torch.sum(INPUT_DICT['batch_images'][0, i, :, :]).cpu().data.numpy(),
+        print
+
+
+        #INPUT_DICT['batch_images'] = images_up.data
+        INPUT_DICT['batch_targets'] = targets.data
+
 
         return scores, INPUT_DICT, OUTPUT_DICT
 
