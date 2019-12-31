@@ -743,19 +743,19 @@ if __name__ == "__main__":
     if opt.net == 1:
         data_fp_suffix = ''
     elif opt.net == 2:
-        data_fp_suffix = '_convnet_1_'+str(opt.losstype)
+        data_fp_suffix = '_convnet_'+str(opt.losstype)+'_synth'
 
         if opt.small == True:
-            data_fp_suffix += '_46000ct'
+            data_fp_suffix += '_46000'
         else:
-            data_fp_suffix += '_184000ct'
+            data_fp_suffix += '_184000'
 
-        data_fp_suffix += '_128b_x5pm_tnh'
+        data_fp_suffix += '_128b_x5pmult_tnhFIXN'
 
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
-            data_fp_suffix += '_clns10p'
+            data_fp_suffix += '_calnoise'
 
         data_fp_suffix += '_100e_00002lr'
     else:

@@ -296,14 +296,14 @@ class PhysicalTrainer():
         self.test_loader = torch.utils.data.DataLoader(self.test_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
 
 
-        self.model_name = 'convnet_1_'+str(self.opt.losstype)
-        if self.opt.small == True: self.model_name += '_46000ct'
-        else: self.model_name += '_184000ct'
+        self.model_name = 'convnet_'+str(self.opt.losstype)+'_synth'
+        if self.opt.small == True: self.model_name += '_46000'
+        else: self.model_name += '_184000'
 
-        self.model_name += '_128b_x5pm_tnh'
+        self.model_name += '_128b_x5pmult_tnhFIXN'
 
         if self.opt.htwt == True: self.model_name += '_htwt'
-        if self.opt.calnoise == True: self.model_name += '_clns10p'
+        if self.opt.calnoise == True: self.model_name += '_calnoise'
 
         self.model_name += '_100e_00002lr'
 

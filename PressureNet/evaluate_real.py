@@ -83,10 +83,10 @@ else:
 class Viz3DPose():
     def __init__(self, opt):
 
-        self.pyRender = libPyRender.pyRenderMesh(render = True)
+        self.pyRender = libPyRender.pyRenderMesh(render = opt.viz)
 
         ##load participant info
-        participant_info = load_pickle("../../../data_BR/real/"+PARTICIPANT+"/participant_info_red.p")
+        participant_info = load_pickle(FILEPATH_PREFIX+"/real/"+PARTICIPANT+"/participant_info_red.p")
         for entry in participant_info:
             print entry, participant_info[entry]
 
@@ -137,7 +137,7 @@ class Viz3DPose():
             self.CTRL_PNL['normalize_std'] = False
         self.CTRL_PNL['all_tanh_activ'] = True  # False
         self.CTRL_PNL['L2_contact'] = True  # False
-        self.CTRL_PNL['pmat_mult'] = int(1)
+        self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['output_only_prev_est'] = False
@@ -322,13 +322,17 @@ class Viz3DPose():
             #
             self.estimate_pose(pmat, pc_autofil_red, model, model2)
 
-            self.pyRender.render_3D_data(camera_point, pmat = pmat, pc = pc_autofil_red)
+            #self.pyRender.render_3D_data(camera_point, pmat = pmat, pc = pc_autofil_red)
 
             self.point_cloud_array = None
-            sleep(100)
+            #sleep(100)
 
 
-        pkl.dump(self.RESULTS_DICT, open('../../../data_BR/final_results/results_real_'+PARTICIPANT+'_'+POSE_TYPE+'_'+NETWORK_2+'.p', 'wb'))
+        dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+
+        pkl.dump(self.RESULTS_DICT, open(dir+'/results_real_'+PARTICIPANT+'_'+POSE_TYPE+'_'+NETWORK_2+'.p', 'wb'))
 
 
 
@@ -477,7 +481,7 @@ class Viz3DPose():
 
         # print smpl_verts
 
-        viz_type = "2D"
+        viz_type = "3D"
 
         self.RESULTS_DICT['body_roll_rad'].append(float(OUTPUT_DICT['batch_angles_est'][0, 1]))
 
@@ -579,13 +583,16 @@ class Viz3DPose():
             # print self.RESULTS_DICT['precision']
             # print np.mean(self.RESULTS_DICT['precision'])
 
-        time.sleep(100)
+        #time.sleep(100)
 
 if __name__ ==  "__main__":
 
     import optparse
 
     p = optparse.OptionParser()
+
+    p.add_option('--hd', action='store_true', dest='hd', default=False,
+                 help='Read and write to data on an external harddrive.')
 
     p.add_option('--net', action='store', type = 'int', dest='net', default=0,
                  help='Choose a network.')
@@ -606,6 +613,8 @@ if __name__ ==  "__main__":
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--viz', action='store_true', dest='viz', default=False,
+                 help='Visualize training.')
 
     opt, args = p.parse_args()
 
@@ -631,89 +640,100 @@ if __name__ ==  "__main__":
                         "S188",
                         "S196", ]
 
-    if opt.p_idx == 0:
-        print "Please choose a participant with flag `--p_idx #`. Enter a number from 1 to 20."
-        sys.exit()
-    else:
-        PARTICIPANT = participant_list[opt.p_idx - 1]
+    if opt.p_idx != 0:
+        participant_list = [participant_list[opt.p_idx - 1]]
 
-    participant_directory = "../../../data_BR/real/"+PARTICIPANT
-    #participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
-    #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
+    for PARTICIPANT in participant_list:
 
-    V3D = Viz3DPose(opt)
+        if opt.hd == False:
+            FILEPATH_PREFIX = "../../../data_BR"
+        else:
+            FILEPATH_PREFIX = "/media/henry/multimodal_data_2/data_BR"
 
-    V3D.load_new_participant_info(participant_directory)
+        participant_directory = FILEPATH_PREFIX + "/real/" + PARTICIPANT
+        #participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
+        #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
 
-    if opt.pose_type == "prescribed":
-        dat = load_pickle(participant_directory+"/prescribed.p")
-        POSE_TYPE = "2"
-    elif opt.pose_type == "p_select":
-        dat = load_pickle(participant_directory+"/p_select.p")
-        POSE_TYPE = "1"
-    else:
-        print "Please choose a pose type - either prescribed poses, " \
-              "'--pose_type prescribed', or participant selected poses, '--pose_type p_select'."
-        sys.exit()
+        V3D = Viz3DPose(opt)
 
+        V3D.load_new_participant_info(participant_directory)
 
-
-
-
-    if opt.small == True:
-        NETWORK_1 = "46000_"
-        NETWORK_2 = "46000_"
-    else:
-        NETWORK_1 = "184000_"
-        NETWORK_2 = "184000_"
+        if opt.pose_type == "prescribed":
+            dat = load_pickle(participant_directory+"/prescribed.p")
+            POSE_TYPE = "2"
+        elif opt.pose_type == "p_select":
+            dat = load_pickle(participant_directory+"/p_select.p")
+            POSE_TYPE = "1"
+        else:
+            print "Please choose a pose type - either prescribed poses, " \
+                  "'--pose_type prescribed', or participant selected poses, '--pose_type p_select'."
+            sys.exit()
 
 
-    NETWORK_1 += "128b_x5pmult_1.0rtojtdpth_tnhFIXN"
-    NETWORK_2 += "128b_x5pmult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
 
-    if opt.htwt == True:
-        NETWORK_1 += "_htwt"
-        NETWORK_2 += "_htwt"
 
-    if opt.calnoise == True:
-        NETWORK_1 += "_calnoise"
-        NETWORK_2 += "_calnoise"
 
-    filename1 = "../../../data_BR/convnets/convnet_anglesDC_synth_" + NETWORK_1 + "_100e_00002lr.pt"
-    filename2 = "../../../data_BR/convnets/convnet_anglesDC_synth_" + NETWORK_2 + "_100e_00002lr.pt"
-    if GPU == True:
-        for i in range(0, 8):
-            try:
-                model = torch.load(filename1, map_location={'cuda:' + str(i): 'cuda:0'})
-                model = model.cuda().eval()
-                print "Network 1 loaded."
-                break
-            except:
-                pass
-        if filename2 is not None:
+        if opt.small == True:
+            NETWORK_1 = "46000_"
+            NETWORK_2 = "46000_"
+        else:
+            NETWORK_1 = "184000_"
+            NETWORK_2 = "184000_"
+
+
+        NETWORK_1 += "128b_x5pmult_1.0rtojtdpth_tnhFIXN"
+        NETWORK_2 += "128b_x5pmult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
+
+        if opt.htwt == True:
+            NETWORK_1 += "_htwt"
+            NETWORK_2 += "_htwt"
+
+        if opt.calnoise == True:
+            NETWORK_1 += "_calnoise"
+            NETWORK_2 += "_calnoise"
+
+
+        if opt.hd == False:
+            filename1 = "../../../data_BR/convnets/convnet_anglesDC_synth_" + NETWORK_1 + "_100e_00002lr.pt"
+            filename2 = "../../../data_BR/convnets/convnet_anglesDC_synth_" + NETWORK_2 + "_100e_00002lr.pt"
+        else:
+            filename1 = "/media/henry/multimodal_data_2/data/convnets/planesreg/FINAL/convnet_anglesDC_synth_" + NETWORK_1 + "_100e_00002lr.pt"
+            filename2 = "/media/henry/multimodal_data_2/data/convnets/planesreg_correction/FINAL/convnet_anglesDC_synth_" + NETWORK_2 + "_100e_00002lr.pt"
+
+
+        if GPU == True:
             for i in range(0, 8):
                 try:
-                    model2 = torch.load(filename2, map_location={'cuda:' + str(i): 'cuda:0'})
-                    model2 = model2.cuda().eval()
-                    print "Network 2 loaded."
+                    model = torch.load(filename1, map_location={'cuda:' + str(i): 'cuda:0'})
+                    model = model.cuda().eval()
+                    print "Network 1 loaded."
                     break
                 except:
                     pass
+            if filename2 is not None:
+                for i in range(0, 8):
+                    try:
+                        model2 = torch.load(filename2, map_location={'cuda:' + str(i): 'cuda:0'})
+                        model2 = model2.cuda().eval()
+                        print "Network 2 loaded."
+                        break
+                    except:
+                        pass
+            else:
+                model2 = None
         else:
-            model2 = None
-    else:
-        model = torch.load(filename1, map_location='cpu')
-        model = model.eval()
-        print "Network 1 loaded."
-        if filename2 is not None:
-            model2 = torch.load(filename2, map_location='cpu')
-            model2 = model2.eval()
-            print "Network 2 loaded."
-        else:
-            model2 = None
+            model = torch.load(filename1, map_location='cpu')
+            model = model.eval()
+            print "Network 1 loaded."
+            if filename2 is not None:
+                model2 = torch.load(filename2, map_location='cpu')
+                model2 = model2.eval()
+                print "Network 2 loaded."
+            else:
+                model2 = None
 
 
-    F_eval = V3D.evaluate_data(dat, model, model2)
+        F_eval = V3D.evaluate_data(dat, model, model2)
 
 
 
