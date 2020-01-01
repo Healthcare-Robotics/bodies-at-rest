@@ -1,4 +1,4 @@
-# Bodies at Rest
+# Bodies at Rest - v1.1
 ## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
@@ -85,6 +85,13 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break4.JPG?raw=true" alt="None"/>
 </p>
 
+## PressureNet evaluation
+There are two steps to evaluating the real data. First, you'll generate files 
+
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+</p>
+
 ## What other packages do I need?
 * SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it's quick. Unzip it in `~/git/`.
 * PyRender - https://github.com/mmatl/pyrender
@@ -98,7 +105,7 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
 </p>
 
 ## Computer requirements
@@ -106,7 +113,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
 </p>
 
 ## What code isn't here? 
@@ -114,5 +121,15 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
 </p>
+
+
+## Updates since last version
+This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
+
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
+</p>
+
+
