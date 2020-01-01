@@ -93,7 +93,12 @@ class Viz3DPose():
         self.gender = participant_info['gender']
         self.height_in = participant_info['height_in']
         self.weight_lbs = participant_info['weight_lbs']
+        self.opt = opt
 
+        if opt.viz == '3D':
+            self.pyRender = libPyRender.pyRenderMesh(render=True)
+        else:
+            self.pyRender = libPyRender.pyRenderMesh(render=False)
 
 
         self.index_queue = []
@@ -472,9 +477,11 @@ class Viz3DPose():
         if SHOW_SMPL_EST == False:
             smpl_verts *= 0.001
 
-        # print smpl_verts
+        if self.opt.viz == '2D':
+            viz_type = "2D"
+        else:
+            viz_type = "3D"
 
-        viz_type = "3D"
 
         self.RESULTS_DICT['body_roll_rad'].append(float(OUTPUT_DICT['batch_angles_est'][0, 1]))
 
@@ -606,8 +613,8 @@ if __name__ ==  "__main__":
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
-    p.add_option('--viz', action='store_true', dest='viz', default=False,
-                 help='Visualize training.')
+    p.add_option('--viz', action='store', dest='viz', default='None',
+                 help='Visualize training. specify `2D` or `3D`.')
 
     opt, args = p.parse_args()
 
