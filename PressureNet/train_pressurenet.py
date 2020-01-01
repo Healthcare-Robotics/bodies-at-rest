@@ -95,7 +95,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
-        self.CTRL_PNL['num_input_channels'] = 2
+        self.CTRL_PNL['num_input_channels'] = 3
         self.CTRL_PNL['GPU'] = GPU
         self.CTRL_PNL['dtype'] = dtype
         self.CTRL_PNL['regr_angles'] = opt.reg_angles
@@ -696,6 +696,9 @@ if __name__ == "__main__":
     p.add_option('--computer', action='store', type = 'string', dest='computer', default='lab_harddrive',
                  help='Set path to the training database on lab harddrive.')
 
+    p.add_option('--hd', action='store_true', dest='hd', default=False,
+                 help='Read and write to data on an external harddrive.')
+
     p.add_option('--losstype', action='store', type = 'string', dest='losstype', default='anglesDC',
                  help='Choose direction cosine or euler angle regression.')
 
@@ -734,10 +737,11 @@ if __name__ == "__main__":
 
     opt, args = p.parse_args()
 
+    if opt.hd == False:
+        data_fp_prefix = "../../../data_BR/"
+    else:
+        data_fp_prefix = "/media/henry/multimodal_data_2/data_BR/"
 
-    #data_fp_prefix = '../../../data/'
-    data_fp_prefix = '../../../data_BR/'
-    #data_fp_prefix = '/media/henry/multimodal_data_2/data/'
     data_fp_suffix = ''
 
     if opt.net == 1:
