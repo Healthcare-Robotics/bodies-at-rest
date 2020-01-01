@@ -20,14 +20,32 @@ def load_pickle(filename):
         return pickle.load(f)
 
 
-def get_heightweight_from_betas(betas):
-
-    height, weight = 0, 0
-
-
-    return height, weight
 
 if __name__ == '__main__':
+
+
+    import optparse
+
+    p = optparse.OptionParser()
+
+    p.add_option('--hd', action='store_true', dest='hd', default=False,
+                 help='Read and write to data on an external harddrive.')
+
+    p.add_option('--pose_type', action='store', type='string', dest='pose_type', default='none',
+                 help='Choose a pose type, either `prescribed` or `p_select`.')
+
+    p.add_option('--small', action='store_true', dest='small', default=False,
+                 help='Make the dataset 1/4th of the original size.')
+
+    p.add_option('--htwt', action='store_true', dest='htwt', default=False,
+                 help='Include height and weight info on the input.')
+
+    p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
+                 help='Apply calibration noise to the input to facilitate sim to real transfer.')
+
+    opt, args = p.parse_args()
+
+
     RESULT_TYPE = "real"
 
     if RESULT_TYPE == "real":
@@ -65,13 +83,45 @@ if __name__ == '__main__':
         straight_limbs = [[]]
 
 
-        #NETWORK_2 = "1.0rtojtdpth_angleadj_tnhFIXN_htwt_calnoise"
-        NETWORK_2 = "184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh_clns10p"
+
+
+
+        if opt.small == True:
+            NETWORK_2 = "46000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+            DATA_QUANT = "46K"
+        else:
+            NETWORK_2 = "184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+            DATA_QUANT = "184K"
+
+        if opt.htwt == True:
+            NETWORK_2 += "_htwt"
+        if opt.calnoise == True:
+            NETWORK_2 += "_clns10p"
+
+
+        if opt.hd == True:
+            FILEPATH_PREFIX = '/media/henry/multimodal_data_2/data_BR'
+        else:
+            FILEPATH_PREFIX = '../../../data_BR'
+
         #NETWORK_2 = "NONE-200e"
         #NETWORK_2 = "BASELINE"
 
-        POSE_TYPE = "1"
-        DATA_QUANT = "184K"
+
+        if opt.pose_type == 'prescribed':
+            POSE_TYPE = "2"
+        elif opt.pose_type == 'p_select':
+            POSE_TYPE = "1"
+        else:
+            print "Please choose a pose type - either prescribed poses, " \
+                  "'--pose_type prescribed', or participant selected poses, '--pose_type p_select'."
+            sys.exit()
+
+
+
+
+
+
 
         recall_list = []
         precision_list = []
@@ -81,11 +131,17 @@ if __name__ == '__main__':
         gt_to_v_err_list = []
 
 
-        for participant in participant_list:
-            participant_directory = "/media/henry/multimodal_data_2/CVPR2020_study/"+participant
-            participant_info = load_pickle(participant_directory + "/participant_info.p")
 
-            pose_type_list = participant_info['pose_type']
+
+
+        for participant in participant_list:
+
+
+            participant_directory = FILEPATH_PREFIX+"/real/"+participant
+            participant_info = load_pickle(participant_directory + "/participant_info_red.p")
+
+
+           # pose_type_list = participant_info['pose_type']
             #if participant_info['gender'] == 'f': continue
 
             print "participant directory: ", participant_directory
@@ -120,18 +176,18 @@ if __name__ == '__main__':
 
             for i in range(num_ims):
 
-                partition_type = pose_type_list[i]
-                print partition_type
+                #partition_type = pose_type_list[i]
+               # print partition_type
 
 
                 if participant == "S114" and POSE_TYPE == "2"  and i in [26, 29]:
-                    print "skipping", i, partition_type
+                    print "skipping", i#, partition_type
                     continue #these don't have point clouds
                 elif participant == "S165" and POSE_TYPE == "2" and i in [1, 3, 15]:
-                    print "skipping", i, partition_type
+                    print "skipping", i#, partition_type
                     continue #these don't have point clouds
                 elif participant == "S188" and POSE_TYPE == "2"  and i in [5, 17, 21]:
-                    print "skipping", i, partition_type
+                    print "skipping", i#, partition_type
                     continue
                 elif participant == "S145" and POSE_TYPE == "1" and i in [0]:
                     print "skipping", i
