@@ -304,7 +304,7 @@ if __name__ == "__main__":
     GENDER = "f"
 
     #Replace this with some subset of data of your choice
-    TESTING_FILENAME = "quick_test/test_rollpi_"+GENDER+"_lay_set23to24_3000"
+    TESTING_FILENAME = "quick_test/test_rollpi_"+GENDER+"_lay_set23to24_3000_qt"
 
 
     test_database_file_f = []
