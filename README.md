@@ -109,7 +109,7 @@ First, you'll generate results files for each participant. Make a new folder `~/
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
 </p>
 
 ## Computer requirements
@@ -117,7 +117,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
 </p>
 
 ## What code isn't here? 
@@ -125,5 +125,5 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
 </p>
