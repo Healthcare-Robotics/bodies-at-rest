@@ -131,7 +131,7 @@ class PreprocessingLib():
 
         else:  #if its NOT training we should still blur things by 0.5
             for map_index in range(images.shape[0]):
-                print pmat_chan_idx, images.shape, 'SHAPE'
+               # print pmat_chan_idx, images.shape, 'SHAPE'
                 images[map_index, pmat_chan_idx, :, :] = gaussian_filter(images[map_index, pmat_chan_idx, :, :], sigma= 0.5) #pmap
                 images[map_index, pmat_chan_idx+1, :, :] = gaussian_filter(images[map_index, pmat_chan_idx+1, :, :], sigma= 0.5) #sobel
 
