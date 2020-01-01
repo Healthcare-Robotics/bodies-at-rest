@@ -333,11 +333,12 @@ class Viz3DPose():
             #sleep(100)
 
 
-        dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
-        if not os.path.exists(dir):
-            os.mkdir(dir)
+        if self.opt.viz == 'None' or self.opt.viz == '3D':
+            dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
+            if not os.path.exists(dir):
+                os.mkdir(dir)
 
-        pkl.dump(self.RESULTS_DICT, open(dir+'/results_real_'+PARTICIPANT+'_'+POSE_TYPE+'_'+NETWORK_2+'.p', 'wb'))
+            pkl.dump(self.RESULTS_DICT, open(dir+'/results_real_'+PARTICIPANT+'_'+POSE_TYPE+'_'+NETWORK_2+'.p', 'wb'))
 
 
 
