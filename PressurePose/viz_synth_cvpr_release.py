@@ -77,7 +77,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['batch_size'] = 1
         self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
-        self.CTRL_PNL['shuffle'] = False
+        self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = False
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['dropout'] = False
@@ -96,6 +96,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
         self.CTRL_PNL['normalize_input'] = False
+        self.CTRL_PNL['normalize_per_image'] = False
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['L2_contact'] = True
         self.CTRL_PNL['pmat_mult'] = int(1)
@@ -284,6 +285,9 @@ if __name__ == "__main__":
     import optparse
 
     p = optparse.OptionParser()
+
+    p.add_option('--hd', action='store_true', dest='hd', default=False,
+                 help='Read and write to data on an external harddrive.')
     p.add_option('--red', action='store_true', dest='red_verts', default=False,
                  help='Do a quick test.')
     p.add_option('--seg', action='store_true', dest='seg_limbs', default=False,
@@ -292,12 +296,15 @@ if __name__ == "__main__":
     opt, args = p.parse_args()
 
 
-
-    filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
-    GENDER = "m"
+    if opt.hd == True:
+        filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
+    else:
+        filepath_prefix = '../../../data_BR/synth/'
+        
+    GENDER = "f"
 
     #Replace this with some subset of data of your choice
-    TESTING_FILENAME = "general_supine/test_roll0_plo_"+GENDER+"_lay_set14_1500"
+    TESTING_FILENAME = "quick_test/test_rollpi_"+GENDER+"_lay_set23to24_3000"
 
 
     test_database_file_f = []

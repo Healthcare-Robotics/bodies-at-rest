@@ -206,7 +206,7 @@ class PreprocessingLib():
             if CTRL_PNL['normalize_per_image'] == True:
                 p_map_inter = p_map_inter * (20000. / np.sum(p_map_inter))
 
-            print np.sum(p_map), 'sum after norm'
+            #print np.sum(p_map), 'sum after norm'
             p_map_dataset.append([p_map, p_map_inter])
 
         return p_map_dataset
