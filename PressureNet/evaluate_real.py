@@ -83,7 +83,11 @@ else:
 class Viz3DPose():
     def __init__(self, opt):
 
-        self.pyRender = libPyRender.pyRenderMesh(render = opt.viz)
+        if opt.viz == '3D':
+            self.pyRender = libPyRender.pyRenderMesh(render = True)
+        else:
+            self.pyRender = libPyRender.pyRenderMesh(render = False)
+
 
         ##load participant info
         participant_info = load_pickle(FILEPATH_PREFIX+"/real/"+PARTICIPANT+"/participant_info_red.p")
@@ -94,7 +98,7 @@ class Viz3DPose():
         self.height_in = participant_info['height_in']
         self.weight_lbs = participant_info['weight_lbs']
 
-
+        self.opt = opt
 
         self.index_queue = []
         if self.gender == "m":
@@ -483,7 +487,10 @@ class Viz3DPose():
 
         # print smpl_verts
 
-        viz_type = "3D"
+        if self.opt.viz == '2D':
+            viz_type = "2D"
+        else:
+            viz_type = "3D"
 
         self.RESULTS_DICT['body_roll_rad'].append(float(OUTPUT_DICT['batch_angles_est'][0, 1]))
 
@@ -545,45 +552,9 @@ class Viz3DPose():
                                                                                               [0.0, 0.0, 0.0]],
                                                                                      dropout_variance=dropout_variance)
 
-            # render in 3D pyrender with pressure mat
-            # self.pyRender.render_mesh_pc_bed_pyrender(smpl_verts, smpl_faces, camera_point, bedangle,
-            #                                          pc = None, pmat = pmat, smpl_render_points = False,
-            #                                          facing_cam_only=False, viz_type = None,
-            #                                          markers = None, segment_limbs=False)
-
-            # render in 3D pyrender with segmented limbs
-            # self.pyRender.render_mesh_pc_bed_pyrender(smpl_verts, smpl_faces, camera_point, bedangle,
-            #                                          pc = None, pmat = None, smpl_render_points = False,
-            #                                          facing_cam_only=False, viz_type = None,
-            #                                          markers = None, segment_limbs=True)
-
-            # render the error of point cloud points relative to verts
-            # self.Render.eval_dist_render_open3d(smpl_verts, smpl_faces, pc_autofil_red, viz_type = 'pc_error',
-            #                                      camera_point = camera_point, segment_limbs=False)
-            # self.pyRender.render_mesh_pc_bed_pyrender(smpl_verts, smpl_faces, camera_point, bedangle,
-            #                                          pc = pc_autofil_red, pmat = None, smpl_render_points = False,
-            #                                          facing_cam_only=True, viz_type = 'pc_error',
-            #                                          markers = None, segment_limbs=False)
-
-            # render the error of verts relative to point cloud points
-            # self.Render.eval_dist_render_open3d(smpl_verts, smpl_faces, pc_autofil_red, viz_type = 'mesh_error',
-            #                                      camera_point = camera_point, segment_limbs=False)
-            # self.pyRender.render_mesh_pc_bed_pyrender(smpl_verts, smpl_faces, camera_point, bedangle,
-            #                                          pc = pc_autofil_red, pmat = None, smpl_render_points = False,
-            #                                          facing_cam_only=True, viz_type = 'mesh_error',
-            #                                          markers = None, segment_limbs=False)
-
             time.sleep(1)
             self.point_cloud_array = None
 
-            # dss = dart_skel_sim.DartSkelSim(render=True, m=self.m, gender = gender, posture = posture, stiffness = stiffness, shiftSIDE = shape_pose_vol[4], shiftUD = shape_pose_vol[5], filepath_prefix=self.filepath_prefix, add_floor = False)
-
-            # dss.run_simulation(10000)
-            # generator.standard_render()
-
-            # print self.RESULTS_DICT['v_limb_to_gt_err']
-            # print self.RESULTS_DICT['precision']
-            # print np.mean(self.RESULTS_DICT['precision'])
 
         #time.sleep(100)
 
@@ -615,8 +586,8 @@ if __name__ ==  "__main__":
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
-    p.add_option('--viz', action='store_true', dest='viz', default=False,
-                 help='Visualize training.')
+    p.add_option('--viz', action='store', dest='viz', default='None',
+                 help='Visualize training. specify `2D` or `3D`.')
 
 
     opt, args = p.parse_args()

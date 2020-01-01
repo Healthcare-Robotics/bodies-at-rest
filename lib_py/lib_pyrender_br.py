@@ -1036,7 +1036,7 @@ class pyRenderMesh():
 
 
         mesh_list = []
-        mesh_list.append(pyrender.Mesh.from_trimesh(tm_list[0], material = self.human_mat, smooth=False))#wireframe = False)) #this is for the main human
+        mesh_list.append(pyrender.Mesh.from_trimesh(tm_list[0], material = self.human_mat, wireframe = True)) #this is for the main human
 
 
         mesh_list_seg = []
