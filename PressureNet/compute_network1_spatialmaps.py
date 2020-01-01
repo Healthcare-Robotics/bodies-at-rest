@@ -442,7 +442,7 @@ if __name__ == "__main__":
     network_design = True
 
     if opt.quick_test == True:
-        filename_list_f = ['data_BR/synth/quick_test/test_rollpi_f_lay_set23to24_3000']
+        filename_list_f = ['data_BR/synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt']
         filename_list_m = []
     else:
         filename_list_f = ['data_BR/synth/general_supine/test_roll0_f_lay_set14_1500',
