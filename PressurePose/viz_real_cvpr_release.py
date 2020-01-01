@@ -220,6 +220,16 @@ if __name__ ==  "__main__":
 
     import optparse
 
+
+
+    GENDER = "f"
+
+    #Replace this with some subset of data of your choice
+    TESTING_FILENAME = "quick_test/test_rollpi_"+GENDER+"_lay_set23to24_3000"
+
+
+
+
     p = optparse.OptionParser()
     p.add_option('--pose_type', action='store', type='string', dest='pose_type', default='none',
                  help='Choose a pose type, either `prescribed` or `p_select`.')
@@ -228,6 +238,9 @@ if __name__ ==  "__main__":
                  # PMR parameter to adjust loss function 2
                  help='Choose a participant. Enter a number from 1 to 20.')
 
+    p.add_option('--hd', action='store_true', dest='hd', default=False,
+                 help='Read and write to data on an external harddrive.')
+    
 
     opt, args = p.parse_args()
 
@@ -262,8 +275,12 @@ if __name__ ==  "__main__":
 
     V3D = Viz3DPose()
 
-    participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
-    #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
+
+    if opt.hd == True:
+        participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
+    else:
+        participant_directory = "../../../data_BR/real/"+PARTICIPANT
+        
 
     V3D.load_new_participant_info(participant_directory)
 
