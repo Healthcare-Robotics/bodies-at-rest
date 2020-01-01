@@ -1,4 +1,4 @@
-# Bodies at Rest
+# Bodies at Rest - v1.1
 ## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
@@ -85,6 +85,15 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break4.JPG?raw=true" alt="None"/>
 </p>
 
+## PressureNet evaluation
+First, you'll generate results files for each participant. Make a new folder `~/data_BR/final_results`. Then run `python evaluate_real.py` and specify a real data type in the PressurePose dataset with either `--pose_type 'p_select'` or `--pose_type 'prescribed'`. You should also use matching flags as before to specify inclusion of height/weight (`--htwt`), size of the dataset (`--small`), and inclusion of calibration noise (`--calnoise`). You can optionally select among the participants to evaluate using `--p_idx` followed by a number between `1` and `20`. The
+ default setting is to evaluate all the participants in order from 1 to 20. You can also visualize the evaluation for a particular participant, pressure image, and point cloud, and estimate in 2D or 3D using the option `--viz '2D'` or `--viz '3D'`. Note that if you visualize in 2D the results won't be saved because some of them are performed in the 3D rendering library. After you've created results files for each participant, run `python results_summary.py` specifying flags (or not) for height/weight, dataset size, and calibration noise.
+ 
+ 
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+</p>
+
 ## What other packages do I need?
 * SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it's quick. Unzip it in `~/git/`.
 * PyRender - https://github.com/mmatl/pyrender
@@ -98,7 +107,7 @@ The data can take a long time to load. Use the `--qt` flag to run a quick test o
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
 </p>
 
 ## Computer requirements
@@ -106,7 +115,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
 </p>
 
 ## What code isn't here? 
@@ -114,5 +123,15 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
 </p>
+
+
+## Updates since last version
+This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
+
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
+</p>
+
+
