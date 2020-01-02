@@ -424,7 +424,6 @@ class PhysicalTrainer():
 
         # train the model one epoch at a time
         for epoch in range(1, self.CTRL_PNL['num_epochs'] + 1):
-            torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.pt')
 
             self.t1 = time.time()
             self.train_convnet(epoch)
@@ -437,9 +436,9 @@ class PhysicalTrainer():
 
             if epoch == self.CTRL_PNL['num_epochs']:
                 print "saving convnet."
-                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
+                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.pt')
                 print "saved convnet."
-                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.p', 'wb'))
+                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.p', 'wb'))
                 print "saved losses."
 
         print self.train_val_losses, 'trainval'
