@@ -753,9 +753,7 @@ if __name__ == "__main__":
 
     data_fp_suffix = ''
 
-    if opt.net == 1:
-        data_fp_suffix = ''
-    elif opt.net == 2:
+    if opt.net == 2 or opt.quick_test == True:
         data_fp_suffix = '_convnet_1_'+str(opt.losstype)
 
         if opt.small == True:
@@ -769,10 +767,11 @@ if __name__ == "__main__":
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
             data_fp_suffix += '_clns10p'
-
-
-
         data_fp_suffix += '_100e_00002lr'
+
+    elif opt.net == 1:
+        data_fp_suffix = ''
+
     else:
         print "Please choose a valid network. You can specify '--net 1' or '--net 2'."
         sys.exit()
