@@ -125,6 +125,14 @@ class UnpackBatchLib():
 
         images_up = torch.cat((images_up, torch.zeros(images_up.size()[0], 1, images_up.size()[2], images_up.size()[3])), 1)
 
+
+        for i in range(images_up.size()[1]):
+            print torch.max(images_up[0, i, :, :]).cpu().data.numpy(),
+        print
+        for i in range(images_up.size()[1]):
+            print torch.sum(images_up[0, i, :, :]).cpu().data.numpy(),
+        print
+
         if CTRL_PNL['incl_ht_wt_channels'] == True: #make images full of stuff
             weight_input = torch.ones((images_up.size()[0], images_up.size()[2] * images_up.size()[3])).type(CTRL_PNL['dtype'])
             weight_input *= batch[7].type(CTRL_PNL['dtype'])

@@ -424,6 +424,8 @@ class PhysicalTrainer():
 
         # train the model one epoch at a time
         for epoch in range(1, self.CTRL_PNL['num_epochs'] + 1):
+            torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.pt')
+
             self.t1 = time.time()
             self.train_convnet(epoch)
 
@@ -755,19 +757,21 @@ if __name__ == "__main__":
     if opt.net == 1:
         data_fp_suffix = ''
     elif opt.net == 2:
-        data_fp_suffix = '_convnet_'+str(opt.losstype)+'_synth'
+        data_fp_suffix = '_convnet_1_'+str(opt.losstype)
 
         if opt.small == True:
-            data_fp_suffix += '_46000'
+            data_fp_suffix += '_46000ct'
         else:
-            data_fp_suffix += '_184000'
+            data_fp_suffix += '_184000ct'
 
-        data_fp_suffix += '_128b_x5pmult_tnhFIXN'
+        data_fp_suffix += '_128b_x5pm_tnh'
 
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
-            data_fp_suffix += '_clns0p1'
+            data_fp_suffix += '_clns10p'
+
+
 
         data_fp_suffix += '_100e_00002lr'
     else:
@@ -783,8 +787,8 @@ if __name__ == "__main__":
 
     if opt.quick_test == True:
         #run a quick test
-        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'_qt.p')
-        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'_qt.p')
+        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
 
     else:
         #General partition - 104,000 train + 12,000 test

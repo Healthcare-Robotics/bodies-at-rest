@@ -125,6 +125,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['full_body_rot'] = True
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['normalize_input'] = True
+        self.CTRL_PNL['normalize_per_image'] = False
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
@@ -309,11 +310,10 @@ class PhysicalTrainer():
 
         self.model_name += '_100e_00002lr'
 
-        self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'})
-
         if GPU == True:
-            self.model = self.model.cuda()
-
+            self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'}).cuda()
+        else:
+            self.model = torch.load('../../../data_BR/convnets/' + self.model_name + '.pt', map_location='cpu')
 
 
         print 'Loaded ConvNet.'
