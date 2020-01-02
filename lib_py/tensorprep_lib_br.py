@@ -152,6 +152,8 @@ class TensorPrepLib():
 
         print "TRAIN XA SHAPE", np.shape(train_xa)
 
+
+
         return train_xa
 
     def prep_labels(self, y_flat, dat, num_repeats, z_adj, gender, is_synth, loss_vector_type, initial_angle_est, full_body_rot = False):
@@ -289,6 +291,7 @@ class TensorPrepLib():
 
             for i in range(x.shape[1]):
                 x[:, i, :, :] *= normalizing_std_constants[i]
+                print i, normalizing_std_constants[i], np.min(x[:, i, :, :]), np.max(x[:, i, :, :]), np.sum(x[:, i, :, :])
 
         else:
             normalizing_std_constants = []

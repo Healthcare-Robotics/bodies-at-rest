@@ -17,7 +17,7 @@ from torch.autograd import Variable
 
 import chumpy as ch
 
-import convnet as convnet
+import convnet_br as convnet
 # import tf.transformations as tft
 
 # import hrl_lib.util as ut
@@ -83,9 +83,11 @@ class PhysicalTrainer():
         This dataset is a dictionary of pressure maps with the corresponding
         3d position and orientation of the markers associated with it.'''
 
+        # change this to 'direct' when you are doing baseline methods
 
         self.CTRL_PNL = {}
         self.CTRL_PNL['loss_vector_type'] = opt.losstype
+
         self.CTRL_PNL['verbose'] = opt.verbose
         self.opt = opt
         self.CTRL_PNL['batch_size'] = 128
@@ -95,9 +97,10 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
-        self.CTRL_PNL['num_input_channels'] = 3
+        self.CTRL_PNL['num_input_channels'] = 2
         self.CTRL_PNL['GPU'] = GPU
         self.CTRL_PNL['dtype'] = dtype
+        repeat_real_data_ct = 3
         self.CTRL_PNL['regr_angles'] = opt.reg_angles
         self.CTRL_PNL['depth_map_labels'] = opt.pmr #can only be true if we have 100% synthetic data for training
         self.CTRL_PNL['depth_map_labels_test'] = opt.pmr #False #can only be true is we have 100% synth for testing
@@ -111,11 +114,8 @@ class PhysicalTrainer():
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
+        self.CTRL_PNL['normalize_input'] = True
         self.CTRL_PNL['normalize_per_image'] = False
-        if self.CTRL_PNL['normalize_per_image'] == False:
-            self.CTRL_PNL['normalize_std'] = True
-        else:
-            self.CTRL_PNL['normalize_std'] = False
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
@@ -141,6 +141,8 @@ class PhysicalTrainer():
         if self.CTRL_PNL['cal_noise'] == True:
             self.CTRL_PNL['num_input_channels'] += 1
 
+        self.CTRL_PNL['num_input_channels'] += 1
+
         pmat_std_from_mult = ['N/A', 11.70153502792190, 19.90905848383454, 23.07018866032369, 0.0, 25.50538629767412]
         if self.CTRL_PNL['cal_noise'] == False:
             sobel_std_from_mult = ['N/A', 29.80360490415032, 33.33532963163579, 34.14427844692501, 0.0, 34.86393494050921]
@@ -157,11 +159,6 @@ class PhysicalTrainer():
                                              1./1.0,                #OUTPUT DO NOTHING
                                              1. / 30.216647403350,  #weight
                                              1. / 14.629298141231]  #height
-
-        if self.CTRL_PNL['normalize_std'] == False:
-            for i in range(10):
-                self.CTRL_PNL['norm_std_coeffs'][i] *= 0.
-                self.CTRL_PNL['norm_std_coeffs'][i] += 1.
 
 
         self.CTRL_PNL['convnet_fp_prefix'] = '../../../data_BR/convnets/'
@@ -189,11 +186,14 @@ class PhysicalTrainer():
 
         dat_f_synth = TensorPrepLib().load_files_to_database(training_database_file_f, creation_type = 'synth', reduce_data = reduce_data)
         dat_m_synth = TensorPrepLib().load_files_to_database(training_database_file_m, creation_type = 'synth', reduce_data = reduce_data)
+        dat_f_real = TensorPrepLib().load_files_to_database(training_database_file_f, creation_type = 'real', reduce_data = reduce_data)
+        dat_m_real = TensorPrepLib().load_files_to_database(training_database_file_m, creation_type = 'real', reduce_data = reduce_data)
 
 
         self.train_x_flat = []  # Initialize the testing pressure mat list
         self.train_x_flat = TensorPrepLib().prep_images(self.train_x_flat, dat_f_synth, dat_m_synth, num_repeats = 1)
         self.train_x_flat = list(np.clip(np.array(self.train_x_flat) * float(self.CTRL_PNL['pmat_mult']), a_min=0, a_max=100))
+        self.train_x_flat = TensorPrepLib().prep_images(self.train_x_flat, dat_f_real, dat_m_real, num_repeats = repeat_real_data_ct)
 
         if self.CTRL_PNL['cal_noise'] == False:
             self.train_x_flat = PreprocessingLib().preprocessing_blur_images(self.train_x_flat, self.mat_size, sigma=0.5)
@@ -210,6 +210,8 @@ class PhysicalTrainer():
             self.depth_contact_maps_input_est = [] #Initialize the precomputed depth and contact map input estimates
             self.depth_contact_maps_input_est = TensorPrepLib().prep_depth_contact_input_est(self.depth_contact_maps_input_est,
                                                                                              dat_f_synth, dat_m_synth, num_repeats = 1)
+            self.depth_contact_maps_input_est = TensorPrepLib().prep_depth_contact_input_est(self.depth_contact_maps_input_est,
+                                                                                             dat_f_real, dat_m_real, num_repeats = repeat_real_data_ct)
         else:
             self.depth_contact_maps_input_est = None
 
@@ -225,7 +227,7 @@ class PhysicalTrainer():
                                                               mesh_depth_contact_maps = self.depth_contact_maps)
 
         #normalize the input
-        if self.CTRL_PNL['normalize_std'] == True:
+        if self.CTRL_PNL['normalize_input'] == True:
             train_xa = TensorPrepLib().normalize_network_input(train_xa, self.CTRL_PNL)
 
         self.train_x_tensor = torch.Tensor(train_xa)
@@ -242,9 +244,19 @@ class PhysicalTrainer():
                                                         initial_angle_est = self.CTRL_PNL['adjust_ang_from_est'],
                                                         full_body_rot = self.CTRL_PNL['full_body_rot'])
 
+        train_y_flat = TensorPrepLib().prep_labels(train_y_flat, dat_f_real, num_repeats = repeat_real_data_ct,
+                                                        z_adj = 0.0, gender = "m", is_synth = False,
+                                                        loss_vector_type = self.CTRL_PNL['loss_vector_type'],
+                                                        initial_angle_est = self.CTRL_PNL['adjust_ang_from_est'],
+                                                        full_body_rot = self.CTRL_PNL['full_body_rot'])
+        train_y_flat = TensorPrepLib().prep_labels(train_y_flat, dat_m_real, num_repeats = repeat_real_data_ct,
+                                                        z_adj = 0.0, gender = "m", is_synth = False,
+                                                        loss_vector_type = self.CTRL_PNL['loss_vector_type'],
+                                                        initial_angle_est = self.CTRL_PNL['adjust_ang_from_est'],
+                                                        full_body_rot = self.CTRL_PNL['full_body_rot'])
 
         # normalize the height and weight
-        if self.CTRL_PNL['normalize_std'] == True:
+        if self.CTRL_PNL['normalize_input'] == True:
             train_y_flat = TensorPrepLib().normalize_wt_ht(train_y_flat, self.CTRL_PNL)
 
         self.train_y_tensor = torch.Tensor(train_y_flat)
@@ -300,7 +312,7 @@ class PhysicalTrainer():
                                                               mesh_depth_contact_maps = self.depth_contact_maps)
 
         #normalize the input
-        if self.CTRL_PNL['normalize_std'] == True:
+        if self.CTRL_PNL['normalize_input'] == True:
             test_xa = TensorPrepLib().normalize_network_input(test_xa, self.CTRL_PNL)
 
         self.test_x_tensor = torch.Tensor(test_xa)
@@ -327,7 +339,7 @@ class PhysicalTrainer():
                                                     loss_vector_type = self.CTRL_PNL['loss_vector_type'],
                                                     initial_angle_est = self.CTRL_PNL['adjust_ang_from_est'])
 
-        if self.CTRL_PNL['normalize_std'] == True:
+        if self.CTRL_PNL['normalize_input'] == True:
             test_y_flat = TensorPrepLib().normalize_wt_ht(test_y_flat, self.CTRL_PNL)
 
         self.test_y_tensor = torch.Tensor(test_y_flat)
@@ -340,9 +352,9 @@ class PhysicalTrainer():
 
 
         self.save_name = '_' + str(opt.net) + '_' + opt.losstype + \
-                         '_synth_' + str(self.train_x_tensor.size()[0]) + \
+                         '_' + str(self.train_x_tensor.size()[0]) + 'ct' + \
                          '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
-                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pmult'
+                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pm'
 
 
         if self.CTRL_PNL['depth_map_labels'] == True:
@@ -352,11 +364,11 @@ class PhysicalTrainer():
         if self.CTRL_PNL['adjust_ang_from_est'] == True:
             self.save_name += '_angleadj'
         if self.CTRL_PNL['all_tanh_activ'] == True:
-            self.save_name += '_tnhFIXN'
+            self.save_name += '_tnh'
         if self.CTRL_PNL['incl_ht_wt_channels'] == True:
             self.save_name += '_htwt'
         if self.CTRL_PNL['cal_noise'] == True:
-            self.save_name += '_calnoise'
+            self.save_name += '_clns'+str(int(self.CTRL_PNL['cal_noise_amt']*100)) + 'p'
         if self.CTRL_PNL['double_network_size'] == True:
             self.save_name += '_dns'
 
@@ -423,9 +435,9 @@ class PhysicalTrainer():
 
             if epoch == self.CTRL_PNL['num_epochs']:
                 print "saving convnet."
-                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.pt')
+                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
                 print "saved convnet."
-                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.p', 'wb'))
+                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.p', 'wb'))
                 print "saved losses."
 
         print self.train_val_losses, 'trainval'
@@ -448,7 +460,10 @@ class PhysicalTrainer():
 
             # This will loop a total = training_images/batch_size times
             for batch_idx, batch in enumerate(self.train_loader):
+                if batch_idx in [0, 1]: continue
 
+                if GPU == True:
+                    print "GPU memory:", torch.cuda.max_memory_allocated()
 
                 self.optimizer.zero_grad()
                 scores, INPUT_DICT, OUTPUT_DICT = \
@@ -500,11 +515,7 @@ class PhysicalTrainer():
 
 
                 if batch_idx % opt.log_interval == 0:# and batch_idx > 0:
-
-                    if GPU == True:
-                        print "GPU memory:", torch.cuda.max_memory_allocated()
-
-                    val_n_batches = 4
+                    val_n_batches = 1
                     print "evaluating on ", val_n_batches
 
                     im_display_idx = 0 #random.randint(0,INPUT_DICT['batch_images'].size()[0])
@@ -686,9 +697,6 @@ class PhysicalTrainer():
 
 
 
-
-
-
 if __name__ == "__main__":
 
     import optparse
@@ -759,7 +767,7 @@ if __name__ == "__main__":
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
-            data_fp_suffix += '_calnoise'
+            data_fp_suffix += '_clns0p1'
 
         data_fp_suffix += '_100e_00002lr'
     else:

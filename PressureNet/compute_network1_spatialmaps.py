@@ -43,6 +43,17 @@ from scipy import ndimage
 import scipy.stats as ss
 from scipy.misc import imresize
 from scipy.ndimage.interpolation import zoom
+#from skimage.feature import hog
+#from skimage import data, color, exposure
+
+
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import scale
+from sklearn.preprocessing import normalize
+from sklearn import svm, linear_model, decomposition, kernel_ridge, neighbors
+from sklearn import metrics
+from sklearn.utils import shuffle
+from sklearn.multioutput import MultiOutputRegressor
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -113,11 +124,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['mesh_bottom_dist'] = True
         self.CTRL_PNL['full_body_rot'] = True
         self.CTRL_PNL['all_tanh_activ'] = True
-        self.CTRL_PNL['normalize_per_image'] = False
-        if self.CTRL_PNL['normalize_per_image'] == False:
-            self.CTRL_PNL['normalize_std'] = True
-        else:
-            self.CTRL_PNL['normalize_std'] = False
+        self.CTRL_PNL['normalize_input'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
         self.CTRL_PNL['cal_noise_amt'] = 0.1
@@ -163,11 +170,6 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
-
-        if self.CTRL_PNL['normalize_std'] == False:
-            for i in range(10):
-                self.CTRL_PNL['norm_std_coeffs'][i] *= 0.
-                self.CTRL_PNL['norm_std_coeffs'][i] += 1.
 
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
@@ -247,7 +249,7 @@ class PhysicalTrainer():
                                                               mesh_depth_contact_maps = self.depth_contact_maps)
 
         #normalize the input
-        if self.CTRL_PNL['normalize_std'] == True:
+        if self.CTRL_PNL['normalize_input'] == True:
             test_xa = TensorPrepLib().normalize_network_input(test_xa, self.CTRL_PNL)
 
         self.test_x_tensor = torch.Tensor(test_xa)
@@ -274,7 +276,7 @@ class PhysicalTrainer():
                                                     loss_vector_type = self.CTRL_PNL['loss_vector_type'],
                                                     initial_angle_est = self.CTRL_PNL['adjust_ang_from_est'])
 
-        if self.CTRL_PNL['normalize_std'] == True:
+        if self.CTRL_PNL['normalize_input'] == True:
             test_y_flat = TensorPrepLib().normalize_wt_ht(test_y_flat, self.CTRL_PNL)
 
         self.test_y_tensor = torch.Tensor(test_y_flat)
@@ -296,14 +298,14 @@ class PhysicalTrainer():
         self.test_loader = torch.utils.data.DataLoader(self.test_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
 
 
-        self.model_name = 'convnet_'+str(self.opt.losstype)+'_synth'
-        if self.opt.small == True: self.model_name += '_46000'
-        else: self.model_name += '_184000'
+        self.model_name = 'convnet_1_'+str(self.opt.losstype)
+        if self.opt.small == True: self.model_name += '_46000ct'
+        else: self.model_name += '_184000ct'
 
-        self.model_name += '_128b_x5pmult_tnhFIXN'
+        self.model_name += '_128b_x5pm_tnh'
 
         if self.opt.htwt == True: self.model_name += '_htwt'
-        if self.opt.calnoise == True: self.model_name += '_calnoise'
+        if self.opt.calnoise == True: self.model_name += '_clns10p'
 
         self.model_name += '_100e_00002lr'
 
