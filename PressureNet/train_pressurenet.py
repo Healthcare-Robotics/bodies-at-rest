@@ -413,6 +413,8 @@ class PhysicalTrainer():
 
         # train the model one epoch at a time
         for epoch in range(1, self.CTRL_PNL['num_epochs'] + 1):
+            torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
+
             self.t1 = time.time()
             self.train_convnet(epoch)
 
@@ -774,8 +776,8 @@ if __name__ == "__main__":
 
     if opt.quick_test == True:
         #run a quick test
-        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'_qt.p')
-        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'_qt.p')
+        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
 
     else:
         #General partition - 104,000 train + 12,000 test

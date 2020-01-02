@@ -306,10 +306,11 @@ class PhysicalTrainer():
 
         self.model_name += '_100e_'+str(0.00002)+'lr'
 
-        self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'})
-
         if GPU == True:
-            self.model = self.model.cuda()
+            self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'}).cuda()
+        else:
+            self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location='cpu')
+
 
 
 
