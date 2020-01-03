@@ -88,16 +88,16 @@ if __name__ == '__main__':
         #NETWORK_2 = "1.0rtojtdpth_angleadj_tnhFIXN_htwt_calnoise"
 
         if opt.small == True:
-            NETWORK_2 = "46000_128b_x5pmult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
+            NETWORK_2 = "46000ct_128b_x5pm_0.5rtojtdpth_depthestin_angleadj_tnh"
             DATA_QUANT = "46K"
         else:
-            NETWORK_2 = "184000_128b_x5pmult_0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
+            NETWORK_2 = "184000ct_128b_x5pm_0.5rtojtdpth_depthestin_angleadj_tnh"
             DATA_QUANT = "184K"
 
         if opt.htwt == True:
             NETWORK_2 += "_htwt"
         if opt.calnoise == True:
-            NETWORK_2 += "_calnoise"
+            NETWORK_2 += "_clns10p"
 
 
         if opt.hd == True:

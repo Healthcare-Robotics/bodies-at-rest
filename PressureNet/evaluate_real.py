@@ -698,8 +698,8 @@ if __name__ ==  "__main__":
             filename1 = "../../../data_BR/convnets/convnet_1_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
             filename2 = "../../../data_BR/convnets/convnet_2_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
         else:
-            filename1 = "/media/henry/multimodal_data_2/data/convnets/planesreg/FINAL/convnet_anglesDC_synth_" + NETWORK_1 + "_100e_00002lr.pt"
-            filename2 = "/media/henry/multimodal_data_2/data/convnets/planesreg_correction/FINAL/convnet_anglesDC_synth_" + NETWORK_2 + "_100e_00002lr.pt"
+            filename1 = "/media/henry/multimodal_data_2/data/convnets/planesreg/FINAL/convnet_1_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
+            filename2 = "/media/henry/multimodal_data_2/data/convnets/planesreg_correction/FINAL/convnet_2_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
 
 
         if GPU == True:
