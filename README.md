@@ -13,7 +13,7 @@ PressurePose synthetic dataset: Make a new folder, `~/data_BR/synth`, and put th
 `https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
 
 PressurePose real dataset: Make a new folder, `~/data_BR/real`, and put the 20 folders (20 participants, 60 files) from the link below in there. For a quick start up, only download the three files in the `S103.zip` folder, which represents a single participant.
-`XXXXXXXXX`
+`https://dataverse.harvard.edu/privateurl.xhtml?token=ff56e65e-5f47-4cb8-adc9-af5e1e5dc983`
 
 Clone this repository into your `~/git/` folder to get started with inspecting PressurePose and training PressureNet.
 
