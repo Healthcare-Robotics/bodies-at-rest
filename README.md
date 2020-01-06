@@ -9,7 +9,7 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-PressurePose synthetic dataset: Make a new folder, `~/data_BR/synth`, and put the folders from the link below in there. For a quick start up, only download the files in the `quick_test` folder, which is 3K images instead of 184K. 
+PressurePose synthetic dataset: Make a new folder, `~/data_BR/synth`, and put the 6 folders (42 files) from the link below in there. For a quick start up, only download the two files in the `quick_test` folder, which is 3K images instead of 184K. 
 `https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
 
 PressurePose real dataset: XXXXXXX. Make a new folder, `~/data_BR/real`, and unzip the files there. For a quick start up, only download the first participant file (`S103.zip`).
