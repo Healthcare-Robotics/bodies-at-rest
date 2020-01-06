@@ -134,7 +134,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break9.JPG?raw=true" alt="None"/>
 </p>
 
 
