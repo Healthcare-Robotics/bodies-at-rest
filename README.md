@@ -9,9 +9,11 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-PressurePose synthetic dataset: XXXXXXX. Make a new folder, `~/data_BR/synth`, and unzip the files there. For a quick start up, only download the `quick_test.zip` file, which is 3K images instead of 184K.
+PressurePose synthetic dataset: Make a new folder, `~/data_BR/synth`, and put the 6 folders (42 files) from the link below in there. For a quick start up, only download the two files in the `quick_test` folder, which is 3K images instead of 184K. 
+`https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
 
-PressurePose real dataset: XXXXXXX. Make a new folder, `~/data_BR/real`, and unzip the files there. For a quick start up, only download the first participant file (`S103.zip`).
+PressurePose real dataset: Make a new folder, `~/data_BR/real`, and put the 20 folders (20 participants, 60 files) from the link below in there. For a quick start up, only download the three files in the `S103.zip` folder, which represents a single participant.
+`https://dataverse.harvard.edu/privateurl.xhtml?token=ff56e65e-5f47-4cb8-adc9-af5e1e5dc983 `
 
 Clone this repository into your `~/git/` folder to get started with inspecting PressurePose and training PressureNet.
 
@@ -132,7 +134,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break9.JPG?raw=true" alt="None"/>
 </p>
 
 
