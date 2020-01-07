@@ -9,6 +9,7 @@ import sys
 import os
 import time
 import numpy as np
+sys.path.append(os.path.abspath('..'))
 
 import lib_pyrender_basic as libPyRender
 
@@ -278,7 +279,7 @@ class PhysicalTrainer():
                 self.pyRender.render_3D_data(camera_point=camera_point, pmat=pmat, smpl_verts_gt=smpl_verts_gt,
                                              smpl_faces=smpl_faces, segment_limbs = opt.seg_limbs)
 
-            time.sleep(1000)
+            time.sleep(3)
 
 if __name__ == "__main__":
 
@@ -299,7 +300,7 @@ if __name__ == "__main__":
     if opt.hd == True:
         filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
     else:
-        filepath_prefix = '../../../data_BR/synth/'
+        filepath_prefix = '../data_BR/synth/'
         
     GENDER = "f"
 
@@ -312,10 +313,10 @@ if __name__ == "__main__":
 
     if GENDER == "f":
         test_database_file_f.append(filepath_prefix+TESTING_FILENAME+'.p')
-        model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
+        model_path = '../smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
     else:
         test_database_file_m.append(filepath_prefix+TESTING_FILENAME+'.p')
-        model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+        model_path = '../smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
 
 
     p = PhysicalTrainer(test_database_file_f, test_database_file_m)

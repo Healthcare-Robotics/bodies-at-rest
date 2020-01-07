@@ -1,0 +1,12 @@
+numpy
+trimesh
+pyrender
+matplotlib
+torch
+torchvision
+chumpy
+opencv-python
+sklearn
+open3d-python
+imutils
+camera

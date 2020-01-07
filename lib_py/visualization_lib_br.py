@@ -21,10 +21,10 @@ from scipy.misc import imresize
 from scipy.ndimage.interpolation import zoom
 
 #ROS
-import rospy
-from visualization_msgs.msg import Marker
-from visualization_msgs.msg import MarkerArray
-import tf
+#import rospy
+#from visualization_msgs.msg import Marker
+#from visualization_msgs.msg import MarkerArray
+#import tf
 
 
 # PyTorch libraries
