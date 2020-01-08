@@ -9,13 +9,22 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-PressurePose synthetic dataset: Make a new folder, `~/bodies-at-rest/data_BR/synth`, and put the 6 folders (42 files) from the link below in there. For a quick start up, only download the two files in the `quick_test` folder, which is 3K images (500 MB) instead of 184K (10 GB). 
+Clone this repository to get started with inspecting PressurePose and training PressureNet.
+`git clone https://github.com/henryclever/bodies-at-rest.git`
+`cd bodies-at-rest`
+`pip install -r requirements.txt`
+
+
+Download SMPL human model, you must create a free account here https://smpl.is.tue.mpg.de/en. Copy smpl directory to bodies-at-rest/smpl.
+
+PressurePose synthetic dataset: 184K labeled synthetic pressure images (10 GB). Run `./download_all_synth` to download all this data. For a quick start up, run `./download_qt_synth`, which is just 3K images (500 MB). Link to all the synthetic data:
 `https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
 
-PressurePose real dataset: Make a new folder, `~/bodies-at-rest/data_BR/real`, and put the 20 folders (20 participants, 60 files) from the link below in there. For a quick start up, only download the three files in the `S103` folder, which represents a single participant (also 500 MB instead of 10 GB).
+PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real images (10 GB). Run `./download_all_real` to download all this data.  For a quick start up, run `./download_qt_real`, which represents a single participant (500 MB). Link to all the real data:
 `https://dataverse.harvard.edu/privateurl.xhtml?token=ff56e65e-5f47-4cb8-adc9-af5e1e5dc983 `
 
-Clone this repository to get started with inspecting PressurePose and training PressureNet.
+
+
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
