@@ -164,7 +164,7 @@ class PhysicalTrainer():
                 self.CTRL_PNL['norm_std_coeffs'][i] += 1.
 
 
-        self.CTRL_PNL['convnet_fp_prefix'] = '../../../data_BR/convnets/'
+        self.CTRL_PNL['convnet_fp_prefix'] = '../data_BR/convnets/'
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
             self.verts_list = "all"
@@ -739,7 +739,7 @@ if __name__ == "__main__":
     opt, args = p.parse_args()
 
     if opt.hd == False:
-        data_fp_prefix = "../../../data_BR/"
+        data_fp_prefix = "../data_BR/"
     else:
         data_fp_prefix = "/media/henry/multimodal_data_2/data_BR/"
 

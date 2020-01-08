@@ -10,6 +10,8 @@ import random
 import copy
 
 import sys
+import os
+sys.path.append(os.path.abspath('..'))
 sys.path.insert(0, '../lib_py')
 import lib_pyrender_basic as libPyRender
 from smpl.smpl_webuser.serialization import load_model
@@ -279,7 +281,7 @@ if __name__ ==  "__main__":
     if opt.hd == True:
         participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
     else:
-        participant_directory = "../../../data_BR/real/"+PARTICIPANT
+        participant_directory = "../data_BR/real/"+PARTICIPANT
         
 
     V3D.load_new_participant_info(participant_directory)
