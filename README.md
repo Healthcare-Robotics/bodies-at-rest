@@ -23,13 +23,13 @@ This repository uses Python 2.7.
 ### Download data:
 * `cd PressurePose`
 
-PressurePose synthetic dataset: 206K labeled synthetic pressure images (10 GB). 
-* Run `./download_synth` to download all the synthetic data. 
+PressurePose synthetic dataset: 206K labeled synthetic pressure images. 
+* Run `./download_synth` to download all the synthetic data (10 GB). 
 * For a quick start up, run `./download_qt_synth`, which is just 3K images (500 MB).
 * Link to all the synthetic data: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X .
 
-PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real pressure images (10 GB). 
-* Run `./download_real` to download all the real data.  
+PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real pressure images. 
+* Run `./download_real` to download all the real data (10 GB).  
 * For a quick start up, run `./download_qt_real`, which represents a single participant (500 MB).
 * Link to all the real data: https://dataverse.harvard.edu/privateurl.xhtml?token=ff56e65e-5f47-4cb8-adc9-af5e1e5dc983 .
 
