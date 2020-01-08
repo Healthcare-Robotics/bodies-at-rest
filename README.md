@@ -7,13 +7,14 @@
 
 ### Paper:
 
-### Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
+### Video: 
+https://www.youtube.com/watch?v=UHBqw0BYWEw
 
 ### Setup code:
 Clone this repository to get started with inspecting PressurePose and training PressureNet.\
 `git clone https://github.com/henryclever/bodies-at-rest.git`\
 `cd bodies-at-rest`\
-`pip install -r requirements.txt`\
+`pip install -r requirements.txt`
 
 Download SMPL human model, you must create a free account here https://smpl.is.tue.mpg.de/en. Copy smpl directory to bodies-at-rest/smpl.
 
