@@ -141,7 +141,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 </p>
 
 ## What code isn't here? 
-The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable. I'd also worry that users would have trouble getting it up and running because of its complexity; what I have now needs work to make it less challenging to install. 
+The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable. I'd also worry that users would have trouble getting it up and running because of its complexity. 
 
 
 <p align="center">
