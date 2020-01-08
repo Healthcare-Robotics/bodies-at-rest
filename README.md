@@ -21,6 +21,8 @@ Download SMPL human model, you must create a free account here https://smpl.is.t
 This repository uses Python 2.7.
 
 ### Download data:
+* `cd PressurePose`
+
 PressurePose synthetic dataset: 184K labeled synthetic pressure images (10 GB). 
 * Run `./download_all_synth` to download all this data. 
 * For a quick start up, run `./download_qt_synth`, which is just 3K images (500 MB).
@@ -52,7 +54,7 @@ This repository:
 ## PressurePose dataset visualization
 First, install the linux packages listed further down the page.
 
-For the synthetic data, when you run the following code `python viz_synth_cvpr_release.py`, an interactive PyRender box will pop up that visualizes the ground truth human mesh and the pressure image. It will show a mesh like the two on the left below. The second set images below show a reduced set of mesh vertices, which represent only those facing an overhead camera and which overlie the pressure mat. This reduction is useful for comparing the mesh vertices to a point cloud. Use the flag `--red` to reduce the vertices in this way. You can also segment the limbs (`--seg`), which produces an image like that on the far right below. To change the synthetic data partition you are visualizing, change the variable `TESTING_FILENAME` inside the python script. 
+For the synthetic data, run the following code: `python viz_synth_cvpr_release.py`. An interactive PyRender box will pop up that visualizes the ground truth human mesh and the pressure image. It will show a mesh like the two on the left below. The second set images below show a reduced set of mesh vertices, which represent only those facing an overhead camera and which overlie the pressure mat. This reduction is useful for comparing the mesh vertices to a point cloud. Use the flag `--red` to reduce the vertices in this way. You can also segment the limbs (`--seg`), which produces an image like that on the far right below. To change the synthetic data partition you are visualizing, change the variable `TESTING_FILENAME` inside the python script. 
 
 
 <p align="center">
@@ -64,7 +66,7 @@ For the synthetic data, when you run the following code `python viz_synth_cvpr_r
 </p>
 
 
-For the real data, when you run the following code `python viz_real_cvpr_release.py` you will see two pop up boxes: one for 2D data that includes RGB, depth, and pressure; the other for a 3D point cloud and pressure image rendering in PyRender that you can flip around to inspect. Make sure you include flags to specify the participant number and the type of real pose dataset. For example, you might use `--p_idx 1 --pose_type 'prescribed'` to specify the first participant in the list and the set of 48 prescribed poses. You can use numbers 1 through 20 to specify the participant, because there are 20, and pose types of `'prescribed'` and `'p_select'`, with the latter used to specify participant selected poses. Here is what you should see when you run this code:
+For the real data, run the following code `python viz_real_cvpr_release.py --p_idx 1 --pose_type 'p_select'`. you will see two pop up boxes: one for 2D data that includes RGB, depth, and pressure; the other for a 3D point cloud and pressure image rendering in PyRender that you can flip around to inspect. Make sure you include flags to specify the participant number and the type of real pose dataset. For example, you might use `--p_idx 3 --pose_type 'prescribed'` to specify the third participant in the list and the set of 48 prescribed poses. You can use numbers 1 through 20 to specify the participant, because there are 20, and pose types of `'prescribed'` and `'p_select'`, with the latter used to specify participant selected poses. Here is what you should see when you run this code:
 
 
 <p align="center">
