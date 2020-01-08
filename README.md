@@ -5,17 +5,19 @@
   <img width="98%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/intro_overview.JPG?raw=true" alt="None"/>
 </p>
 
-Paper:
+### Paper:
 
-Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
+### Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-Clone this repository to get started with inspecting PressurePose and training PressureNet.
+### Setup code:
+Clone this repository to get started with inspecting PressurePose and training PressureNet.\
 `git clone https://github.com/henryclever/bodies-at-rest.git`\
 `cd bodies-at-rest`\
 `pip install -r requirements.txt`\
 
 Download SMPL human model, you must create a free account here https://smpl.is.tue.mpg.de/en. Copy smpl directory to bodies-at-rest/smpl.
 
+### Download data:
 PressurePose synthetic dataset: 184K labeled synthetic pressure images (10 GB). Run `./download_all_synth` to download all this data. For a quick start up, run `./download_qt_synth`, which is just 3K images (500 MB).\
 Link to all the synthetic data: `https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
 
