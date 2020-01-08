@@ -18,6 +18,8 @@ Clone this repository to get started with inspecting PressurePose and training P
 
 Download SMPL human model, you must create a free account here https://smpl.is.tue.mpg.de/en. Copy smpl directory to bodies-at-rest/smpl.
 
+This repository uses Python 2.7.
+
 ### Download data:
 PressurePose synthetic dataset: 184K labeled synthetic pressure images (10 GB). 
 * Run `./download_all_synth` to download all this data. 
