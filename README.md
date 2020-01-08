@@ -9,13 +9,13 @@ Paper:
 
 Video: https://www.youtube.com/watch?v=UHBqw0BYWEw
 
-PressurePose synthetic dataset: Make a new folder, `~/data_BR/synth`, and put the 6 folders (42 files) from the link below in there. For a quick start up, only download the two files in the `quick_test` folder, which is 3K images instead of 184K. 
+PressurePose synthetic dataset: Make a new folder, `~/bodies-at-rest/data_BR/synth`, and put the 6 folders (42 files) from the link below in there. For a quick start up, only download the two files in the `quick_test` folder, which is 3K images (500 MB) instead of 184K (10 GB). 
 `https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
 
-PressurePose real dataset: Make a new folder, `~/data_BR/real`, and put the 20 folders (20 participants, 60 files) from the link below in there. For a quick start up, only download the three files in the `S103.zip` folder, which represents a single participant.
+PressurePose real dataset: Make a new folder, `~/bodies-at-rest/data_BR/real`, and put the 20 folders (20 participants, 60 files) from the link below in there. For a quick start up, only download the three files in the `S103` folder, which represents a single participant (also 500 MB instead of 10 GB).
 `https://dataverse.harvard.edu/privateurl.xhtml?token=ff56e65e-5f47-4cb8-adc9-af5e1e5dc983 `
 
-Clone this repository into your `~/git/` folder to get started with inspecting PressurePose and training PressureNet.
+Clone this repository to get started with inspecting PressurePose and training PressureNet.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
@@ -25,7 +25,7 @@ Clone this repository into your `~/git/` folder to get started with inspecting P
 
 This repository: 
 
-* Allows you to visualize both synthetic and real data in the PressurePose dataset. The synthetic dataset includes 206,000 fully labeled pressure images, meaning that each pressure image has a corresponding SMPL human mesh parameterized by body shape (10 PCA parameters), pose (69 joint angles), posture (6 DOF global transform), gender, height, and weight. The real dataset includes 1051 pressure images with co-registered point cloud data, RGB data, gender, height, and weight. 
+* Allows visualization of both synthetic and real data in the PressurePose dataset. The synthetic dataset includes 206,000 fully labeled pressure images, meaning that each pressure image has a corresponding SMPL human mesh parameterized by body shape (10 PCA parameters), pose (69 joint angles), posture (6 DOF global transform), gender, height, and weight. The real dataset includes 1051 pressure images with co-registered point cloud data, RGB data, gender, height, and weight. 
 * Has the code for PressureNet. Below we describe step-by-step how to train PressureNet. 
 
 <p align="center">
