@@ -5,6 +5,9 @@
   <img width="98%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/intro_overview.JPG?raw=true" alt="None"/>
 </p>
 
+### Licence:
+Software Copyright License for non-commercial scientific research purposes. Please read carefully the terms and conditions and any accompanying documentation before you download and/or use the PressurePose dataset, PressureNet model, or any software, (the "Model & Software"). By downloading and/or using the Model & Software (including downloading, cloning, installing, and any other use of this github repository), you acknowledge that you have read these terms and conditions, understand them, and agree to be bound by them. If you do not agree with these terms and conditions, you must not download and/or use the Model & Software. Any infringement of the terms of this agreement will automatically terminate your rights under this License.
+
 ### Paper:
 
 ### Video: 
@@ -116,36 +119,21 @@ First, you'll generate results files for each participant. Make a new folder `~/
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
 </p>
 
-## What other packages do I need?
-* SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it's quick. Unzip it in `~/git/`.
-* PyRender - https://github.com/mmatl/pyrender
-* Trimesh - https://github.com/mikedh/trimesh
-* PyTorch - https://pytorch.org/
-* PyTorch HMR - https://github.com/MandyMo/pytorch_HMR. Clone this and put it in `~/git/`.
-* OpenCV - `pip install python-opencv`
-* Open3D - `pip install open3d-python`
-* LateX packages - `apt-get install dvipng texlive-fonts-recommended texlive-fonts-extra`
-* Matplotlib, PyGlet, some others .... 
-
-
-<p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
-</p>
 
 ## Computer requirements
 To train all 184K images, you'll need at least 64GB of ram on your CPU with the present implementation. You can run smaller sizes (e.g. 32K images) on a machine much smaller. If you restructured some code or converted some images to a more efficient format (e.g. float to int) it might help. You'll also need at least 8GB of ram on your GPU to fit the present implementation of PressureNet. I'm sure there are other ways to make this code more efficient, so if you can do it, make a request for me and push it back up to this repository with a tagged python filename - just make sure you have documented the changes with good comments. 
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
 </p>
 
 ## What code isn't here? 
-The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable. I'd also worry that users would have trouble getting it up and running because of its complexity. 
+The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable.
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
 </p>
 
 
@@ -153,7 +141,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break9.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
 </p>
 
 
