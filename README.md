@@ -10,6 +10,12 @@
 ### Video: 
 https://www.youtube.com/watch?v=UHBqw0BYWEw
 
+<p align="center">
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
+</p>
+
+## Getting started
+
 ### Setup code:
 Clone this repository to get started with inspecting PressurePose and training PressureNet.\
 `git clone https://github.com/henryclever/bodies-at-rest.git`\
@@ -37,7 +43,7 @@ PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real 
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break2.JPG?raw=true" alt="None"/>
 </p>
 
 ## What code is in here?
@@ -48,7 +54,7 @@ This repository:
 * Has the code for PressureNet. Below we describe step-by-step how to train PressureNet. 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break2.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break3.JPG?raw=true" alt="None"/>
 </p>
 
 ## PressurePose dataset visualization
@@ -80,7 +86,7 @@ The real dataset is captured with a Kinect V2 and is already calibrated, and the
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break3.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break4.JPG?raw=true" alt="None"/>
 </p>
 
 ## PressureNet training
@@ -105,7 +111,7 @@ The data can take a long time to load. You can use an euler angle parameterizati
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break4.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
 </p>
 
 ## PressureNet evaluation
@@ -114,7 +120,7 @@ First, you'll generate results files for each participant. Make a new folder `~/
  
  
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
 </p>
 
 
@@ -123,7 +129,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break6.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
 </p>
 
 ## What code isn't here? 
@@ -131,7 +137,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break7.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
 </p>
 
 
@@ -139,7 +145,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, made installation easier, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
 
 <p align="center">
-  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break8.JPG?raw=true" alt="None"/>
+  <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break9.JPG?raw=true" alt="None"/>
 </p>
 
 
