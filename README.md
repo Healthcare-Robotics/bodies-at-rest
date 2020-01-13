@@ -5,9 +5,6 @@
   <img width="98%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/intro_overview.JPG?raw=true" alt="None"/>
 </p>
 
-### Licence:
-Software Copyright License for non-commercial scientific research purposes. Please read carefully the terms and conditions (`bodies-at-rest/License.txt`) before you download and/or use the PressurePose dataset, PressureNet model, or any software, (the "Data, Model & Software"). By downloading and/or using the Data, Model & Software (including downloading, cloning, installing, and any other use of this github repository), you acknowledge that you have read these terms and conditions, understand them, and agree to be bound by them. If you do not agree with these terms and conditions, you must not download and/or use the Data, Model & Software. Any infringement of the terms of this agreement will automatically terminate your rights under this License.
-
 ### Paper:
 
 ### Video: 
