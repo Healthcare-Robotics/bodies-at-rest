@@ -22,7 +22,9 @@ Clone this repository to get started with inspecting PressurePose and training P
 `cd bodies-at-rest`\
 `pip install -r requirements.txt`
 
-Download SMPL human model, you must create a free account here https://smpl.is.tue.mpg.de/en. Copy smpl directory to bodies-at-rest/smpl. If it's missing any requirements please create an issue and I will fix it.
+If it's missing any requirements please create an issue and I will fix it.
+
+Download SMPL human model, you must create a free account here https://smpl.is.tue.mpg.de/en. Copy smpl directory to bodies-at-rest/smpl.
 
 This repository uses Python 2.7.
 
