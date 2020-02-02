@@ -236,6 +236,8 @@ class VisualizationLib():
         num_subplots = 5
         if pmap_recon_in is not None:
             num_subplots += 3
+        elif pmap_recon_gt is not None:
+            num_subplots += 3
 
 
 

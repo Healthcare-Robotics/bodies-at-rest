@@ -121,9 +121,9 @@ class UnpackBatchLib():
                                                                                     norm_std_coeffs = CTRL_PNL['norm_std_coeffs'])
 
 
-        images_up = Variable(torch.Tensor(images_up_non_tensor).type(CTRL_PNL['dtype']), requires_grad=False)
+        images_up = Variable(torch.Tensor(images_up_non_tensor), requires_grad=False).type(CTRL_PNL['dtype'])
 
-        images_up = torch.cat((images_up, torch.zeros(images_up.size()[0], 1, images_up.size()[2], images_up.size()[3])), 1)
+        images_up = torch.cat((images_up, torch.zeros(images_up.size()[0], 1, images_up.size()[2], images_up.size()[3]).type(CTRL_PNL['dtype'])), 1)
 
 
         for i in range(images_up.size()[1]):

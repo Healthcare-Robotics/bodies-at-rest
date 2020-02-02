@@ -91,7 +91,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['verbose'] = opt.verbose
         self.opt = opt
         self.CTRL_PNL['batch_size'] = 128
-        self.CTRL_PNL['num_epochs'] = 100
+        self.CTRL_PNL['num_epochs'] = 1
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
@@ -108,6 +108,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['depth_map_input_est'] = opt.pmr #do this if we're working in a two-part regression
         if opt.net == 1:
             self.CTRL_PNL['adjust_ang_from_est'] = False #starts angles from scratch
+            self.CTRL_PNL['depth_map_input_est'] = False
         elif opt.net == 2:
             self.CTRL_PNL['adjust_ang_from_est'] = True #gets betas and angles from prior estimate
         self.CTRL_PNL['clip_sobel'] = True
@@ -461,7 +462,7 @@ class PhysicalTrainer():
 
             # This will loop a total = training_images/batch_size times
             for batch_idx, batch in enumerate(self.train_loader):
-                if batch_idx in [0, 1]: continue
+                #if batch_idx in [0, 1]: continue
 
                 if GPU == True:
                     print "GPU memory:", torch.cuda.max_memory_allocated()
@@ -781,12 +782,11 @@ if __name__ == "__main__":
     test_database_file_f = []
     test_database_file_m = [] #141 total training loss at epoch 9
 
-
-
+    #print "SUFFIX IS : ", data_fp_suffix
     if opt.quick_test == True:
         #run a quick test
-        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
 
     else:
         #General partition - 104,000 train + 12,000 test
