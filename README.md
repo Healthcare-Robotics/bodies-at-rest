@@ -83,12 +83,12 @@ Running the above code results in the following loss function:
 
 While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used. You can omit the global rotation using `--omit_root`. We recommend using a loss on the global rotation, which helps the network to get started. Without it, some joints have a higher probability of getting stuck at a limit initially, requiring a restart. However,  here it is:
 <p align="left">
-  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_no_root.JPG?raw=true" alt="None"/>
+  <img width="25%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_no_root.JPG?raw=true" alt="None"/>
 </p>
 
 You can also use PMR on Network 1 with the flag `--pmr`. We recommend using PMR only for Network 2, because it is more geared to fine-tuning the network. However, using `--pmr` will result in:
 <p align="left">
-  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_2.JPG?raw=true" alt="None"/>
+  <img width="90%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_2.JPG?raw=true" alt="None"/>
 </p>
  
 
