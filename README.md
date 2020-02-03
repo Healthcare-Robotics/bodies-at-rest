@@ -99,6 +99,15 @@ First, you'll generate results files for each participant. Make a new folder `~/
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
 </p>
 
+Running the above code results in the following loss function:
+
+
+While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used.
+ * We recommend using a loss on the global rotation, which helps the network to get started. Without it, some joints have a higher probability of getting stuck at a limit initially, requiring a restart. However, you can omit the global rotation using `--omit_root` will result in:
+ * We recommend using PMR only for Network 2. However, to run it on network 1, using the flag `--pmr` will result in:
+ 
+ 
+
 
 ## What other packages do I need?
 * SMPL: A Skinned Multi-Person Linear Model - https://smpl.is.tue.mpg.de/. You'll have to sign up with an account to get this but it's quick. Unzip it in `~/git/`.
