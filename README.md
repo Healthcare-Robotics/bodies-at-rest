@@ -78,7 +78,7 @@ There are 3 steps to train PressureNet as implemented in the paper.
 Running the above code results in the following loss function:
 
 <p align="left">
-  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/loss_1.png?raw=true" alt="None"/>
+  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/loss_1.JPG?raw=true" alt="None"/>
 </p>
 
 While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used.
