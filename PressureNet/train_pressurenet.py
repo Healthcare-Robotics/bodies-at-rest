@@ -413,7 +413,7 @@ class PhysicalTrainer():
 
         # train the model one epoch at a time
         for epoch in range(1, self.CTRL_PNL['num_epochs'] + 1):
-            torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
+            #torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
 
             self.t1 = time.time()
             self.train_convnet(epoch)
@@ -791,10 +791,12 @@ if __name__ == "__main__":
         training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_plo_f_lay_set10to17_16000' + data_fp_suffix + '.p')
         training_database_file_m.append(data_fp_prefix + 'synth/general/train_rollpi_m_lay_set10to17_16000' + data_fp_suffix + '.p')
         training_database_file_m.append(data_fp_prefix + 'synth/general/train_rollpi_plo_m_lay_set10to17_16000' + data_fp_suffix + '.p')
+
         test_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
         test_database_file_f.append(data_fp_prefix+'synth/general/test_rollpi_plo_f_lay_set23to24_3000'+data_fp_suffix+'.p')
         test_database_file_m.append(data_fp_prefix+'synth/general/test_rollpi_m_lay_set23to24_3000'+data_fp_suffix+'.p')
         test_database_file_m.append(data_fp_prefix+'synth/general/test_rollpi_plo_m_lay_set23to24_3000'+data_fp_suffix+'.p')
+
 
 
         #General supine partition - 52,000 train + 6,000 test
@@ -806,6 +808,7 @@ if __name__ == "__main__":
         training_database_file_f.append(data_fp_prefix + 'synth/general_supine/train_roll0_plo_f_lay_set10to13_8000' + data_fp_suffix + '.p')
         training_database_file_m.append(data_fp_prefix + 'synth/general_supine/train_roll0_m_lay_set10to13_8000' + data_fp_suffix + '.p')
         training_database_file_m.append(data_fp_prefix + 'synth/general_supine/train_roll0_plo_m_lay_set10to13_8000' + data_fp_suffix + '.p')
+
         test_database_file_f.append(data_fp_prefix+'synth/general_supine/test_roll0_f_lay_set14_1500'+data_fp_suffix+'.p')
         test_database_file_f.append(data_fp_prefix+'synth/general_supine/test_roll0_plo_f_lay_set14_1500'+data_fp_suffix+'.p')
         test_database_file_m.append(data_fp_prefix+'synth/general_supine/test_roll0_m_lay_set14_1500'+data_fp_suffix+'.p')
