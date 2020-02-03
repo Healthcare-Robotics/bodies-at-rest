@@ -91,7 +91,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['verbose'] = opt.verbose
         self.opt = opt
         self.CTRL_PNL['batch_size'] = 128
-        self.CTRL_PNL['num_epochs'] = 1
+        self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
