@@ -81,10 +81,15 @@ Running the above code results in the following loss function:
   <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_1.JPG?raw=true" alt="None"/>
 </p>
 
-While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used.
- ** We recommend using a loss on the global rotation, which helps the network to get started. Without it, some joints have a higher probability of getting stuck at a limit initially, requiring a restart. However, you can omit the global rotation using `--omit_root` will result in:
- ** We recommend using PMR only for Network 2. However, to run it on network 1, using the flag `--pmr` will result in:
- 
+While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used. You can omit the global rotation using `--omit_root`. We recommend using a loss on the global rotation, which helps the network to get started. Without it, some joints have a higher probability of getting stuck at a limit initially, requiring a restart. However,  here it is:
+<p align="left">
+  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_no_root.JPG?raw=true" alt="None"/>
+</p>
+
+You can also use PMR on Network 1 with the flag `--pmr`. We recommend using PMR only for Network 2, because it is more geared to fine-tuning the network. However, using `--pmr` will result in:
+<p align="left">
+  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/CVPR_2020/docs/figures/loss_2.JPG?raw=true" alt="None"/>
+</p>
  
 
 * Step 2: Compute a new dataset that has spatial map reconstructions from the PMR output of network 1. Run the following: `python compute_network1_spatialmaps.py`. Make sure the flags on this match the flags you trained network 1 on. This will create a copy of the existing dataset plus estimated depth maps in separate files with longer filename tags.  Make sure you have at least 10GB free.
