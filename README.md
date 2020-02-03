@@ -74,6 +74,19 @@ There are 3 steps to train PressureNet as implemented in the paper.
   <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/net1.png?raw=true" alt="None"/>
 </p>
 
+
+Running the above code results in the following loss function:
+
+<p align="left">
+  <img width="50%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/loss_1.png?raw=true" alt="None"/>
+</p>
+
+While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used.
+ ** We recommend using a loss on the global rotation, which helps the network to get started. Without it, some joints have a higher probability of getting stuck at a limit initially, requiring a restart. However, you can omit the global rotation using `--omit_root` will result in:
+ ** We recommend using PMR only for Network 2. However, to run it on network 1, using the flag `--pmr` will result in:
+ 
+ 
+
 * Step 2: Compute a new dataset that has spatial map reconstructions from the PMR output of network 1. Run the following: `python compute_network1_spatialmaps.py`. Make sure the flags on this match the flags you trained network 1 on. This will create a copy of the existing dataset plus estimated depth maps in separate files with longer filename tags.  Make sure you have at least 10GB free.
 
 * Step 3: Train network 2 for 100 epochs using loss function 2. Run the following: `python train_pressurenet.py --net 2 --pmr`. Make sure the flags on this match the flags you trained network 1 on (except `--viz`, that doesn't matter). If you do visualize, expect a box like the one below to pop up. For this example, while the ground truth is in a lateral posture, the network 1 estimate outputs a pose in a prone posture. The smaller top right images show the input channels. The bottom right channels show the output reconstructed spatial maps, as well as ground truth on the far right. Here, net 2 has just started training so the output Q_2 doesn't differ substantially from the input Q_1. Use the `--qt` flag to run a quick test on a small portion of the dataset to check for bugs, or if you only downloaded the two files in the `~/data_BR/synth/quick_test` folder. For a quick test on the downloaded data use: `python train_pressurenet.py --net 2 --pmr --qt --calnoise`. 
@@ -98,15 +111,6 @@ First, you'll generate results files for each participant. Make a new folder `~/
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break5.JPG?raw=true" alt="None"/>
 </p>
-
-Running the above code results in the following loss function:
-
-
-While the paper does not present ablative studies to check for the effect of changing the loss function, the following may flags may be used.
- * We recommend using a loss on the global rotation, which helps the network to get started. Without it, some joints have a higher probability of getting stuck at a limit initially, requiring a restart. However, you can omit the global rotation using `--omit_root` will result in:
- * We recommend using PMR only for Network 2. However, to run it on network 1, using the flag `--pmr` will result in:
- 
- 
 
 
 ## What other packages do I need?
