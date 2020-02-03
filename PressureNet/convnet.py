@@ -139,6 +139,11 @@ class CNN(nn.Module):
     def forward_kinematic_angles(self, images, gender_switch, synth_real_switch, CTRL_PNL, OUTPUT_EST_DICT,
                                  targets=None, is_training = True, betas=None, angles_gt = None, root_shift = None):
 
+
+        #cut out the sobel and contact channels
+        if CTRL_PNL['omit_cntct_sobel'] == True:
+            images = torch.cat((images[:, 1:CTRL_PNL['num_input_channels_batch0'], :, :], images[:, CTRL_PNL['num_input_channels_batch0']+1:, :, :]), dim = 1)
+
         reg_angles = CTRL_PNL['regr_angles']
 
         OUTPUT_DICT = {}

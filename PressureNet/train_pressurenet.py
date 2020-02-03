@@ -95,6 +95,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
+        self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -400,8 +401,12 @@ class PhysicalTrainer():
         if self.CTRL_PNL['full_body_rot'] == True:
             fc_output_size += 3
 
-        self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                 verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
+        if self.opt.omit_cntct_sobel == True:
+            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
+                                     verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels']-2)
+        else:
+            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
+                                     verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
 
         #load in a model instead if one is partially trained
         #self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
@@ -478,9 +483,10 @@ class PhysicalTrainer():
 
                 if self.CTRL_PNL['full_body_rot'] == True:
                     OSA = 6
-                    loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints
-                    #if self.CTRL_PNL['adjust_ang_from_est'] == True:
-                    #    loss_bodyrot *= 0
+                    if self.opt.omit_root == True:
+                        loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * 0.0
+                    else:
+                        loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints
                 else: OSA = 0
 
                 loss_eucl = self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:, 10+OSA:34+OSA])*self.weight_joints
@@ -643,7 +649,10 @@ class PhysicalTrainer():
 
                 if self.CTRL_PNL['full_body_rot'] == True:
                     OSA = 6
-                    loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints)
+                    if self.opt.omit_root == True:
+                        loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * 0.0)
+                    else:
+                        loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints)
                     loss_to_add += loss_bodyrot
                 else: OSA = 0
 
@@ -736,6 +745,12 @@ if __name__ == "__main__":
     p.add_option('--viz', action='store_true', dest='visualize', default=False,
                  help='Visualize training.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
     p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False, #I found this option doesn't help much.
                  help='Regress the angles as well as betas and joint pos.')
 
@@ -785,8 +800,8 @@ if __name__ == "__main__":
     #print "SUFFIX IS : ", data_fp_suffix
     if opt.quick_test == True:
         #run a quick test
-        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
-        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000'+data_fp_suffix+'.p')
+        training_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
+        test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
 
     else:
         #General partition - 104,000 train + 12,000 test

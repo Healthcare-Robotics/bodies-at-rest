@@ -167,6 +167,11 @@ class UnpackBatchLib():
             INPUT_DICT['batch_mdm'] = None
             INPUT_DICT['batch_cm'] = None
 
+
+        if CTRL_PNL['omit_cntct_sobel'] == True:
+            images_up[:, 0, :, :] *= 0
+            images_up[:, CTRL_PNL['num_input_channels_batch0'], :, :] *= 0
+
         scores, OUTPUT_DICT = model.forward_kinematic_angles(images=images_up,
                                                              gender_switch=gender_switch,
                                                              synth_real_switch=synth_real_switch,
