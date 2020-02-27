@@ -43,6 +43,15 @@ if __name__ == '__main__':
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align the procrustes. Works only on synthetic data.')
+
     opt, args = p.parse_args()
 
 
@@ -98,10 +107,16 @@ if __name__ == '__main__':
             NETWORK_2 += "_htwt"
         if opt.calnoise == True:
             NETWORK_2 += "_clns10p"
+        if opt.omit_root == True:
+            NETWORK_2 += '_or'
+        if opt.omit_cntct_sobel == True:
+            NETWORK_2 += '_ocs'
+        if opt.align_procr == True:
+            NETWORK_2 += '_ap'
 
 
         if opt.hd == True:
-            FILEPATH_PREFIX = '/media/henry/multimodal_data_2/data_BR'
+            FILEPATH_PREFIX = '/media/NAME/multimodal_data_2/data_BR'
         else:
             FILEPATH_PREFIX = '../../../data_BR'
 
@@ -260,7 +275,7 @@ if __name__ == '__main__':
 
 
         #NETWORK_1 = "1.0rtojtdpth_depthestin_angleadj_tnhFIXN_htwt_calnoise"
-        NETWORK_2 = "0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
+        NETWORK_2 = "0.5rtojtdpth_depthestin_angleadj_tnh"
         #NETWORK_2 = "1.0rtojtdpth_angleadj_tnhFIXN_calnoise"
         #NETWORK_2 = "NONE-200e"
         #NETWORK_2 = "BASELINE"
@@ -292,11 +307,7 @@ if __name__ == '__main__':
         joint_err_list = []
 
         for filename in filename_list:
-            #current_results_dict = load_pickle("/media/henry/multimodal_data_1/data/final_results/"+DATA_QUANT+"_"
-            #                                   +NETWORK_2+"/results_synth_"+DATA_QUANT+"_"+filename+NETWORK_2+".p")
-            #current_results_dict = load_pickle("/media/henry/multimodal_data_2/data/final_results/"+NETWORK_2+"/results_synth_"+filename+NETWORK_2+".p")
-            #current_results_dict = load_pickle("/home/henry/data/final_results/"+NETWORK_2+"/results_synth_"+filename+NETWORK_2+".p")
-            current_results_dict = load_pickle("/media/henry/multimodal_data_2/data/final_results/"+DATA_QUANT+"_"+NETWORK_2+"/results_synth_"+DATA_QUANT+"_"+filename+NETWORK_2+".p")
+            current_results_dict = load_pickle("/media/NAME/multimodal_data_2/data/final_results/"+DATA_QUANT+"_"+NETWORK_2+"/results_synth_"+DATA_QUANT+"_"+filename+NETWORK_2+".p")
             for entry in current_results_dict:
                 print entry
             #print current_results_dict['j_err'], 'j err'

@@ -364,7 +364,6 @@ class VisualizationLib():
         #Visualize estimated from training set
         self.plot_joint_markers(scores_net1, pimage_in_mult, ax1, 'yellow')
 
-        #fig.savefig('/home/henry/data/blah.png', dpi=400)
         plt.show(block=block)
 
 

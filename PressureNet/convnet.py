@@ -284,6 +284,7 @@ class CNN(nn.Module):
         test_ground_truth = False #can only use True when the dataset is entirely synthetic AND when we use anglesDC
         #is_training = True
 
+
         if test_ground_truth == False or is_training == False:
             # make sure the estimated betas are reasonable.
 
@@ -297,6 +298,14 @@ class CNN(nn.Module):
             scores[:, 13+OSA:85+OSA] = scores[:, 13+OSA:85+OSA].tanh()
             scores[:, 13+OSA:85+OSA] /= (2. / torch.abs(self.meshDepthLib.bounds[0:72, 0] - self.meshDepthLib.bounds[0:72, 1]))
             scores[:, 13+OSA:85+OSA] += torch.mean(self.meshDepthLib.bounds[0:72, 0:2], dim=1)
+
+
+
+            print scores.size(), angles_gt.size(),  "PSI VECTOR AND ANGLES GT"
+            if CTRL_PNL['align_procr'] == True:
+                root_shift_est = root_shift
+                scores[:, 13 + OSA:16 + OSA] = angles_gt[:, 0:3].clone()
+
 
 
             #print scores[:, 13+OSA:85+OSA]
@@ -500,7 +509,11 @@ class CNN(nn.Module):
                 scores[:, 10:13] = scores[:, 10:13].clone() - torch.cos(angles_gt[:, 0:3].clone())
                 scores[:, 13:16] = scores[:, 13:16].clone() - torch.sin(angles_gt[:, 0:3].clone())
 
+            if CTRL_PNL['align_procr'] == True:
+                scores[:, 10:16] *= 0.0
+
             #print euler_root_rot_gt[0, :], 'body rot angles gt'
+
 
         #compare the output angles to the target values
         if reg_angles == True:

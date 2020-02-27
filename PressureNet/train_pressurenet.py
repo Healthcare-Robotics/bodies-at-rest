@@ -95,7 +95,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
+        self.CTRL_PNL['omit_root'] = opt.omit_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
+        self.CTRL_PNL['align_procr'] = opt.align_procr
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -371,6 +373,14 @@ class PhysicalTrainer():
             self.save_name += '_htwt'
         if self.CTRL_PNL['cal_noise'] == True:
             self.save_name += '_clns'+str(int(self.CTRL_PNL['cal_noise_amt']*100)) + 'p'
+
+        if  self.CTRL_PNL['omit_root'] == True:
+            self.save_name += '_or'
+        if  self.CTRL_PNL['omit_cntct_sobel'] == True:
+            self.save_name += '_ocs'
+        if  self.CTRL_PNL['align_procr'] == True:
+            self.save_name += '_ap'
+
         if self.CTRL_PNL['double_network_size'] == True:
             self.save_name += '_dns'
 
@@ -751,6 +761,9 @@ if __name__ == "__main__":
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align the procrustes. Works only on synthetic data.')
+
     p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False, #I found this option doesn't help much.
                  help='Regress the angles as well as betas and joint pos.')
 
@@ -765,7 +778,7 @@ if __name__ == "__main__":
     if opt.hd == False:
         data_fp_prefix = "../../../data_BR/"
     else:
-        data_fp_prefix = "/media/henry/multimodal_data_2/data_BR/"
+        data_fp_prefix = "/media/NAME/multimodal_data_2/data_BR/"
 
     data_fp_suffix = ''
 
@@ -779,10 +792,12 @@ if __name__ == "__main__":
 
         data_fp_suffix += '_128b_x5pm_tnh'
 
-        if opt.htwt == True:
-            data_fp_suffix += '_htwt'
-        if opt.calnoise == True:
-            data_fp_suffix += '_clns10p'
+        if opt.htwt == True: data_fp_suffix += '_htwt'
+        if opt.calnoise == True: data_fp_suffix += '_clns10p'
+        if opt.omit_root == True: data_fp_suffix += '_or'
+        if opt.omit_cntct_sobel == True: data_fp_suffix += '_ocs'
+        if opt.align_procr == True: data_fp_suffix += '_ap'
+
         data_fp_suffix += '_100e_00002lr'
 
     elif opt.net == 1:

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 #Bodies at Rest: Code to do rendering.
-#(c) Henry M. Clever
-#Major updates made for CVPR release: December 10, 2019
-
 
 try:
     import open3d as o3d

@@ -106,6 +106,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
+        self.CTRL_PNL['omit_root'] = opt.omit_root
+        self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
+        self.CTRL_PNL['align_procr'] = opt.align_procr
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -307,6 +310,10 @@ class PhysicalTrainer():
 
         if self.opt.htwt == True: self.model_name += '_htwt'
         if self.opt.calnoise == True: self.model_name += '_clns10p'
+        if self.opt.omit_root == True: self.model_name += '_or'
+        if self.opt.omit_cntct_sobel == True: self.model_name += '_ocs'
+        if self.opt.align_procr == True: self.model_name += '_ap'
+
 
         self.model_name += '_100e_00002lr'
 
@@ -403,7 +410,6 @@ class PhysicalTrainer():
 
         print self.filename
 
-        #pkl.dump(self.dat,open('/media/henry/multimodal_data_2/'+self.filename+'_output0p7.p', 'wb'))
         pkl.dump(self.dat,open('../../../'+self.filename+'_'+self.model_name+'.p', 'wb'))
 
 
@@ -433,13 +439,22 @@ if __name__ == "__main__":
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align the procrustes. Works only on synthetic data.')
+
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
 
     opt, args = p.parse_args()
 
-    filepath_prefix_qt = '/home/henry/'
+    filepath_prefix_qt = '~/'
 
     network_design = True
 

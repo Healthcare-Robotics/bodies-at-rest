@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 #Bodies at Rest: Code to visualize real dataset.
-#(c) Henry M. Clever
-#Major updates made for CVPR release: December 10, 2019
-
 
 import numpy as np
 import random
@@ -277,7 +274,7 @@ if __name__ ==  "__main__":
 
 
     if opt.hd == True:
-        participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
+        participant_directory = "/media/NAME/multimodal_data_2/data_BR/real/"+PARTICIPANT
     else:
         participant_directory = "../../../data_BR/real/"+PARTICIPANT
         

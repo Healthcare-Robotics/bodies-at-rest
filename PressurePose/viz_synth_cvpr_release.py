@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 #Bodies at Rest: Code to visualize synthetic dataset.
-#(c) Henry M. Clever
-#Major updates made for CVPR release: December 10, 2019
 
 
 import sys
@@ -141,8 +139,7 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
-        self.CTRL_PNL['filepath_prefix'] = '/home/henry/'
-            #self.CTRL_PNL['filepath_prefix'] = '/media/henry/multimodal_data_2/'
+        self.CTRL_PNL['filepath_prefix'] = '~/'
 
         self.mat_size = (NUMOFTAXELS_X, NUMOFTAXELS_Y)
 
@@ -297,7 +294,7 @@ if __name__ == "__main__":
 
 
     if opt.hd == True:
-        filepath_prefix = '/media/henry/multimodal_data_2/data_BR/synth/'
+        filepath_prefix = '/media/NAME/multimodal_data_2/data_BR/synth/'
     else:
         filepath_prefix = '../../../data_BR/synth/'
         
@@ -314,10 +311,10 @@ if __name__ == "__main__":
 
     if GENDER == "f":
         test_database_file_f.append(filepath_prefix+TESTING_FILENAME+'.p')
-        model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
+        model_path = '../smpl/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
     else:
         test_database_file_m.append(filepath_prefix+TESTING_FILENAME+'.p')
-        model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+        model_path = '../smpl/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
 
 
     p = PhysicalTrainer(test_database_file_f, test_database_file_m)

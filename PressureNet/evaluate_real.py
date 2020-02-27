@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 #Bodies at Rest: Code to visualize real dataset.
-#(c) Henry M. Clever
-#Major updates made for CVPR release: December 10, 2019
 
 
 import numpy as np
@@ -120,6 +118,9 @@ class Viz3DPose():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
+        self.CTRL_PNL['omit_root'] = opt.omit_root
+        self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
+        self.CTRL_PNL['align_procr'] = opt.align_procr
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['num_input_channels'] = 3
         self.CTRL_PNL['GPU'] = GPU
@@ -197,7 +198,7 @@ class Viz3DPose():
 
         self.count = 0
 
-        self.CTRL_PNL['filepath_prefix'] = '/home/henry/'
+        self.CTRL_PNL['filepath_prefix'] = '~/'
         self.CTRL_PNL['aws'] = False
         self.CTRL_PNL['lock_root'] = False
 
@@ -614,6 +615,15 @@ if __name__ ==  "__main__":
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align the procrustes. Works only on synthetic data.')
+
     p.add_option('--viz', action='store', dest='viz', default='None',
                  help='Visualize training. specify `2D` or `3D`.')
 
@@ -649,11 +659,9 @@ if __name__ ==  "__main__":
         if opt.hd == False:
             FILEPATH_PREFIX = "../../../data_BR"
         else:
-            FILEPATH_PREFIX = "/media/henry/multimodal_data_2/data_BR"
+            FILEPATH_PREFIX = "/media/NAME/multimodal_data_2/data_BR"
 
         participant_directory = FILEPATH_PREFIX + "/real/" + PARTICIPANT
-        #participant_directory = "/media/henry/multimodal_data_2/data_BR/real/"+PARTICIPANT
-        #participant_directory = "/home/henry/Desktop/CVPR2020_study/"+PARTICIPANT
 
         V3D = Viz3DPose(opt)
 
@@ -693,13 +701,25 @@ if __name__ ==  "__main__":
             NETWORK_1 += "_clns10p"
             NETWORK_2 += "_clns10p"
 
+        if opt.omit_root == True:
+            NETWORK_1 += '_or'
+            NETWORK_2 += '_or'
+
+        if opt.omit_cntct_sobel == True:
+            NETWORK_1 += '_ocs'
+            NETWORK_2 += '_ocs'
+
+        if opt.align_procr == True:
+            NETWORK_1 += '_ap'
+            NETWORK_2 += '_ap'
+
 
         if opt.hd == False:
             filename1 = "../../../data_BR/convnets/convnet_1_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
             filename2 = "../../../data_BR/convnets/convnet_2_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
         else:
-            filename1 = "/media/henry/multimodal_data_2/data/convnets/planesreg/FINAL/convnet_1_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
-            filename2 = "/media/henry/multimodal_data_2/data/convnets/planesreg_correction/FINAL/convnet_2_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
+            filename1 = "/media/NAME/multimodal_data_2/data/convnets/planesreg/FINAL/convnet_1_anglesDC_" + NETWORK_1 + "_100e_00002lr.pt"
+            filename2 = "/media/NAME/multimodal_data_2/data/convnets/planesreg_correction/FINAL/convnet_2_anglesDC_" + NETWORK_2 + "_100e_00002lr.pt"
 
 
         if GPU == True:

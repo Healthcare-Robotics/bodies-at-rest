@@ -22,7 +22,6 @@ import chumpy as ch
 # some_file.py
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
-sys.path.insert(1, '/home/henry/git/volumetric_pose_gen/convnets')
 
 
 import convnet as convnet
@@ -100,10 +99,10 @@ else:
 TESTING_FILENAME = "test_roll0_plo_m_lay_set14_1500"
 GENDER = "m"
 #NETWORK_1 = "1.0rtojtdpth_tnh_htwt_calnoise"
-NETWORK_1 = "1.0rtojtdpth_tnhFIXN_htwt_calnoise"
+NETWORK_1 = "1.0rtojtdpth_tnh_htwt_clns10p"
 #NETWORK_2 = "1.0rtojtdpth_angleadj_tnhFIXN_htwt_calnoise"
 DATA_QUANT = "184K"
-NETWORK_2 = "0.5rtojtdpth_depthestin_angleadj_tnhFIXN_htwt_calnoise"
+NETWORK_2 = "0.5rtojtdpth_depthestin_angleadj_tnh_htwt_clns10p"
 
 class PhysicalTrainer():
     '''Gets the dictionary of pressure maps from the training database,
@@ -127,6 +126,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = True
+        self.CTRL_PNL['omit_root'] = opt.omit_root
+        self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
+        self.CTRL_PNL['align_procr'] = opt.align_procr
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['dropout'] = False
         self.CTRL_PNL['lock_root'] = False
@@ -150,6 +152,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['L2_contact'] = True
         self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = False
+        self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
 
@@ -194,11 +197,7 @@ class PhysicalTrainer():
                                              1. / 14.629298141231]  #height
 
 
-        if self.opt.aws == True:
-            self.CTRL_PNL['filepath_prefix'] = '/home/ubuntu/'
-        else:
-            self.CTRL_PNL['filepath_prefix'] = '/home/henry/'
-            #self.CTRL_PNL['filepath_prefix'] = '/media/henry/multimodal_data_2/'
+        self.CTRL_PNL['filepath_prefix'] = '~/'
 
         if self.CTRL_PNL['depth_map_output'] == True: #we need all the vertices if we're going to regress the depth maps
             self.verts_list = "all"
@@ -225,10 +224,14 @@ class PhysicalTrainer():
             self.save_name += '_tnh'
         if self.CTRL_PNL['incl_ht_wt_channels'] == True:
             self.save_name += '_htwt'
-        #if self.CTRL_PNL['L2_contact'] == True:
-        #    self.save_name += '_l2cnt'
         if self.CTRL_PNL['cal_noise'] == True:
-            self.save_name += '_calnoise'
+            self.save_name += '_clns'+str(int(self.CTRL_PNL['cal_noise_amt']*100)) + 'p'
+        if  self.CTRL_PNL['omit_root'] == True:
+            self.save_name += '_or'
+        if  self.CTRL_PNL['omit_cntct_sobel'] == True:
+            self.save_name += '_ocs'
+        if  self.CTRL_PNL['align_procr'] == True:
+            self.save_name += '_ap'
 
 
         # self.save_name = '_' + opt.losstype+'_real_s9_alltest_' + str(self.CTRL_PNL['batch_size']) + 'b_'# + str(self.CTRL_PNL['num_epochs']) + 'e'
@@ -456,12 +459,8 @@ class PhysicalTrainer():
             #self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
             #                         verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'], in_channels=self.CTRL_PNL['num_input_channels'])
 
-            #self.model = torch.load("/media/henry/multimodal_data_2/data/convnets/planesreg/184K/convnet_anglesDC_synth_184000_128b_x5pmult_1.0rtojtdpth_tnhFIX_htwt_calnoise_100e_00002lr.pt", map_location='cpu')
-
-            #self.model = torch.load("/media/henry/multimodal_data_2/data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_"+NETWORK_1+"_100e_00002lr.pt", map_location='cpu')
-            #self.model2 = torch.load("/media/henry/multimodal_data_2/data/convnets/planesreg_correction/184K/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_2+"_100e_00002lr.pt", map_location='cpu')
-            self.model = torch.load("/home/henry/data/convnets/planesreg/FINAL/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_1+"_100e_00002lr.pt", map_location='cpu')
-            self.model2 = torch.load("/home/henry/data/convnets/planesreg_correction/FINAL/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_2+"_100e_00002lr.pt", map_location='cpu')
+            self.model = torch.load("/home/NAME/data/convnets/planesreg/FINAL/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_1+"_100e_00002lr.pt", map_location='cpu')
+            self.model2 = torch.load("/home/NAME/data/convnets/planesreg_correction/FINAL/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_2+"_100e_00002lr.pt", map_location='cpu')
             #self.model2 = None
         pp = 0
         for p in list(self.model.parameters()):
@@ -488,9 +487,9 @@ class PhysicalTrainer():
 
     def val_convnet_special(self, epoch):
         if GENDER == "f":
-            model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
+            model_path = '../smpl/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
         else:
-            model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+            model_path = '../smpl/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
 
         self.m = load_model(model_path)
 
@@ -648,9 +647,9 @@ class PhysicalTrainer():
     def val_convnet_general(self, epoch):
 
         if GENDER == "m":
-            model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+            model_path = '../smpl/SMPL_python_v.1.0.0/smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
         else:
-            model_path = '/home/henry/git/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
+            model_path = '../smpl/SMPL_python_v.1.0.0/smpl/models/basicModel_f_lbs_10_207_0_v1.0.0.pkl'
 
         self.m = load_model(model_path)
 
@@ -868,7 +867,7 @@ class PhysicalTrainer():
 
         #save here
 
-        pkl.dump(RESULTS_DICT, open('/home/henry/data/final_results/results_synth_'+DATA_QUANT+'_'+TESTING_FILENAME+'_'+NETWORK_2+'.p', 'wb'))
+        pkl.dump(RESULTS_DICT, open('~/data/final_results/results_synth_'+DATA_QUANT+'_'+TESTING_FILENAME+'_'+NETWORK_2+'.p', 'wb'))
 
 if __name__ == "__main__":
     #Initialize trainer with a training database file
@@ -910,10 +909,26 @@ if __name__ == "__main__":
                  dest='visualize', \
                  default=False, \
                  help='Visualize.')
+
+    p.add_option('--omit_root', action='store_true',
+                 dest='omit_root',
+                 default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true',
+                 dest='omit_cntct_sobel',
+                 default=False,
+                 help='Cut contact and sobel from input.')
+
+    p.add_option('--align_procr', action='store_true',
+                 dest='align_procr',
+                 default=False,
+                 help='Align the procrustes. Works only on synthetic data.')
+
     p.add_option('--aws', action='store_true',
                  dest='aws', \
                  default=False, \
-                 help='Use ubuntu user dir instead of henry.')
+                 help='Use ubuntu user dir instead of NAME.')
     p.add_option('--rgangs', action='store_true',
                  dest='reg_angles', \
                  default=False, \
@@ -927,14 +942,7 @@ if __name__ == "__main__":
     opt, args = p.parse_args()
 
 
-    if opt.aws == True:
-        filepath_prefix = '/home/ubuntu/data/'
-        filepath_suffix = ''
-    else:
-        #filepath_prefix =
-        filepath_prefix = '/home/henry/data/'
-        #filepath_suffix = ''
-
+    filepath_prefix = '~/data/'
 
     training_database_file_f = []
     training_database_file_m = []
@@ -942,7 +950,6 @@ if __name__ == "__main__":
     test_database_file_m = [] #141 total training loss at epoch 9
 
 
-    #test_database_file_f.append('/home/henry/data/synth/random/test_roll0_plo_f_lay_1000_none_stiff_output0p5_112k_100e_alltanh.p')
 
 
     #training_database_file_f.append(filepath_prefix+'synth/random3_fix/test_roll0_f_lay_set14_1500.p') #were actually testing this one
