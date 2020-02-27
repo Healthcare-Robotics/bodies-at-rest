@@ -2,7 +2,7 @@
 ## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
-  <img width="98%" src="https://github.com/Healthcare-Robotics/bodies-at-rest/blob/master/docs/figures/intro_overview_v4.JPG?raw=true" alt="None"/>
+  <img width="98%" src="https://github.com/Healthcare-Robotics/bodies-at-rest/blob/CVPR_2020/docs/figures/intro_overview_v4.JPG?raw=true" alt="None"/>
 </p>
 
 ### Paper:
