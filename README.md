@@ -2,10 +2,12 @@
 ## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
-  <img width="98%" src="https://github.com/paperID10031/bodies-at-rest-anon/blob/master/docs/figures/intro_overview_v4.JPG?raw=true" alt="None"/>
+  <img width="98%" src="https://github.com/Healthcare-Robotics/bodies-at-rest/blob/master/docs/figures/intro_overview_v4.JPG?raw=true" alt="None"/>
 </p>
 
 ### Paper:
+Clever, Henry M., Zackory Erickson, Ariel Kapusta, Greg Turk, C. Karen Liu, Charles C. Kemp. "Bodies at Rest: 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data." In <i>IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</i>, 2020.
+
 
 ### Video:
 https://www.youtube.com/watch?v=UHBqw0BYWEw
