@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
 
         if opt.hd == True:
-            FILEPATH_PREFIX = '/media/NAME/multimodal_data_2/data_BR'
+            FILEPATH_PREFIX = '/media/henry/multimodal_data_2/data_BR'
         else:
             FILEPATH_PREFIX = '../../../data_BR'
 
