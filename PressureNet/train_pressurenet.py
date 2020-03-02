@@ -97,7 +97,6 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['omit_root'] = opt.omit_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
-        self.CTRL_PNL['align_procr'] = opt.align_procr
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -378,8 +377,8 @@ class PhysicalTrainer():
             self.save_name += '_or'
         if  self.CTRL_PNL['omit_cntct_sobel'] == True:
             self.save_name += '_ocs'
-        if  self.CTRL_PNL['align_procr'] == True:
-            self.save_name += '_ap'
+        if  self.opt.no_shape_wt == True:
+            self.save_name += '_nsw'
 
         if self.CTRL_PNL['double_network_size'] == True:
             self.save_name += '_dns'
@@ -500,7 +499,11 @@ class PhysicalTrainer():
                 else: OSA = 0
 
                 loss_eucl = self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:, 10+OSA:34+OSA])*self.weight_joints
-                loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints*0.5
+
+                if self.opt.noshapewt == True:
+                    loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints
+                else:
+                    loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints*0.5
 
 
                 if self.CTRL_PNL['regr_angles'] == True:
@@ -667,7 +670,13 @@ class PhysicalTrainer():
                 else: OSA = 0
 
                 loss_eucl = float(self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:,  10+OSA:34+OSA]) * self.weight_joints)
-                loss_betas = float(self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints * 0.5)
+
+                if self.opt.no_shape_wt == True:
+                    loss_betas = float(self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints)
+                else:
+                    loss_betas = float(self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints * 0.5)
+
+
 
 
                 if self.CTRL_PNL['regr_angles'] == True:
@@ -749,6 +758,9 @@ if __name__ == "__main__":
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
 
+    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
+                 help='Do not weight betas by 1/2.')
+
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
@@ -760,9 +772,6 @@ if __name__ == "__main__":
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
-
-    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
-                 help='Align the procrustes. Works only on synthetic data.')
 
     p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False, #I found this option doesn't help much.
                  help='Regress the angles as well as betas and joint pos.')
@@ -796,7 +805,7 @@ if __name__ == "__main__":
         if opt.calnoise == True: data_fp_suffix += '_clns10p'
         if opt.omit_root == True: data_fp_suffix += '_or'
         if opt.omit_cntct_sobel == True: data_fp_suffix += '_ocs'
-        if opt.align_procr == True: data_fp_suffix += '_ap'
+        if opt.no_shape_wt == True: data_fp_suffix += '_nsw'
 
         data_fp_suffix += '_100e_00002lr'
 

@@ -302,9 +302,6 @@ class CNN(nn.Module):
 
 
             print scores.size(), angles_gt.size(),  "PSI VECTOR AND ANGLES GT"
-            if CTRL_PNL['align_procr'] == True:
-                root_shift_est = root_shift
-                scores[:, 13 + OSA:16 + OSA] = angles_gt[:, 0:3].clone()
 
 
 
@@ -509,8 +506,6 @@ class CNN(nn.Module):
                 scores[:, 10:13] = scores[:, 10:13].clone() - torch.cos(angles_gt[:, 0:3].clone())
                 scores[:, 13:16] = scores[:, 13:16].clone() - torch.sin(angles_gt[:, 0:3].clone())
 
-            if CTRL_PNL['align_procr'] == True:
-                scores[:, 10:16] *= 0.0
 
             #print euler_root_rot_gt[0, :], 'body rot angles gt'
 
