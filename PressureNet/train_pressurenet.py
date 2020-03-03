@@ -449,7 +449,7 @@ class PhysicalTrainer():
                 self.t2 = 0
             print 'Time taken by epoch',epoch,':',self.t2,' seconds'
 
-            if epoch == self.CTRL_PNL['num_epochs']:
+            if epoch == self.CTRL_PNL['num_epochs'] or epoch == 20 or epoch == 30 or epoch == 40 or epoch == 50 or epoch == 60 or epoch == 70 or epoch == 80 or epoch == 90:
                 print "saving convnet."
                 torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_00002lr.pt')
                 print "saved convnet."
@@ -500,7 +500,7 @@ class PhysicalTrainer():
 
                 loss_eucl = self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:, 10+OSA:34+OSA])*self.weight_joints
 
-                if self.opt.noshapewt == True:
+                if self.opt.no_shape_wt == True:
                     loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints
                 else:
                     loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10])*self.weight_joints*0.5
@@ -779,7 +779,7 @@ if __name__ == "__main__":
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
-    p.add_option('--log_interval', type=int, default=5, metavar='N',
+    p.add_option('--log_interval', type=int, default=50, metavar='N',
                  help='number of batches between logging train status') #if you visualize too often it will slow down training.
 
     opt, args = p.parse_args()
@@ -828,6 +828,12 @@ if __name__ == "__main__":
         test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
 
     else:
+        #training_database_file_f.append(data_fp_prefix+'synth/general/train_rollpi_f_lay_set22_2000_FIX.p')
+        #test_database_file_f.append(data_fp_prefix+'synth/general/train_rollpi_f_lay_set22_2000_FIX.p')
+
+
+
+
         #General partition - 104,000 train + 12,000 test
         training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_f_lay_set18to22_10000' + data_fp_suffix + '.p')
         training_database_file_f.append(data_fp_prefix + 'synth/general/train_rollpi_plo_f_lay_set18to22_10000' + data_fp_suffix + '.p')
@@ -881,7 +887,7 @@ if __name__ == "__main__":
         training_database_file_m.append(data_fp_prefix+'synth/crossed_legs/train_roll0_xl_m_lay_set2both_4000'+data_fp_suffix+'.p')
         test_database_file_f.append(data_fp_prefix+'synth/crossed_legs/test_roll0_xl_f_lay_set1both_500'+data_fp_suffix+'.p')
         test_database_file_m.append(data_fp_prefix+'synth/crossed_legs/test_roll0_xl_m_lay_set1both_500'+data_fp_suffix+'.p')
-
+        
 
     p = PhysicalTrainer(training_database_file_f, training_database_file_m, test_database_file_f, test_database_file_m, opt)
 
