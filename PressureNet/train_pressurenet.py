@@ -512,8 +512,8 @@ class PhysicalTrainer():
 
 
 
-                #loss.backward()
-                #self.optimizer.step()
+                loss.backward()
+                self.optimizer.step()
                 loss *= 1000
 
 
