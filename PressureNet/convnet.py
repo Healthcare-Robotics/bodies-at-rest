@@ -143,7 +143,7 @@ class CNN(nn.Module):
         #cut out the sobel and contact channels
         if CTRL_PNL['omit_cntct_sobel'] == True:
             images = torch.cat((images[:, 1:CTRL_PNL['num_input_channels_batch0'], :, :], images[:, CTRL_PNL['num_input_channels_batch0']+1:, :, :]), dim = 1)
-        print "ConvNet input size: ", INPUT_DICT['batch_images'].size()
+        print "ConvNet input size: ", images.size()
 
         reg_angles = CTRL_PNL['regr_angles']
 
