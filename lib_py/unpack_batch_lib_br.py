@@ -188,6 +188,5 @@ class UnpackBatchLib():
         INPUT_DICT['batch_images'] = images_up.data
         INPUT_DICT['batch_targets'] = targets.data
 
-        print "ConvNet input size: ", INPUT_DICT['batch_images'].size()
-
+        
         return scores, INPUT_DICT, OUTPUT_DICT

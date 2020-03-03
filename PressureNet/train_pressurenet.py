@@ -478,8 +478,8 @@ class PhysicalTrainer():
             for batch_idx, batch in enumerate(self.train_loader):
                 #if batch_idx in [0, 1]: continue
 
-                if GPU == True:
-                    print "GPU memory:", torch.cuda.max_memory_allocated()
+                #if GPU == True:
+                    #print "GPU memory:", torch.cuda.max_memory_allocated()
 
                 self.optimizer.zero_grad()
                 scores, INPUT_DICT, OUTPUT_DICT = \

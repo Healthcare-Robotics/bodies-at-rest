@@ -95,7 +95,7 @@ class PreprocessingLib():
                 sobel_contact_orig[sobel_contact_orig != 0] = 1.
 
 
-                # first multiply
+                # fiintrst multiply
                 amount_to_mult_im = random.normalvariate(mu = 1.0, sigma = variation_amount) #mult a variation of 10%
                 amount_to_mult_sobel = random.normalvariate(mu = 1.0, sigma = variation_amount) #mult a variation of 10%
                 images[map_index, pmat_chan_idx, :, :] = images[map_index, pmat_chan_idx, :, :] * amount_to_mult_im
@@ -141,9 +141,9 @@ class PreprocessingLib():
         #pmat_contact[pmat_contact != 0] = 100./41.80684362163343
         pmat_contact[pmat_contact != 0] = 100.*norm_std_coeffs[0]
 
-        print images.shape
+        #print images.shape
         images = np.concatenate((pmat_contact, images), axis = 1)
-        print images.shape
+        #print images.shape
 
         #for i in range(0, 20):
         #    VisualizationLib().visualize_pressure_map(images[i, 0, :, :] * 20., None, None,
