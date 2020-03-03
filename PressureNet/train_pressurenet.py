@@ -93,7 +93,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['batch_size'] = 128
         self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
-        self.CTRL_PNL['shuffle'] = False
+        self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['omit_root'] = opt.omit_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
