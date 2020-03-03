@@ -93,7 +93,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['batch_size'] = 128
         self.CTRL_PNL['num_epochs'] = 100
         self.CTRL_PNL['incl_inter'] = True
-        self.CTRL_PNL['shuffle'] = True
+        self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['omit_root'] = opt.omit_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
@@ -828,7 +828,7 @@ if __name__ == "__main__":
         test_database_file_f.append(data_fp_prefix+'synth/quick_test/test_rollpi_f_lay_set23to24_3000_qt'+data_fp_suffix+'.p')
 
     else:
-        #training_database_file_f.append(data_fp_prefix+'synth/general/train_rollpi_f_lay_set22_2000_FIX.p')
+        ##training_database_file_f.append(data_fp_prefix+'synth/general/train_rollpi_f_lay_set22_2000_FIX.p')
         #test_database_file_f.append(data_fp_prefix+'synth/general/train_rollpi_f_lay_set22_2000_FIX.p')
 
 
