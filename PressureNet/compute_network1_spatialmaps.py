@@ -502,7 +502,7 @@ if __name__ == "__main__":
                            'data_BR/synth/general/train_rollpi_m_lay_set10to17_16000',
                            'data_BR/synth/general/train_rollpi_m_lay_set18to22_10000',
                            'data_BR/synth/general/train_rollpi_plo_m_lay_set10to17_16000',
-                           'data_BR/synth/general/train_rollpi_plo_m_lay_set18to22_10000'
+                           'data_BR/synth/general/train_rollpi_plo_m_lay_set18to22_10000',
                            
                            'data_BR/synth/hands_behind_head/test_roll0_plo_hbh_m_lay_set1_500',
                            'data_BR/synth/prone_hands_up/test_roll0_plo_phu_m_lay_set1pa3_500',
