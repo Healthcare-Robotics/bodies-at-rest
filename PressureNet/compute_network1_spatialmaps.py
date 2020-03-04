@@ -303,13 +303,14 @@ class PhysicalTrainer():
 
         if self.opt.htwt == True: self.model_name += '_htwt'
         if self.opt.calnoise == True: self.model_name += '_clns10p'
+        if self.opt.omit_root == True: self.model_name += '_or'
 
         self.model_name += '_100e_'+str(0.00002)+'lr'
 
         if GPU == True:
-            self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'}).cuda()
+            self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'}).cuda()
         else:
-            self.model = torch.load('../../../data_BR/convnets/'+self.model_name + '.pt', map_location='cpu')
+            self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location='cpu')
 
 
 
@@ -402,7 +403,7 @@ class PhysicalTrainer():
         print self.filename
 
         #pkl.dump(self.dat,open('/media/henry/multimodal_data_2/'+self.filename+'_output0p7.p', 'wb'))
-        pkl.dump(self.dat,open('../../../'+self.filename+'_'+self.model_name+'.p', 'wb'))
+        pkl.dump(self.dat,open('../'+self.filename+'_'+self.model_name+'.p', 'wb'))
 
 
 
@@ -431,13 +432,16 @@ if __name__ == "__main__":
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
 
 
     opt, args = p.parse_args()
 
-    filepath_prefix_qt = '/home/henry/'
+    filepath_prefix_qt = '../'
 
     network_design = True
 
