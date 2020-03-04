@@ -313,6 +313,7 @@ class PhysicalTrainer():
         if self.opt.omit_root == True: self.model_name += '_or'
         if self.opt.omit_cntct_sobel == True: self.model_name += '_ocs'
         if self.opt.align_procr == True: self.model_name += '_ap'
+        if self.opt.no_shape_wt == True: self.model_name += '_nsw'
 
 
         self.model_name += '_100e_00002lr'
@@ -444,6 +445,9 @@ if __name__ == "__main__":
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
+
+    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
+                 help='Do not weight betas by 1/2.')
 
     p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
                  help='Align the procrustes. Works only on synthetic data.')
