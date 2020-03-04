@@ -454,7 +454,7 @@ if __name__ == "__main__":
 
     opt, args = p.parse_args()
 
-    filepath_prefix_qt = '/home/henry/'
+    filepath_prefix_qt = '../../../'
 
     network_design = True
 
