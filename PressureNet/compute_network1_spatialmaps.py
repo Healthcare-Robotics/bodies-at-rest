@@ -509,7 +509,7 @@ if __name__ == "__main__":
                            'data_BR/synth/straight_limbs/test_roll0_sl_m_lay_set1both_500',
                            'data_BR/synth/crossed_legs/test_roll0_xl_m_lay_set1both_500',
 
-                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_m_lay_set2pa1_2000'
+                           'data_BR/synth/hands_behind_head/train_roll0_plo_hbh_m_lay_set2pa1_2000',
                            'data_BR/synth/prone_hands_up/train_roll0_plo_phu_m_lay_set2pl4_4000',
                            'data_BR/synth/straight_limbs/train_roll0_sl_m_lay_set2pa1_4000',
                            'data_BR/synth/crossed_legs/train_roll0_xl_m_lay_set2both_4000',]
