@@ -119,6 +119,8 @@ class Viz3DPose():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
+        self.CTRL_PNL['omit_root'] = opt.omit_root
+        self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['num_input_channels'] = 2
         self.CTRL_PNL['GPU'] = GPU
@@ -589,6 +591,16 @@ if __name__ ==  "__main__":
     p.add_option('--viz', action='store', dest='viz', default='None',
                  help='Visualize training. specify `2D` or `3D`.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
+    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
+                 help='Do not weight betas by 1/2.')
+
+
 
     opt, args = p.parse_args()
 
@@ -664,6 +676,18 @@ if __name__ ==  "__main__":
         if opt.calnoise == True:
             NETWORK_1 += "_clns10p"
             NETWORK_2 += "_clns10p"
+
+        if opt.omit_root == True:
+            NETWORK_1 += "_or"
+            NETWORK_2 += "_or"
+
+        if opt.omit_cntct_sobel == True:
+            NETWORK_1 += "_ocs"
+            NETWORK_2 += "_ocs"
+
+        if opt.no_shape_wt == True:
+            NETWORK_1 += "_nsw"
+            NETWORK_2 += "_nsw"
 
         filename1 = FILEPATH_PREFIX+"/convnets/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
         filename2 = FILEPATH_PREFIX+"/convnets/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
