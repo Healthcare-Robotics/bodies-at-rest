@@ -143,7 +143,7 @@ class Viz3DPose():
             self.CTRL_PNL['normalize_std'] = False
         self.CTRL_PNL['all_tanh_activ'] = True  # False
         self.CTRL_PNL['L2_contact'] = True  # False
-        self.CTRL_PNL['pmat_mult'] = int(5)
+        self.CTRL_PNL['pmat_mult'] = int(4)
         self.CTRL_PNL['cal_noise'] = False
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['output_only_prev_est'] = False
