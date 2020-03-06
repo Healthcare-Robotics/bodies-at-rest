@@ -43,6 +43,15 @@ if __name__ == '__main__':
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
+                 help='Cut root from loss function.')
+
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
+    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
+                 help='Do not weight betas by 1/2.')
+    
     opt, args = p.parse_args()
 
 
@@ -97,7 +106,12 @@ if __name__ == '__main__':
             NETWORK_2 += "_htwt"
         if opt.calnoise == True:
             NETWORK_2 += "_clns10p"
-
+        if opt.omit_root == True:
+            NETWORK_2 += "_or"
+        if opt.omit_cntct_sobel == True:
+            NETWORK_2 += "_ocs"
+        if opt.no_shape_wt == True:
+            NETWORK_2 += "_nsw"
 
         if opt.hd == True:
             FILEPATH_PREFIX = '/media/henry/multimodal_data_2/data_BR'
