@@ -799,8 +799,8 @@ if __name__ == "__main__":
             data_fp_suffix += '_clns10p'
         if opt.loss_root == True:
             data_fp_suffix += '_rt'
-        #if opt.omit_cntct_sobel == True:
-        #    data_fp_suffix += '_ocs'
+        if opt.omit_cntct_sobel == True:
+            data_fp_suffix += '_ocs'
         if opt.half_shape_wt == True:
             data_fp_suffix += '_hsw'
 
