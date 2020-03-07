@@ -143,7 +143,7 @@ class Viz3DPose():
             self.CTRL_PNL['normalize_std'] = False
         self.CTRL_PNL['all_tanh_activ'] = True  # False
         self.CTRL_PNL['L2_contact'] = True  # False
-        self.CTRL_PNL['pmat_mult'] = int(4)
+        self.CTRL_PNL['pmat_mult'] = int(5)
         self.CTRL_PNL['cal_noise'] = False
         self.CTRL_PNL['cal_noise_amt'] = 0.1
         self.CTRL_PNL['output_only_prev_est'] = False
@@ -399,6 +399,11 @@ class Viz3DPose():
         NUMOFOUTPUTNODES_TRAIN = 24
         self.output_size_train = (NUMOFOUTPUTNODES_TRAIN, NUMOFOUTPUTDIMS)
 
+
+        print batch[0].size(), "BATCH SIZE M1***********", self.CTRL_PNL['num_input_channels_batch0']
+
+        self.CTRL_PNL['num_input_channels_batch0'] = 2
+
         self.CTRL_PNL['adjust_ang_from_est'] = False
         scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch, is_training=False, model=model,
                                                                                     CTRL_PNL = self.CTRL_PNL)
@@ -445,7 +450,9 @@ class Viz3DPose():
             self.CTRL_PNL['adjust_ang_from_est'] = True
             #self.CTRL_PNL['num_input_channels_batch0'] += 3
 
+            self.CTRL_PNL['num_input_channels_batch0'] = 5
 
+            print batch_cor[0].size(), "BATCH SIZE M2***********", self.CTRL_PNL['num_input_channels_batch0']
             scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch_cor, is_training=False, model=model2,
                                                                                         CTRL_PNL = self.CTRL_PNL)
             #self.CTRL_PNL['num_input_channels_batch0'] -= 3
@@ -621,6 +628,9 @@ if __name__ ==  "__main__":
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
+    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
+                 help='Do not weight betas by 1/2.')
+
     p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
                  help='Align the procrustes. Works only on synthetic data.')
 
@@ -708,6 +718,10 @@ if __name__ ==  "__main__":
         if opt.omit_cntct_sobel == True:
             NETWORK_1 += '_ocs'
             NETWORK_2 += '_ocs'
+
+        if opt.no_shape_wt == True:
+            NETWORK_1 += '_nsw'
+            NETWORK_2 += '_nsw'
 
         if opt.align_procr == True:
             NETWORK_1 += '_ap'

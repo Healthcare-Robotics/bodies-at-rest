@@ -787,11 +787,11 @@ if __name__ == "__main__":
     if opt.hd == False:
         data_fp_prefix = "../../../data_BR/"
     else:
-        data_fp_prefix = "/media/NAME/multimodal_data_2/data_BR/"
+        data_fp_prefix = "/media/henry/multimodal_data_2/data_BR/"
 
     data_fp_suffix = ''
 
-    if opt.net == 2 or opt.quick_test == True:
+    if opt.net == 2:# or opt.quick_test == True:
         data_fp_suffix = '_convnet_1_'+str(opt.losstype)
 
         if opt.small == True:

@@ -49,6 +49,9 @@ if __name__ == '__main__':
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
+    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
+                 help='Do not weight betas by 1/2.')
+
     p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
                  help='Align the procrustes. Works only on synthetic data.')
 
@@ -111,6 +114,8 @@ if __name__ == '__main__':
             NETWORK_2 += '_or'
         if opt.omit_cntct_sobel == True:
             NETWORK_2 += '_ocs'
+        if opt.no_shape_wt == True:
+            NETWORK_2 += '_nsw'
         if opt.align_procr == True:
             NETWORK_2 += '_ap'
 
