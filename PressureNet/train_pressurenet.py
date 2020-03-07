@@ -746,7 +746,7 @@ if __name__ == "__main__":
 
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
-    
+
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
