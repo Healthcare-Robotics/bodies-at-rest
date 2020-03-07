@@ -93,7 +93,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = True
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
-        self.CTRL_PNL['omit_root'] = opt.omit_root
+        self.CTRL_PNL['loss_root'] = opt.loss_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
@@ -121,7 +121,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['pmat_mult'] = int(1)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
-        self.CTRL_PNL['cal_noise_amt'] = 0.1
+        self.CTRL_PNL['cal_noise_amt'] = 0.2
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
 
@@ -362,12 +362,12 @@ class PhysicalTrainer():
         if self.CTRL_PNL['double_network_size'] == True:
             self.save_name += '_dns'
 
-        if  self.CTRL_PNL['omit_root'] == True:
-            self.save_name += '_or'
+        if  self.CTRL_PNL['loss_root'] == True:
+            self.save_name += '_rt'
         if  self.CTRL_PNL['omit_cntct_sobel'] == True:
             self.save_name += '_ocs'
-        if  self.opt.no_shape_wt == True:
-            self.save_name += '_nsw'
+        if  self.opt.half_shape_wt == True:
+            self.save_name += '_hsw'
 
         print 'appending to', 'train' + self.save_name
         self.train_val_losses = {}
@@ -396,8 +396,12 @@ class PhysicalTrainer():
         if self.CTRL_PNL['full_body_rot'] == True:
             fc_output_size += 3
 
-        self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                 verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
+        if self.opt.omit_cntct_sobel == True:
+            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
+                                     verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels']-2)
+        else:
+            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
+                                     verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
 
         #load in a model instead if one is partially trained
         #self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
@@ -473,19 +477,19 @@ class PhysicalTrainer():
 
                 if self.CTRL_PNL['full_body_rot'] == True:
                     OSA = 6
-                    if self.opt.omit_root == True:
-                        loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * 0.0
-                    else:
+                    if self.opt.loss_root == True:
                         loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints
+                    else:
+                        loss_bodyrot = self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * 0.0
                     #if self.CTRL_PNL['adjust_ang_from_est'] == True:
                     #    loss_bodyrot *= 0
                 else: OSA = 0
 
                 loss_eucl = self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:, 10+OSA:34+OSA])*self.weight_joints
-                if self.opt.no_shape_wt == True:
-                    loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints
-                else:
+                if self.opt.half_shape_wt == True:
                     loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints * 0.5
+                else:
+                    loss_betas = self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints
 
 
                 if self.CTRL_PNL['regr_angles'] == True:
@@ -648,18 +652,18 @@ class PhysicalTrainer():
 
                 if self.CTRL_PNL['full_body_rot'] == True:
                     OSA = 6
-                    if self.opt.omit_root == True:
-                        loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * 0.0)
-                    else:
+                    if self.opt.loss_root == True:
                         loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * self.weight_joints)
+                    else:
+                        loss_bodyrot = float(self.criterion(scores[:, 10:16], scores_zeros[:, 10:16]) * 0.0)
                     loss_to_add += loss_bodyrot
                 else: OSA = 0
 
                 loss_eucl = float(self.criterion(scores[:, 10+OSA:34+OSA], scores_zeros[:,  10+OSA:34+OSA]) * self.weight_joints)
-                if self.opt.no_shape_wt == True:
-                    loss_betas = float(self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints)
-                else:
+                if self.opt.half_shape_wt == True:
                     loss_betas = float(self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints * 0.5)
+                else:
+                    loss_betas = float(self.criterion(scores[:, 0:10], scores_zeros[:, 0:10]) * self.weight_joints)
 
 
 
@@ -743,8 +747,8 @@ if __name__ == "__main__":
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
 
-    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
-                 help='Do not weight betas by 1/2.')
+    p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
+                 help='Half betas.')
 
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
@@ -752,8 +756,8 @@ if __name__ == "__main__":
     p.add_option('--viz', action='store_true', dest='visualize', default=False,
                  help='Visualize training.')
 
-    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
-                 help='Cut root from loss function.')
+    p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
+                 help='Use root in loss function.')
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
@@ -790,12 +794,12 @@ if __name__ == "__main__":
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
             data_fp_suffix += '_clns10p'
-        if opt.omit_root == True:
-            data_fp_suffix += '_or'
-        if opt.omit_cntct_sobel == True:
-            data_fp_suffix += '_ocs'
-        if opt.no_shape_wt == True:
-            data_fp_suffix += '_nsw'
+        if opt.loss_root == True:
+            data_fp_suffix += '_rt'
+        #if opt.omit_cntct_sobel == True:
+        #    data_fp_suffix += '_ocs'
+        if opt.half_shape_wt == True:
+            data_fp_suffix += '_hsw'
 
         data_fp_suffix += '_100e_'+str(0.00002)+'lr'
 

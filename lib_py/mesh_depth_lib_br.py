@@ -179,7 +179,7 @@ class MeshDepthLib():
                 self.posedirs_f = torch.Tensor(np.array(human_f.posedirs)).type(dtype)
                 self.weights_f = torch.Tensor(np.array(human_f.weights)).type(dtype)
 
-                model_path_m = '../smpl/models/basicModel_m_lbs_10_207_0_v1.0.0.pkl'
+                model_path_m = '../smpl/models/basicmodel_m_lbs_10_207_0_v1.0.0.pkl'
                 human_m = load_model(model_path_m)
                 self.v_template_m = torch.Tensor(np.array(human_m.v_template)).type(dtype)
                 self.shapedirs_m = torch.Tensor(np.array(human_m.shapedirs)).permute(0, 2, 1).type(dtype)
