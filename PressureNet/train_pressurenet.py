@@ -746,21 +746,24 @@ if __name__ == "__main__":
 
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
-
-    p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
-                 help='Half betas.')
+    
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
 
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
+
+
+
+
+    p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
+                 help='Half betas.')
 
     p.add_option('--viz', action='store_true', dest='visualize', default=False,
                  help='Visualize training.')
 
     p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
                  help='Use root in loss function.')
-
-    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
-                 help='Cut contact and sobel from input.')
 
     p.add_option('--rgangs', action='store_true', dest='reg_angles', default=False, #I found this option doesn't help much.
                  help='Regress the angles as well as betas and joint pos.')
