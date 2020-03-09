@@ -796,7 +796,7 @@ if __name__ == "__main__":
         if opt.htwt == True:
             data_fp_suffix += '_htwt'
         if opt.calnoise == True:
-            data_fp_suffix += '_clns10p'
+            data_fp_suffix += '_clns20p'
         if opt.loss_root == True:
             data_fp_suffix += '_rt'
         if opt.omit_cntct_sobel == True:
