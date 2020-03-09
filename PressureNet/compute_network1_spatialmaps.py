@@ -306,7 +306,7 @@ class PhysicalTrainer():
         self.model_name += '_128b_x'+str(self.CTRL_PNL['pmat_mult'])+'pm_tnh'
 
         if self.opt.htwt == True: self.model_name += '_htwt'
-        if self.opt.calnoise == True: self.model_name += '_clns10p'
+        if self.opt.calnoise == True: self.model_name += '_clns20p'
         if self.opt.loss_root == True: self.model_name += '_rt'
         if self.opt.omit_cntct_sobel == True: self.model_name += '_ocs'
         if self.opt.half_shape_wt == True: self.model_name += '_hsw'
