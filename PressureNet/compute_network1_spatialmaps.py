@@ -62,11 +62,14 @@ HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1)
 
 DROPOUT = False
 
+DEVICE = 0
+
 torch.set_num_threads(1)
 if torch.cuda.is_available():
     # Use for GPU
     GPU = True
     dtype = torch.cuda.FloatTensor
+    torch.cuda.set_device(DEVICE)
     print'######################### CUDA is available! #############################'
 else:
     # Use for CPU
