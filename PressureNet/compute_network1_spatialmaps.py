@@ -95,6 +95,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
+        self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -120,7 +121,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['pmat_mult'] = int(1)
         self.CTRL_PNL['cal_noise'] = opt.calnoise
-        self.CTRL_PNL['cal_noise_amt'] = 0.1
+        self.CTRL_PNL['cal_noise_amt'] = 0.2
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
 
@@ -303,7 +304,10 @@ class PhysicalTrainer():
 
         if self.opt.htwt == True: self.model_name += '_htwt'
         if self.opt.calnoise == True: self.model_name += '_clns10p'
-        if self.opt.omit_root == True: self.model_name += '_or'
+        if self.opt.loss_root == True: self.model_name += '_rt'
+        if self.opt.omit_cntct_sobel == True: self.model_name += '_ocs'
+        if self.opt.half_shape_wt == True: self.model_name += '_hsw'
+
 
         self.model_name += '_100e_'+str(0.00002)+'lr'
 
@@ -429,11 +433,17 @@ if __name__ == "__main__":
     p.add_option('--htwt', action='store_true', dest='htwt', default=False,
                  help='Include height and weight info on the input.')
 
+    p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
+                 help='Cut contact and sobel from input.')
+
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
-    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
-                 help='Cut root from loss function.')
+    p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
+                 help='Half betas.')
+
+    p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
+                 help='Use root in loss function.')
 
     p.add_option('--verbose', '--v',  action='store_true', dest='verbose',
                  default=True, help='Printout everything (under construction).')
