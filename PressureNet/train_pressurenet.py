@@ -401,7 +401,7 @@ class PhysicalTrainer():
             fc_output_size += 3
 
         if self.opt.go200 == True:
-            self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix'] + 'convnet_1_anglesDC_184000ct_128b_x1pm_tnh_clns20p_100e_2e-05lr.pt',map_location={'cuda:0': 'cuda:' + str(self.opt.device)})
+            self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix'] + 'convnet_1_anglesDC_184000ct_128b_x1pm_tnh_clns20p_100e_2e-05lr.pt',map_location={'cuda:' + str(self.opt.prev_device): 'cuda:' + str(self.opt.device)})
 
         elif self.opt.omit_cntct_sobel == True:
             self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
@@ -748,6 +748,9 @@ if __name__ == "__main__":
 
     p.add_option('--net', action='store', type = 'int', dest='net', default=0,
                  help='Choose a network.')
+
+    p.add_option('--prev_device', action='store', type = 'int', dest='prev_device', default=0,
+                 help='Choose a GPU core that it was previously on.')
 
     p.add_option('--device', action='store', type = 'int', dest='device', default=0,
                  help='Choose a GPU core.')

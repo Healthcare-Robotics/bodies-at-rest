@@ -316,7 +316,7 @@ class PhysicalTrainer():
         self.model_name += '_100e_'+str(0.00002)+'lr'
 
         if GPU == True:
-            self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:' + str(self.opt.device)}).cuda()
+            self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:' + str(self.opt.prev_device):'cuda:' + str(self.opt.device)}).cuda()
         else:
             self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location='cpu')
 
@@ -427,6 +427,9 @@ if __name__ == "__main__":
 
     p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
+
+    p.add_option('--prev_device', action='store', type = 'int', dest='prev_device', default=0,
+                 help='Choose a GPU core that it was previously on.')
 
     p.add_option('--device', action='store', type = 'int', dest='device', default=0,
                  help='Choose a GPU core.')
