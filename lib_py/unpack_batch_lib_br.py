@@ -163,9 +163,11 @@ class UnpackBatchLib():
 
 
         if CTRL_PNL['omit_cntct_sobel'] == True:
-
             images_up[:, 0, :, :] *= 0
             images_up[:, CTRL_PNL['num_input_channels_batch0'], :, :] *= 0
+
+        if CTRL_PNL['omit_hover'] == True:
+            images_up[:, 1, :, :] *= 0
 
 
         scores, OUTPUT_DICT = model.forward_kinematic_angles(images=images_up,

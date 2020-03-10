@@ -95,6 +95,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['loss_root'] = opt.loss_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
+        self.CTRL_PNL['omit_hover'] = opt.omit_hover
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -366,6 +367,8 @@ class PhysicalTrainer():
             self.save_name += '_rt'
         if  self.CTRL_PNL['omit_cntct_sobel'] == True:
             self.save_name += '_ocs'
+        if  self.CTRL_PNL['omit_hover'] == True:
+            self.save_name += '_oh'
         if  self.opt.half_shape_wt == True:
             self.save_name += '_hsw'
 
@@ -396,7 +399,10 @@ class PhysicalTrainer():
         if self.CTRL_PNL['full_body_rot'] == True:
             fc_output_size += 3
 
-        if self.opt.omit_cntct_sobel == True:
+        if self.opt.go200 == True:
+            self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix'] + 'convnet_1_anglesDC_184000ct_128b_x1pm_tnh_clns20p_100e_2e-05lr.pt',map_location={'cuda:0': 'cuda:' + str(DEVICE)})
+
+        elif self.opt.omit_cntct_sobel == True:
             self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
                                      verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels']-2)
         else:
@@ -404,6 +410,7 @@ class PhysicalTrainer():
                                      verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
 
         #load in a model instead if one is partially trained
+
         #self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_anglesDC_synth_184K_128b_x5pmult_1.0rtojtdpth_tnh_htwt_calnoise_100e_00002lr.pt', map_location={'cuda:2':'cuda:'+str(DEVICE)})
         #self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix']+'convnet_2_anglesDC_184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh_clns10p_100e_2e-05lr.pt', map_location='cpu')
 
@@ -437,11 +444,17 @@ class PhysicalTrainer():
                 self.t2 = 0
             print 'Time taken by epoch',epoch,':',self.t2,' seconds'
 
-            if epoch == self.CTRL_PNL['num_epochs'] or epoch == 20 or epoch == 30 or epoch == 40 or epoch == 50 or epoch == 60 or epoch == 70 or epoch == 80 or epoch == 90:
+            if epoch == self.CTRL_PNL['num_epochs'] or epoch == 10 or epoch == 20 or epoch == 30 or epoch == 40 or epoch == 50 or epoch == 60 or epoch == 70 or epoch == 80 or epoch == 90:
+
+                if self.opt.go200 == True:
+                    epoch_log = epoch + 100
+                else:
+                    epoch_log = epoch + 0
+
                 print "saving convnet."
-                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.pt')
+                torch.save(self.model, self.CTRL_PNL['convnet_fp_prefix']+'convnet'+self.save_name+'_'+str(epoch_log)+'e'+'_'+str(learning_rate)+'lr.pt')
                 print "saved convnet."
-                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch)+'e'+'_'+str(learning_rate)+'lr.p', 'wb'))
+                pkl.dump(self.train_val_losses,open(self.CTRL_PNL['convnet_fp_prefix']+'convnet_losses'+self.save_name+'_'+str(epoch_log)+'e'+'_'+str(learning_rate)+'lr.p', 'wb'))
                 print "saved losses."
 
         print self.train_val_losses, 'trainval'
@@ -741,6 +754,9 @@ if __name__ == "__main__":
     p.add_option('--pmr', action='store_true', dest='pmr', default=False,
                  help='Run PMR on input plus precomputed spatial maps.')
 
+    p.add_option('--go200', action='store_true', dest='go200', default=False,
+                 help='Run network 1 for 100 to 200 epochs.')
+
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')
 
@@ -749,6 +765,9 @@ if __name__ == "__main__":
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
+
+    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
+                 help='Cut hovermap from pmr input.')
 
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
