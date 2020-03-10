@@ -62,14 +62,12 @@ HIGH_TAXEL_THRESH_Y = (NUMOFTAXELS_Y - 1)
 
 DROPOUT = False
 
-DEVICE = 0
 
 torch.set_num_threads(1)
 if torch.cuda.is_available():
     # Use for GPU
     GPU = True
     dtype = torch.cuda.FloatTensor
-    torch.cuda.set_device(DEVICE)
     print'######################### CUDA is available! #############################'
 else:
     # Use for CPU
@@ -129,6 +127,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['first_pass'] = True
 
         self.filename = filename
+
+        if GPU == True:
+            torch.cuda.set_device(self.opt.device)
 
         if opt.losstype == 'direct':
             self.CTRL_PNL['depth_map_labels'] = False
@@ -315,7 +316,7 @@ class PhysicalTrainer():
         self.model_name += '_100e_'+str(0.00002)+'lr'
 
         if GPU == True:
-            self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:0'}).cuda()
+            self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location={'cuda:0':'cuda:' + str(self.opt.device)}).cuda()
         else:
             self.model = torch.load('../data_BR/convnets/'+self.model_name + '.pt', map_location='cpu')
 
@@ -426,6 +427,9 @@ if __name__ == "__main__":
 
     p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
+
+    p.add_option('--device', action='store', type = 'int', dest='device', default=0,
+                 help='Choose a GPU core.')
 
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')

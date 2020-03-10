@@ -57,14 +57,12 @@ NUMOFOUTPUTDIMS = 3
 NUMOFOUTPUTNODES_TRAIN = 24
 NUMOFOUTPUTNODES_TEST = 10
 INTER_SENSOR_DISTANCE = 0.0286  # metres
-DEVICE = 0
 
 torch.set_num_threads(1)
 if torch.cuda.is_available():
     # Use for GPU
     GPU = True
     dtype = torch.cuda.FloatTensor
-    torch.cuda.set_device(DEVICE)
     print '######################### CUDA is available! #############################'
 else:
     # Use for CPU
@@ -125,6 +123,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['cal_noise_amt'] = 0.2
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
+
+        if GPU == True:
+            torch.cuda.set_device(self.opt.device)
 
         self.weight_joints = 1.0#self.opt.j_d_ratio*2
         self.weight_depth_planes = (1-self.opt.j_d_ratio)#*2
@@ -400,7 +401,7 @@ class PhysicalTrainer():
             fc_output_size += 3
 
         if self.opt.go200 == True:
-            self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix'] + 'convnet_1_anglesDC_184000ct_128b_x1pm_tnh_clns20p_100e_2e-05lr.pt',map_location={'cuda:0': 'cuda:' + str(DEVICE)})
+            self.model = torch.load(self.CTRL_PNL['convnet_fp_prefix'] + 'convnet_1_anglesDC_184000ct_128b_x1pm_tnh_clns20p_100e_2e-05lr.pt',map_location={'cuda:0': 'cuda:' + str(self.opt.device)})
 
         elif self.opt.omit_cntct_sobel == True:
             self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
@@ -747,6 +748,9 @@ if __name__ == "__main__":
 
     p.add_option('--net', action='store', type = 'int', dest='net', default=0,
                  help='Choose a network.')
+
+    p.add_option('--device', action='store', type = 'int', dest='device', default=0,
+                 help='Choose a GPU core.')
 
     p.add_option('--qt', action='store_true', dest='quick_test', default=False,
                  help='Do a quick test.')
