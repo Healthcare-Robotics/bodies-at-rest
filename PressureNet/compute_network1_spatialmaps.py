@@ -446,6 +446,9 @@ if __name__ == "__main__":
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
+    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
+                 help='Cut hovermap from pmr input.')
+
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
