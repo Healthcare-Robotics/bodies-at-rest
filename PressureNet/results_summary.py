@@ -34,6 +34,9 @@ if __name__ == '__main__':
     p.add_option('--pose_type', action='store', type='string', dest='pose_type', default='none',
                  help='Choose a pose type, either `prescribed` or `p_select`.')
 
+    p.add_option('--pmr', action='store_true', dest='pmr', default=False,
+                 help='Run PMR on input plus precomputed spatial maps.')
+
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')
 
@@ -43,14 +46,17 @@ if __name__ == '__main__':
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
-    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
-                 help='Cut root from loss function.')
+    p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
+                 help='Use root in loss function.')
+
+    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
+                 help='Cut hovermap from pmr input.')
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
-    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
-                 help='Do not weight betas by 1/2.')
+    p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
+                 help='Half betas.')
     
     opt, args = p.parse_args()
 
@@ -92,26 +98,30 @@ if __name__ == '__main__':
         straight_limbs = [[]]
 
 
-
-
-
         if opt.small == True:
-            NETWORK_2 = "46000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+            NETWORK_2 = "46000ct_"
             DATA_QUANT = "46K"
         else:
-            NETWORK_2 = "184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+            NETWORK_2 = "184000ct_"
             DATA_QUANT = "184K"
+
+        if opt.pmr == True:
+            NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+        else:
+            NETWORK_2 += "128b_x1pm_angleadj_tnh"
 
         if opt.htwt == True:
             NETWORK_2 += "_htwt"
         if opt.calnoise == True:
-            NETWORK_2 += "_clns10p"
-        if opt.omit_root == True:
-            NETWORK_2 += "_or"
+            NETWORK_2 += "_clns20p"
+        if opt.loss_root == True:
+            NETWORK_2 += "_rt"
         if opt.omit_cntct_sobel == True:
             NETWORK_2 += "_ocs"
-        if opt.no_shape_wt == True:
-            NETWORK_2 += "_nsw"
+        if opt.omit_hover == True:
+            NETWORK_2 += "_oh"
+        if opt.half_shape_wt == True:
+            NETWORK_2 += "_hsw"
 
         if opt.hd == True:
             FILEPATH_PREFIX = '/media/henry/multimodal_data_2/data_BR'

@@ -119,8 +119,9 @@ class Viz3DPose():
         self.CTRL_PNL['incl_inter'] = True
         self.CTRL_PNL['shuffle'] = False
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
-        self.CTRL_PNL['omit_root'] = opt.omit_root
+        self.CTRL_PNL['loss_root'] = opt.loss_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
+        self.CTRL_PNL['omit_hover'] = opt.omit_hover
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['num_input_channels'] = 2
         self.CTRL_PNL['GPU'] = GPU
@@ -130,8 +131,8 @@ class Viz3DPose():
         self.CTRL_PNL['dropout'] = DROPOUT
         self.CTRL_PNL['depth_map_labels'] = False
         self.CTRL_PNL['depth_map_output'] = True
-        self.CTRL_PNL['depth_map_input_est'] = False  # rue #do this if we're working in a two-part regression
-        self.CTRL_PNL['adjust_ang_from_est'] = self.CTRL_PNL['depth_map_input_est']  # holds betas and root same as prior estimate
+        self.CTRL_PNL['depth_map_input_est'] = opt.pmr  # rue #do this if we're working in a two-part regression
+        self.CTRL_PNL['adjust_ang_from_est'] = False#self.CTRL_PNL['depth_map_input_est']  # holds betas and root same as prior estimate
         self.CTRL_PNL['clip_sobel'] = True
         self.CTRL_PNL['clip_betas'] = True
         self.CTRL_PNL['mesh_bottom_dist'] = True
@@ -432,10 +433,13 @@ class Viz3DPose():
                                             cm_est.type(torch.FloatTensor),
                                             pmat_stack[:, 1:, :, :]), dim=1))
             else:
-                batch_cor.append(torch.cat((mdm_est_pos.type(torch.FloatTensor),
-                                            mdm_est_neg.type(torch.FloatTensor),
-                                            cm_est.type(torch.FloatTensor),
-                                            pmat_stack[:, 0:, :, :]), dim=1))
+                if self.opt.pmr == True:
+                    batch_cor.append(torch.cat((mdm_est_pos.type(torch.FloatTensor),
+                                                mdm_est_neg.type(torch.FloatTensor),
+                                                cm_est.type(torch.FloatTensor),
+                                                pmat_stack[:, 0:, :, :]), dim=1))
+                else:
+                    batch_cor.append(pmat_stack)
 
 
             if self.CTRL_PNL['full_body_rot'] == False:
@@ -451,12 +455,15 @@ class Viz3DPose():
                                             OUTPUT_DICT['batch_root_atan2_est'].cpu()), dim=1))
 
             self.CTRL_PNL['adjust_ang_from_est'] = True
-            self.CTRL_PNL['num_input_channels_batch0'] += 3
+
+            if self.opt.pmr == True:
+                self.CTRL_PNL['num_input_channels_batch0'] += 3
 
 
             scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch_cor, is_training=False, model=model2,
                                                                                         CTRL_PNL = self.CTRL_PNL)
-            self.CTRL_PNL['num_input_channels_batch0'] -= 3
+            if self.opt.pmr == True:
+                self.CTRL_PNL['num_input_channels_batch0'] -= 3
 
         self.CTRL_PNL['first_pass'] = False
 
@@ -579,6 +586,9 @@ if __name__ ==  "__main__":
                  # PMR parameter to adjust loss function 2
                  help='Choose a participant. Enter a number from 1 to 20.')
 
+    p.add_option('--pmr', action='store_true', dest='pmr', default=False,
+                 help='Run PMR on input plus precomputed spatial maps.')
+
     p.add_option('--small', action='store_true', dest='small', default=False,
                  help='Make the dataset 1/4th of the original size.')
 
@@ -591,14 +601,17 @@ if __name__ ==  "__main__":
     p.add_option('--viz', action='store', dest='viz', default='None',
                  help='Visualize training. specify `2D` or `3D`.')
 
-    p.add_option('--omit_root', action='store_true', dest='omit_root', default=False,
-                 help='Cut root from loss function.')
+    p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
+                 help='Use root in loss function.')
+
+    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
+                 help='Cut hovermap from pmr input.')
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
-    p.add_option('--no_shape_wt', action='store_true', dest='no_shape_wt', default=False,
-                 help='Do not weight betas by 1/2.')
+    p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
+                 help='Half betas.')
 
 
 
@@ -667,30 +680,40 @@ if __name__ ==  "__main__":
 
 
         NETWORK_1 += "128b_x1pm_tnh"
-        NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+
+        if opt.pmr == True:
+            NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+        else:
+            NETWORK_2 += "128b_x1pm_angleadj_tnh"
+
 
         if opt.htwt == True:
             NETWORK_1 += "_htwt"
             NETWORK_2 += "_htwt"
 
         if opt.calnoise == True:
-            NETWORK_1 += "_clns10p"
-            NETWORK_2 += "_clns10p"
+            NETWORK_1 += "_clns20p"
+            NETWORK_2 += "_clns20p"
 
-        if opt.omit_root == True:
-            NETWORK_1 += "_or"
-            NETWORK_2 += "_or"
+        if opt.loss_root == True:
+            NETWORK_1 += "_rt"
+            NETWORK_2 += "_rt"
 
         if opt.omit_cntct_sobel == True:
             NETWORK_1 += "_ocs"
             NETWORK_2 += "_ocs"
 
-        if opt.no_shape_wt == True:
-            NETWORK_1 += "_nsw"
-            NETWORK_2 += "_nsw"
+        if opt.omit_hover == True:
+            NETWORK_1 += "_oh"
+            NETWORK_2 += "_oh"
 
-        filename1 = FILEPATH_PREFIX+"/convnets/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
-        filename2 = FILEPATH_PREFIX+"/convnets/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
+        if opt.half_shape_wt == True:
+            NETWORK_1 += "_hsw"
+            NETWORK_2 += "_hsw"
+
+
+        filename1 = FILEPATH_PREFIX+"/convnets_camready/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
+        filename2 = FILEPATH_PREFIX+"/convnets_camready/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
         if GPU == True:
             for i in range(0, 8):
                 try:
