@@ -131,7 +131,7 @@ class Viz3DPose():
         self.CTRL_PNL['dropout'] = DROPOUT
         self.CTRL_PNL['depth_map_labels'] = False
         self.CTRL_PNL['depth_map_output'] = True
-        self.CTRL_PNL['depth_map_input_est'] = opt.pmr  # rue #do this if we're working in a two-part regression
+        self.CTRL_PNL['depth_map_input_est'] = False#opt.pmr  # rue #do this if we're working in a two-part regression
         self.CTRL_PNL['adjust_ang_from_est'] = False#self.CTRL_PNL['depth_map_input_est']  # holds betas and root same as prior estimate
         self.CTRL_PNL['clip_sobel'] = True
         self.CTRL_PNL['clip_betas'] = True
@@ -601,6 +601,9 @@ if __name__ ==  "__main__":
     p.add_option('--viz', action='store', dest='viz', default='None',
                  help='Visualize training. specify `2D` or `3D`.')
 
+    p.add_option('--go200', action='store_true', dest='go200', default=False,
+                 help='Run network 1 for 100 to 200 epochs.')
+
     p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
                  help='Use root in loss function.')
 
@@ -681,7 +684,9 @@ if __name__ ==  "__main__":
 
         NETWORK_1 += "128b_x1pm_tnh"
 
-        if opt.pmr == True:
+        if opt.go200 == True:
+            NETWORK_2 += "128b_x1pm_tnh"
+        elif opt.pmr == True:
             NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
         else:
             NETWORK_2 += "128b_x1pm_angleadj_tnh"
@@ -712,8 +717,13 @@ if __name__ ==  "__main__":
             NETWORK_2 += "_hsw"
 
 
-        filename1 = FILEPATH_PREFIX+"/convnets_camready/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
-        filename2 = FILEPATH_PREFIX+"/convnets_camready/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
+        if opt.go200 == False:
+            filename1 = FILEPATH_PREFIX+"/convnets_camready/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt"
+            filename2 = FILEPATH_PREFIX+"/convnets_camready/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt"
+        else:
+            filename1 = FILEPATH_PREFIX+"/convnets_camready/convnet_1_anglesDC_" + NETWORK_1 + "_200e_2e-05lr.pt"
+            filename2 = None
+
         if GPU == True:
             for i in range(0, 8):
                 try:
