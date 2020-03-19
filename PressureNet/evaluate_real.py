@@ -315,6 +315,7 @@ class Viz3DPose():
             #because we used a sheet on the bed the overall pressure is lower than calibration, which was done without a sheet. bump it up here.
             bedsheet_norm_factor = float(1)
 
+
             self.pressure = np.clip(self.pressure*bedsheet_norm_factor, 0, 100)
 
 
@@ -459,6 +460,8 @@ class Viz3DPose():
             if self.opt.pmr == True:
                 self.CTRL_PNL['num_input_channels_batch0'] += 3
 
+
+            print self.CTRL_PNL['num_input_channels_batch0'], batch_cor[0].size()
 
             scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch_cor, is_training=False, model=model2,
                                                                                         CTRL_PNL = self.CTRL_PNL)
