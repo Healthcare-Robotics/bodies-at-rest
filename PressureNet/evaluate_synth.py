@@ -148,7 +148,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['normalize_input'] = True
         self.CTRL_PNL['all_tanh_activ'] = True
         self.CTRL_PNL['L2_contact'] = True
-        self.CTRL_PNL['pmat_mult'] = int(5)
+        self.CTRL_PNL['pmat_mult'] = int(1)
         self.CTRL_PNL['cal_noise'] = False
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
@@ -208,11 +208,12 @@ class PhysicalTrainer():
         print self.CTRL_PNL['num_epochs'], 'NUM EPOCHS!'
         # Entire pressure dataset with coordinates in world frame
 
-        self.save_name = '_' + opt.losstype + \
-                         '_synth_32000' + \
+
+
+        self.save_name = '_' + str(opt.net) + '_' + opt.losstype + \
+                         '_' + str(self.train_x_tensor.size()[0]) + 'ct' + \
                          '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
-                         '_' + str(self.CTRL_PNL['num_epochs']) + 'e' + \
-                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pmult'
+                         '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pm'
 
 
         if self.CTRL_PNL['depth_map_labels'] == True:
@@ -225,10 +226,19 @@ class PhysicalTrainer():
             self.save_name += '_tnh'
         if self.CTRL_PNL['incl_ht_wt_channels'] == True:
             self.save_name += '_htwt'
-        #if self.CTRL_PNL['L2_contact'] == True:
-        #    self.save_name += '_l2cnt'
         if self.CTRL_PNL['cal_noise'] == True:
-            self.save_name += '_calnoise'
+            self.save_name += '_clns'+str(int(self.CTRL_PNL['cal_noise_amt']*100)) + 'p'
+        if self.CTRL_PNL['double_network_size'] == True:
+            self.save_name += '_dns'
+
+        if  self.CTRL_PNL['loss_root'] == True:
+            self.save_name += '_rt'
+        if  self.CTRL_PNL['omit_cntct_sobel'] == True:
+            self.save_name += '_ocs'
+        if  self.CTRL_PNL['omit_hover'] == True:
+            self.save_name += '_oh'
+        if  self.opt.half_shape_wt == True:
+            self.save_name += '_hsw'
 
 
         # self.save_name = '_' + opt.losstype+'_real_s9_alltest_' + str(self.CTRL_PNL['batch_size']) + 'b_'# + str(self.CTRL_PNL['num_epochs']) + 'e'
@@ -440,29 +450,16 @@ class PhysicalTrainer():
         self.test_dataset = torch.utils.data.TensorDataset(self.test_x_tensor, self.test_y_tensor)
         self.test_loader = torch.utils.data.DataLoader(self.test_dataset, self.CTRL_PNL['batch_size'], shuffle=self.CTRL_PNL['shuffle'])
 
-        print "Loading convnet model................................"
-        if self.CTRL_PNL['loss_vector_type'] == 'direct':
-            fc_output_size = 30
-            self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-                                     verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'],
-                                     in_channels=self.CTRL_PNL['num_input_channels'])
+        fc_output_size = 85## 10 + 3 + 24*3 --- betas, root shift, rotations
 
-        elif self.CTRL_PNL['loss_vector_type'] == 'anglesDC' or self.CTRL_PNL['loss_vector_type'] == 'anglesEU':
-            fc_output_size = 85## 10 + 3 + 24*3 --- betas, root shift, rotations
+        if self.CTRL_PNL['full_body_rot'] == True:
+            fc_output_size += 3
 
-            if self.CTRL_PNL['full_body_rot'] == True:
-                fc_output_size += 3
 
-            #self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
-            #                         verts_list = self.verts_list, filepath=self.CTRL_PNL['filepath_prefix'], in_channels=self.CTRL_PNL['num_input_channels'])
 
-            #self.model = torch.load("/media/henry/multimodal_data_2/data/convnets/planesreg/184K/convnet_anglesDC_synth_184000_128b_x5pmult_1.0rtojtdpth_tnhFIX_htwt_calnoise_100e_00002lr.pt", map_location='cpu')
-
-            #self.model = torch.load("/media/henry/multimodal_data_2/data/convnets/planesreg/184K/convnet_anglesDC_synth_184K_128b_x5pmult_"+NETWORK_1+"_100e_00002lr.pt", map_location='cpu')
-            #self.model2 = torch.load("/media/henry/multimodal_data_2/data/convnets/planesreg_correction/184K/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_2+"_100e_00002lr.pt", map_location='cpu')
-            self.model = torch.load("/home/henry/data/convnets/planesreg/FINAL/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_1+"_100e_00002lr.pt", map_location='cpu')
-            self.model2 = torch.load("/home/henry/data/convnets/planesreg_correction/FINAL/convnet_anglesDC_synth_184000_128b_x5pmult_"+NETWORK_2+"_100e_00002lr.pt", map_location='cpu')
-            #self.model2 = None
+        self.model = torch.load(FILEPATH_PREFIX + "/convnets_camready/convnet_1_anglesDC_" + NETWORK_1 + "_100e_2e-05lr.pt", map_location='cpu')
+        self.model2 = torch.load(FILEPATH_PREFIX + "/convnets_camready/convnet_2_anglesDC_" + NETWORK_2 + "_100e_2e-05lr.pt", map_location='cpu')
+        #self.model2 = None
         pp = 0
         for p in list(self.model.parameters()):
             nn = 1
@@ -512,7 +509,6 @@ class PhysicalTrainer():
                     print "GPU memory:", torch.cuda.max_memory_allocated()
                 if self.CTRL_PNL['loss_vector_type'] == 'direct':
 
-                    self.optimizer.zero_grad()
                     scores, INPUT_DICT, OUTPUT_DICT = \
                         UnpackBatchLib().unpackage_batch_dir_pass(batch, is_training=True, model=self.model, CTRL_PNL = self.CTRL_PNL)
 
@@ -868,7 +864,12 @@ class PhysicalTrainer():
 
         #save here
 
-        pkl.dump(RESULTS_DICT, open('/home/henry/data/final_results/results_synth_'+DATA_QUANT+'_'+TESTING_FILENAME+'_'+NETWORK_2+'.p', 'wb'))
+        dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+
+        pkl.dump(self.RESULTS_DICT, open(dir+'/results_synth_'+TESTING_FILENAME+'_'+NETWORK_2+'.p', 'wb'))
+
 
 if __name__ == "__main__":
     #Initialize trainer with a training database file
@@ -927,13 +928,52 @@ if __name__ == "__main__":
     opt, args = p.parse_args()
 
 
-    if opt.aws == True:
-        filepath_prefix = '/home/ubuntu/data/'
-        filepath_suffix = ''
+
+    if opt.hd == False:
+        FILEPATH_PREFIX = "../data_BR"
     else:
-        #filepath_prefix =
-        filepath_prefix = '/home/henry/data/'
-        #filepath_suffix = ''
+        FILEPATH_PREFIX = "/media/henry/multimodal_data_2/data_BR"
+
+    if opt.small == True:
+        NETWORK_1 = "46000ct_"
+        NETWORK_2 = "46000ct_"
+    else:
+        NETWORK_1 = "184000ct_"
+        NETWORK_2 = "184000ct_"
+
+
+    NETWORK_1 += "128b_x1pm_tnh"
+
+    if opt.pmr == True:
+        NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+    else:
+        NETWORK_2 += "128b_x1pm_angleadj_tnh"
+
+
+    if opt.htwt == True:
+        NETWORK_1 += "_htwt"
+        NETWORK_2 += "_htwt"
+
+    if opt.calnoise == True:
+        NETWORK_1 += "_clns20p"
+        NETWORK_2 += "_clns20p"
+
+    if opt.loss_root == True:
+        NETWORK_1 += "_rt"
+        NETWORK_2 += "_rt"
+
+    if opt.omit_cntct_sobel == True:
+        NETWORK_1 += "_ocs"
+        NETWORK_2 += "_ocs"
+
+    if opt.omit_hover == True:
+        NETWORK_1 += "_oh"
+        NETWORK_2 += "_oh"
+
+    if opt.half_shape_wt == True:
+        NETWORK_1 += "_hsw"
+        NETWORK_2 += "_hsw"
+
 
 
     training_database_file_f = []
