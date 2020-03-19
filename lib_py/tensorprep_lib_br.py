@@ -55,7 +55,7 @@ def load_pickle(filename):
 
 class TensorPrepLib():
 
-    def load_files_to_database(self, database_file, creation_type, verbose = False, reduce_data = False):
+    def load_files_to_database(self, database_file, creation_type, verbose = False, reduce_data = False, test = False):
         # load in the training or testing files.  This may take a while.
        # print "GOT HERE!!", database_file
         dat = None
@@ -72,19 +72,21 @@ class TensorPrepLib():
                                 datcurr_to_append = list(
                                     np.array(datcurr_to_append).reshape(84, 47)[10:74, 10:37].reshape(1728))
                             try:
-                                #if len(dat_curr['images']) == 3000:
-                                #    if inputgoalset < len(dat_curr['images'])/2:
-                                #        dat[key].append(datcurr_to_append)
-                                #elif len(dat_curr['images']) == 1500:
-                                #    if inputgoalset < len(dat_curr['images'])/3:
-                                #        dat[key].append(datcurr_to_append)
-                                #else:
-                                #    dat[key].append(datcurr_to_append)
-                                if reduce_data == True:
-                                    if inputgoalset < len(dat_curr['images'])/4:
+                                if test == False:
+                                    if reduce_data == True:
+                                        if inputgoalset < len(dat_curr['images'])/4:
+                                            dat[key].append(datcurr_to_append)
+                                    else:
                                         dat[key].append(datcurr_to_append)
                                 else:
-                                    dat[key].append(datcurr_to_append)
+                                    if len(dat_curr['images']) == 3000:
+                                        if inputgoalset < len(dat_curr['images'])/2:
+                                            dat[key].append(datcurr_to_append)
+                                    elif len(dat_curr['images']) == 1500:
+                                        if inputgoalset < len(dat_curr['images'])/3:
+                                            dat[key].append(datcurr_to_append)
+                                    else:
+                                        dat[key].append(datcurr_to_append)
 
                             except:
                                 try:
