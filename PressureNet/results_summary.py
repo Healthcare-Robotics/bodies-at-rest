@@ -46,6 +46,9 @@ if __name__ == '__main__':
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
                  help='Apply calibration noise to the input to facilitate sim to real transfer.')
 
+    p.add_option('--go200', action='store_true', dest='go200', default=False,
+                 help='Run network 1 for 100 to 200 epochs.')
+
     p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
                  help='Use root in loss function.')
 
@@ -105,7 +108,10 @@ if __name__ == '__main__':
             NETWORK_2 = "184000ct_"
             DATA_QUANT = "184K"
 
-        if opt.pmr == True:
+
+        if opt.go200 == True:
+            NETWORK_2 += "128b_x1pm_tnh"
+        elif opt.pmr == True:
             NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
         else:
             NETWORK_2 += "128b_x1pm_angleadj_tnh"

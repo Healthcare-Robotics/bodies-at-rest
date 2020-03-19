@@ -166,7 +166,9 @@ class UnpackBatchLib():
             images_up[:, 0, :, :] *= 0
             images_up[:, CTRL_PNL['num_input_channels_batch0'], :, :] *= 0
 
-        if CTRL_PNL['omit_hover'] == True:
+
+
+        if CTRL_PNL['omit_hover'] == True and CTRL_PNL['adjust_ang_from_est'] == True:
             images_up[:, 1, :, :] *= 0
 
 

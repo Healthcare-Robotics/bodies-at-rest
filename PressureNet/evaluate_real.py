@@ -709,7 +709,6 @@ if __name__ ==  "__main__":
             NETWORK_2 += "_ocs"
 
         if opt.omit_hover == True:
-            NETWORK_1 += "_oh"
             NETWORK_2 += "_oh"
 
         if opt.half_shape_wt == True:
