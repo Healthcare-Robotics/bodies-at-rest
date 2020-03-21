@@ -410,7 +410,7 @@ class PhysicalTrainer():
             self.model = convnet.CNN(fc_output_size, self.CTRL_PNL['loss_vector_type'], self.CTRL_PNL['batch_size'],
                                      verts_list = self.verts_list, in_channels=self.CTRL_PNL['num_input_channels'])
 
-        #self.model = torch.load('../data_BR/convnets_camready/convnet_2_anglesDC_184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh_clns20p_rt_50e_2e-05lr',
+        #self.model = torch.load('../data_BR/convnets_camready/convnet_2_anglesDC_184000ct_128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh_clns20p_rt_50e_2e-05lr.pt',
         #                        map_location={'cuda:0': 'cuda:' + str(self.opt.device)})
 
         #load in a model instead if one is partially trained

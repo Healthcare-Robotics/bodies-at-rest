@@ -82,31 +82,6 @@ else:
     print '############################## USING CPU #################################'
 
 
-GENDER = "m"
-#PARTITION = "general/"
-#TESTING_FILENAME = "test_rollpi_"+GENDER+"_lay_set23to24_3000"
-#TESTING_FILENAME = "test_rollpi_plo_"+GENDER+"_lay_set23to24_3000"
-
-
-#PARTITION = "general_supine/"
-#TESTING_FILENAME = "test_roll0_"+GENDER+"_lay_set14_1500"
-#TESTING_FILENAME = "test_roll0_plo_"+GENDER+"_lay_set14_1500"
-
-#PARTITION = "crossed_legs/"
-#TESTING_FILENAME = "test_roll0_xl_"+GENDER+"_lay_set1both_500"
-
-
-#PARTITION = "hands_behind_head/"
-#TESTING_FILENAME = "test_roll0_plo_hbh_"+GENDER+"_lay_set1_500"
-
-
-#PARTITION = "prone_hands_up/"
-#TESTING_FILENAME = "test_roll0_plo_phu_"+GENDER+"_lay_set1pa3_500"
-
-
-PARTITION = "straight_limbs/"
-TESTING_FILENAME = "test_roll0_sl_"+GENDER+"_lay_set1both_500"
-
 class PhysicalTrainer():
     '''Gets the dictionary of pressure maps from the training database,
     and will have API to do all sorts of training with it.'''
@@ -770,6 +745,9 @@ if __name__ == "__main__":
     p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
 
+    p.add_option('--test', action='store', type = 'int', dest='test', default=1, #PMR parameter to adjust loss function 2
+                 help='Set the testing block.')
+
 
     p.add_option('--hd', action='store_true', dest='hd', default=False,
                  help='Read and write to data on an external harddrive.')
@@ -818,6 +796,8 @@ if __name__ == "__main__":
                  help='Regress the angles as well as betas and joint pos.')
 
 
+
+
     opt, args = p.parse_args()
 
 
@@ -863,7 +843,6 @@ if __name__ == "__main__":
         NETWORK_2 += "_ocs"
 
     if opt.omit_hover == True:
-        NETWORK_1 += "_oh"
         NETWORK_2 += "_oh"
 
     if opt.half_shape_wt == True:
@@ -871,20 +850,48 @@ if __name__ == "__main__":
         NETWORK_2 += "_hsw"
 
 
-    test_database_file_f = []
-    test_database_file_m = [] #141 total training loss at epoch 9
+    if opt.test == 1:
+        testing_filename_list = [["m","general/","test_rollpi_m_lay_set23to24_3000"],
+                                 ["m","general/","test_rollpi_plo_m_lay_set23to24_3000"]]
+    elif opt.test == 2:
+        testing_filename_list = [["f","general/","test_rollpi_f_lay_set23to24_3000"],
+                                 ["f","general/","test_rollpi_plo_f_lay_set23to24_3000"]]
+
+    elif opt.test == 3:
+        testing_filename_list = [["m","general_supine/", "test_roll0_m_lay_set14_1500"],
+                                  ["m","general_supine/", "test_roll0_plo_m_lay_set14_1500"],
+                                  ["m","crossed_legs/", "test_roll0_xl_m_lay_set1both_500"],
+                                  ["f","general_supine/", "test_roll0_f_lay_set14_1500"],
+                                  ["f","general_supine/", "test_roll0_plo_f_lay_set14_1500"],
+                                  ["f","crossed_legs/", "test_roll0_xl_f_lay_set1both_500"]]
+
+    elif opt.test == 4:
+        testing_filename_list = [["m", "hands_behind_head/", "test_roll0_plo_hbh_m_lay_set1_500"],
+                                 ["m", "prone_hands_up/", "test_roll0_plo_phu_m_lay_set1pa3_500"],
+                                 ["m", "straight_limbs/",  "test_roll0_sl_m_lay_set1both_500"],
+                                 ["f", "hands_behind_head/", "test_roll0_plo_hbh_f_lay_set4_500"],
+                                 ["f", "prone_hands_up/", "test_roll0_plo_phu_f_lay_set1pa3_500"],
+                                 ["f", "straight_limbs/", "test_roll0_sl_f_lay_set1both_500"]]
+
+    for item_test in testing_filename_list:
+        GENDER = item_test[0]
+        PARTITION = item_test[1]
+        TESTING_FILENAME = item_test[2]
+
+        test_database_file_f = []
+        test_database_file_m = [] #141 total training loss at epoch 9
 
 
 
-    if GENDER == "f":
-        test_database_file_f.append(FILEPATH_PREFIX+'/synth/'+PARTITION+TESTING_FILENAME+'.p')
-    else:
-        test_database_file_m.append(FILEPATH_PREFIX+'/synth/'+PARTITION+TESTING_FILENAME+'.p')
+        if GENDER == "f":
+            test_database_file_f.append(FILEPATH_PREFIX+'/synth/'+PARTITION+TESTING_FILENAME+'.p')
+        else:
+            test_database_file_m.append(FILEPATH_PREFIX+'/synth/'+PARTITION+TESTING_FILENAME+'.p')
 
 
-    p = PhysicalTrainer(test_database_file_f, test_database_file_m, opt)
+        p = PhysicalTrainer(test_database_file_f, test_database_file_m, opt)
 
-    p.init_convnet_test()
+        p.init_convnet_test()
 
-        #else:
-        #    print 'Please specify correct training type:1. HoG_KNN 2. convnet_2'
+            #else:
+            #    print 'Please specify correct training type:1. HoG_KNN 2. convnet_2'

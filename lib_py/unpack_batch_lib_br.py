@@ -162,9 +162,15 @@ class UnpackBatchLib():
             INPUT_DICT['batch_cm'] = None
 
 
+        #print images_up.size(), CTRL_PNL['num_input_channels_batch0']
+
         if CTRL_PNL['omit_cntct_sobel'] == True:
             images_up[:, 0, :, :] *= 0
-            images_up[:, CTRL_PNL['num_input_channels_batch0'], :, :] *= 0
+
+            if CTRL_PNL['cal_noise'] == True:
+                images_up[:, CTRL_PNL['num_input_channels_batch0'], :, :] *= 0
+            else:
+                images_up[:, CTRL_PNL['num_input_channels_batch0']-1, :, :] *= 0
 
 
 
