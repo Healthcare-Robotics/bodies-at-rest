@@ -1124,15 +1124,15 @@ if __name__ ==  "__main__":
 
     opt, args = p.parse_args()
 
-    participant_list = [#"S103",
-                        #"S104",
-                        #"S107",
-                        #"S114",
-                        #"S118",
-                        #"S121",
-                        #"S130",
-                        #"S134",
-                        #"S140",
+    participant_list = ["S103",
+                        "S104",
+                        "S107",
+                        "S114",
+                        "S118",
+                        "S121",
+                        "S130",
+                        "S134",
+                        "S140",
                         "S141",
 
                         "S145",
@@ -1144,7 +1144,8 @@ if __name__ ==  "__main__":
                         "S184",
                         "S187",
                         "S188",
-                        "S196", ]
+                        "S196",
+                        ]
 
     if opt.p_idx != 0:
         participant_list = [participant_list[opt.p_idx - 1]]

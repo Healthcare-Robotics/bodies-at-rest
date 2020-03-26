@@ -64,7 +64,7 @@ if __name__ == '__main__':
     opt, args = p.parse_args()
 
 
-    RESULT_TYPE = "real"
+    RESULT_TYPE = "synth"
 
     if RESULT_TYPE == "real":
 
@@ -295,29 +295,51 @@ if __name__ == '__main__':
     elif RESULT_TYPE == "synth":
 
 
-        #NETWORK_1 = "1.0rtojtdpth_depthestin_angleadj_tnhFIXN_htwt_calnoise"
-        NETWORK_2 = "0.5rtojtdpth_depthestin_angleadj_tnhFIXN"
-        #NETWORK_2 = "1.0rtojtdpth_angleadj_tnhFIXN_calnoise"
-        #NETWORK_2 = "NONE-200e"
-        #NETWORK_2 = "BASELINE"
-        DATA_QUANT = "184K"
+        if opt.small == True:
+            NETWORK_2 = "46000ct_"
+            DATA_QUANT = "46K"
+        else:
+            NETWORK_2 = "184000ct_"
+            DATA_QUANT = "184K"
 
-        filename_list = ["test_rollpi_f_lay_set23to24_1500_",
-                         "test_rollpi_m_lay_set23to24_1500_",
-                         "test_rollpi_plo_f_lay_set23to24_1500_",
-                         "test_rollpi_plo_m_lay_set23to24_1500_",
-                         "test_roll0_f_lay_set14_500_",
-                         "test_roll0_m_lay_set14_500_",
-                         "test_roll0_plo_f_lay_set14_500_",
-                         "test_roll0_plo_m_lay_set14_500_",
-                         "test_roll0_plo_hbh_f_lay_set4_500_",
-                         "test_roll0_plo_hbh_m_lay_set1_500_",
-                         "test_roll0_plo_phu_f_lay_set1pa3_500_",
-                         "test_roll0_plo_phu_m_lay_set1pa3_500_",
-                         "test_roll0_sl_f_lay_set1both_500_",
-                         "test_roll0_sl_m_lay_set1both_500_",
-                         "test_roll0_xl_f_lay_set1both_500_",
-                         "test_roll0_xl_m_lay_set1both_500_"
+
+        if opt.go200 == True:
+            NETWORK_2 += "128b_x1pm_tnh"
+        elif opt.pmr == True:
+            NETWORK_2 += "128b_x1pm_0.5rtojtdpth_depthestin_angleadj_tnh"
+        else:
+            NETWORK_2 += "128b_x1pm_angleadj_tnh"
+
+        if opt.htwt == True:
+            NETWORK_2 += "_htwt"
+        if opt.calnoise == True:
+            NETWORK_2 += "_clns20p"
+        if opt.loss_root == True:
+            NETWORK_2 += "_rt"
+        if opt.omit_cntct_sobel == True:
+            NETWORK_2 += "_ocs"
+        if opt.omit_hover == True:
+            NETWORK_2 += "_oh"
+        if opt.half_shape_wt == True:
+            NETWORK_2 += "_hsw"
+
+
+        filename_list = ["test_rollpi_f_lay_set23to24_1500",
+                         "test_rollpi_m_lay_set23to24_1500",
+                         "test_rollpi_plo_f_lay_set23to24_1500",
+                         "test_rollpi_plo_m_lay_set23to24_1500",
+                         "test_roll0_f_lay_set14_500",
+                         "test_roll0_m_lay_set14_500",
+                         "test_roll0_plo_f_lay_set14_500",
+                         "test_roll0_plo_m_lay_set14_500",
+                         "test_roll0_plo_hbh_f_lay_set4_500",
+                         "test_roll0_plo_hbh_m_lay_set1_500",
+                         "test_roll0_plo_phu_f_lay_set1pa3_500",
+                         "test_roll0_plo_phu_m_lay_set1pa3_500",
+                         "test_roll0_sl_f_lay_set1both_500",
+                         "test_roll0_sl_m_lay_set1both_500",
+                         "test_roll0_xl_f_lay_set1both_500",
+                         "test_roll0_xl_m_lay_set1both_500"
                             ]
         import math
         recall_avg_list = []
@@ -326,13 +348,14 @@ if __name__ == '__main__':
         v_to_gt_err_avg_list = []
         gt_to_v_err_avg_list = []
         joint_err_list = []
+        v2v_err_list = []
 
         for filename in filename_list:
             #current_results_dict = load_pickle("/media/henry/multimodal_data_1/data/final_results/"+DATA_QUANT+"_"
             #                                   +NETWORK_2+"/results_synth_"+DATA_QUANT+"_"+filename+NETWORK_2+".p")
             #current_results_dict = load_pickle("/media/henry/multimodal_data_2/data/final_results/"+NETWORK_2+"/results_synth_"+filename+NETWORK_2+".p")
             #current_results_dict = load_pickle("/home/henry/data/final_results/"+NETWORK_2+"/results_synth_"+filename+NETWORK_2+".p")
-            current_results_dict = load_pickle("/media/henry/multimodal_data_2/data/final_results/"+DATA_QUANT+"_"+NETWORK_2+"/results_synth_"+DATA_QUANT+"_"+filename+NETWORK_2+".p")
+            current_results_dict = load_pickle("/media/henry/multimodal_data_2/data_BR/final_results/"+NETWORK_2+"/results_synth_"+filename+".p")
             for entry in current_results_dict:
                 print entry
             #print current_results_dict['j_err'], 'j err'
@@ -356,6 +379,7 @@ if __name__ == '__main__':
                 gt_to_v_err_avg_list.append(current_results_dict['gt_to_v_err'][i])
                 #print  curr_gt_to_v_err
 
+                v2v_err_list.append(current_results_dict['v2v_err'][i])
 
 
                 joint_err_list.append(current_results_dict['j_err'][i])
@@ -373,5 +397,6 @@ if __name__ == '__main__':
         #print "average overlap depth err: ", np.mean(overlap_d_err_avg_list)
         print "average v to gt err: ", np.mean(v_to_gt_err_avg_list)*100
         print "average gt to v err: ", np.mean(gt_to_v_err_avg_list)*100
-        print "mean 3D err: ", np.mean([np.mean(v_to_gt_err_avg_list), np.mean(gt_to_v_err_avg_list)])*100
-        print "mean joint err: ", np.mean(joint_err_list)*100
+        print "mean 3DVPE err: ", np.mean([np.mean(v_to_gt_err_avg_list), np.mean(gt_to_v_err_avg_list)])*100
+        print "MPJPE: ", np.mean(joint_err_list)*100
+        print "v2v: ", np.mean(v2v_err_list)*100
