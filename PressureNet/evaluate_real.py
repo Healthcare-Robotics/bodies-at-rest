@@ -150,6 +150,7 @@ class Viz3DPose():
         self.CTRL_PNL['output_only_prev_est'] = False
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
+        self.CTRL_PNL['align_procr'] = False
 
         if self.CTRL_PNL['cal_noise'] == True:
             self.CTRL_PNL[

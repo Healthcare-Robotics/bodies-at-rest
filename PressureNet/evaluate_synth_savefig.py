@@ -137,6 +137,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['output_only_prev_est'] = False
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
+        self.CTRL_PNL['align_procr'] = False
 
 
         if self.CTRL_PNL['cal_noise'] == True:
@@ -375,7 +376,7 @@ class PhysicalTrainer():
 
             # This will loop a total = training_images/batch_size times
             for batch_idx, batch in enumerate(self.test_loader):
-                if batch_idx > 4 and batch_idx < 500: #57:
+                if batch_idx > 62 and batch_idx < 500: #57:
 
                     batch1 = batch[1].clone()
 
@@ -389,6 +390,7 @@ class PhysicalTrainer():
 
                     self.CTRL_PNL['adjust_ang_from_est'] = False
                     self.CTRL_PNL['depth_map_labels'] = False
+                    self.CTRL_PNL['align_procr'] = False
 
                     print self.CTRL_PNL['num_input_channels_batch0'], batch[0].size()
 
@@ -448,6 +450,8 @@ class PhysicalTrainer():
                             self.CTRL_PNL['num_input_channels_batch0'] += 3
 
                         print self.CTRL_PNL['num_input_channels_batch0'], batch_cor[0].size()
+
+                        self.CTRL_PNL['align_procr'] = self.opt.align_procr
 
                         scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch_cor, is_training=False,
                                                                                         model=self.model2,
@@ -559,6 +563,7 @@ class PhysicalTrainer():
 
 
                         save_name = NETWORK_2+'_'+TESTING_FILENAME+'_'+str(batch_idx)
+                        if self.opt.align_procr == True: save_name += '_ap'
                         # render everything
                         RESULTS_DICT = self.pyRender.render_mesh_pc_bed_pyrender_everything_synth(smpl_verts, smpl_faces,
                                                                                 camera_point, bedangle, RESULTS_DICT,
@@ -578,11 +583,11 @@ class PhysicalTrainer():
 
         #save here
 
-        dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
-        if not os.path.exists(dir):
-            os.mkdir(dir)
+        #dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
+        #if not os.path.exists(dir):
+        #    os.mkdir(dir)
 
-        pkl.dump(RESULTS_DICT, open(dir+'/results_synth_'+TESTING_FILENAME+'.p', 'wb'))
+        #pkl.dump(RESULTS_DICT, open(dir+'/results_synth_'+TESTING_FILENAME+'.p', 'wb'))
 
 
 if __name__ == "__main__":
@@ -639,6 +644,9 @@ if __name__ == "__main__":
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
+
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align procrustes. Only available on synthetic data.')
 
     p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
                  help='Half betas.')
@@ -709,7 +717,7 @@ if __name__ == "__main__":
 
 
     if opt.test == 1:
-        testing_filename_list = [["f", "prone_hands_up/", "train_roll0_plo_phu_f_lay_set2pl4_4000"],
+        testing_filename_list = [["f", "general/", "train_rollpi_f_lay_set10to17_16000"],
                                  ["m","general/","test_rollpi_m_lay_set23to24_3000"],
                                  ["m","general/","test_rollpi_plo_m_lay_set23to24_3000"]]
     elif opt.test == 2:
