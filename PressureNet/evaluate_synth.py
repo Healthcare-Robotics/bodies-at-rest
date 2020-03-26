@@ -137,6 +137,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['output_only_prev_est'] = False
         self.CTRL_PNL['double_network_size'] = False
         self.CTRL_PNL['first_pass'] = True
+        self.CTRL_PNL['align_procr'] = False
 
 
         if self.CTRL_PNL['cal_noise'] == True:
@@ -536,6 +537,7 @@ class PhysicalTrainer():
 
                 print self.CTRL_PNL['num_input_channels_batch0'], batch[0].size()
 
+                self.CTRL_PNL['align_procr'] = False
                 scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch, False, self.model,
                                                                                             self.CTRL_PNL)
 
@@ -592,6 +594,7 @@ class PhysicalTrainer():
                         self.CTRL_PNL['num_input_channels_batch0'] += 3
 
                     print self.CTRL_PNL['num_input_channels_batch0'], batch_cor[0].size()
+                    self.CTRL_PNL['align_procr'] = self.opt.align_procr
 
                     scores, INPUT_DICT, OUTPUT_DICT = UnpackBatchLib().unpack_batch(batch_cor, is_training=False,
                                                                                     model=self.model2,
@@ -721,6 +724,7 @@ class PhysicalTrainer():
         #save here
 
         dir = FILEPATH_PREFIX + '/final_results/'+NETWORK_2
+        if self.opt.align_procr == True: dir += '_ap'
         if not os.path.exists(dir):
             os.mkdir(dir)
 
@@ -781,6 +785,9 @@ if __name__ == "__main__":
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
+
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align procrustes. Only available on synthetic data.')
 
     p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
                  help='Half betas.')

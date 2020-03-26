@@ -297,12 +297,20 @@ class CNN(nn.Module):
             root_shift_est = scores[:, 10:13].clone()
 
 
+
+
             # normalize for tan activation function
             scores[:, 13+OSA:85+OSA] -= torch.mean(self.meshDepthLib.bounds[0:72, 0:2], dim=1)
             scores[:, 13+OSA:85+OSA] *= (2. / torch.abs(self.meshDepthLib.bounds[0:72, 0] - self.meshDepthLib.bounds[0:72, 1]))
             scores[:, 13+OSA:85+OSA] = scores[:, 13+OSA:85+OSA].tanh()
             scores[:, 13+OSA:85+OSA] /= (2. / torch.abs(self.meshDepthLib.bounds[0:72, 0] - self.meshDepthLib.bounds[0:72, 1]))
             scores[:, 13+OSA:85+OSA] += torch.mean(self.meshDepthLib.bounds[0:72, 0:2], dim=1)
+
+
+            if CTRL_PNL['align_procr'] == True:
+                print "aligning procrustes"
+                root_shift_est = root_shift
+                scores[:, 13+OSA:16+OSA] = angles_gt[:, 0:3].clone()
 
 
             #print scores[:, 13+OSA:85+OSA]
