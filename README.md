@@ -1,4 +1,4 @@
-# Bodies at Rest - v1.1: CVPR Camera Ready code version
+# Bodies at Rest - v1.1
 ## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
@@ -10,6 +10,9 @@ Clever, Henry M., Zackory Erickson, Ariel Kapusta, Greg Turk, C. Karen Liu, Char
 
 ### Video: 
 https://www.youtube.com/watch?v=Y7-2D5TwRJY
+
+### Code version (v1.1) note:
+This is the "camera ready" version of the code.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
