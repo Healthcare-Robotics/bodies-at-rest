@@ -48,7 +48,7 @@ PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real 
 Trained PressureNet model: the best performing PressureNet presented in the paper.
 * Run `./download_model` to download Mod1 and Mod2 for the best performing PressureNet in the paper (2 GB).
 * To use this with the training and evaluation code, you'll have to specify the correct flags. See sections below to understand what flags to use.
-* Link to the model: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/xxxxxx .
+* Link to the model: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IOUBGS .
 
 
 <p align="center">
