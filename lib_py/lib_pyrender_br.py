@@ -68,7 +68,7 @@ class pyRenderMesh():
         # dterms = 'vc', 'camera', 'bgcolor'
         self.first_pass = True
         self.render = render
-        if render: #True:# render == True:
+        if True: #render == True:
             self.scene = pyrender.Scene()
 
             #self.human_mat = pyrender.MetallicRoughnessMaterial(baseColorFactor=[0.0, 0.0, 1.0 ,0.0])

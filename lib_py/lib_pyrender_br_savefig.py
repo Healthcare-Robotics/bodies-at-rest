@@ -238,6 +238,9 @@ class pyRenderMesh():
                                     dropout_variance=None, color_im = None, tf_corners = None, current_pose_type_ct = None,
                                     participant = None):
 
+        pmat *= 0.75
+        pmat[pmat>0] += 10
+
         #print np.min(smpl_verts[:, 0])
         #print np.min(smpl_verts[:, 1])
 
@@ -552,7 +555,7 @@ class pyRenderMesh():
         save_name = participant+'_'+current_pose_type_ct
 
         print "saving!"
-        fig.savefig('/media/henry/multimodal_data_2/CVPR2020_study/'+participant+'/estimated_poses_camready/'+save_name+'.png', dpi=300)
+        fig.savefig('/media/henry/multimodal_data_2/CVPR2020_study/'+participant+'/estimated_poses_camready/'+save_name+'_v2.png', dpi=300)
         #fig.savefig('/media/henry/multimodal_data_2/CVPR2020_study/'+participant+'/natural_est_poses/'+save_name+'.png', dpi=300)
         #fig.savefig('/media/henry/multimodal_data_2/CVPR2020_study/TEST.png', dpi=300)
 
@@ -573,6 +576,9 @@ class pyRenderMesh():
     def render_mesh_pc_bed_pyrender_everything_synth(self, smpl_verts, smpl_faces, camera_point, bedangle, RESULTS_DICT,
                                     smpl_verts_gt = None, pmat = None, smpl_render_points = False, markers = None,
                                     dropout_variance=None, tf_corners = None, save_name = 'test_synth'):
+
+        pmat *= 0.75
+        pmat[pmat>0] += 10
 
         viz_popup = False
 
@@ -894,7 +900,7 @@ class pyRenderMesh():
 
 
             print "saving!"
-            fig.savefig('/media/henry/multimodal_data_2/CVPR2020_study/'+save_name+'.png', dpi=300)
+            fig.savefig('/media/henry/multimodal_data_2/CVPR2020_study/'+save_name+'_v2.png', dpi=300)
 
 
             self.pic_num += 1

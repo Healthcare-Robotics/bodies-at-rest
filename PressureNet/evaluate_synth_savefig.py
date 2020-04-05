@@ -376,7 +376,7 @@ class PhysicalTrainer():
 
             # This will loop a total = training_images/batch_size times
             for batch_idx, batch in enumerate(self.test_loader):
-                if batch_idx > 62 and batch_idx < 500: #57:
+                if batch_idx > BATCH_IDX_START and batch_idx < 500: #57:
 
                     batch1 = batch[1].clone()
 
@@ -716,8 +716,10 @@ if __name__ == "__main__":
         NETWORK_2 += "_hsw"
 
 
+    BATCH_IDX_START = 6
+
     if opt.test == 1:
-        testing_filename_list = [["f", "general/", "train_rollpi_f_lay_set10to17_16000"],
+        testing_filename_list = [#["f", "hands_behind_head/","test_roll0_plo_hbh_f_lay_set4_500"],
                                  ["m","general/","test_rollpi_m_lay_set23to24_3000"],
                                  ["m","general/","test_rollpi_plo_m_lay_set23to24_3000"]]
     elif opt.test == 2:

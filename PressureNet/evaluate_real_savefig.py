@@ -742,6 +742,7 @@ class Viz3DPose():
 
         elif viz_type == "3D":
             #render everything
+
             self.RESULTS_DICT = self.pyRender.render_mesh_pc_bed_pyrender_everything(smpl_verts, smpl_faces, camera_point,
                                                                   bedangle, self.RESULTS_DICT,
                                                                   pc = pc_autofil_red, pmat = pmat_array_input, smpl_render_points = False,
@@ -1139,13 +1140,13 @@ if __name__ ==  "__main__":
                         "S145",
                         "S151",
                         "S163",
-                        "S165",
-                        "S170",
-                        "S179",
-                        "S184",
-                        "S187",
-                        "S188",
-                        "S196",
+                        #"S165",
+                        #"S170",
+                        #"S179",
+                        #"S184",
+                        #"S187",
+                        #"S188",
+                        #"S196",
                         ]
 
     if opt.p_idx != 0:
