@@ -136,7 +136,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 </p>
 
 ## What code isn't here? 
-The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable.
+The code for generating more synthetic data isn't here. I plan on adding it, but it's much more complicated than the PressureNet code, so I don't intend on making it as easy to use as this.
 
 
 <p align="center">
@@ -145,7 +145,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 
 
 ## Updates since last version
-This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, made installation easier, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
+This version of the code is an upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, made installation easier, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break9.JPG?raw=true" alt="None"/>
