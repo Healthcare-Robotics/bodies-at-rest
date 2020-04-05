@@ -104,9 +104,9 @@ class PhysicalTrainer():
         self.CTRL_PNL['depth_map_labels_test'] = opt.pmr #False #can only be true is we have 100% synth for testing
         self.CTRL_PNL['depth_map_output'] = self.CTRL_PNL['depth_map_labels']
         self.CTRL_PNL['depth_map_input_est'] = opt.pmr #do this if we're working in a two-part regression
-        if opt.net == 1:
+        if opt.mod == 1:
             self.CTRL_PNL['adjust_ang_from_est'] = False #starts angles from scratch
-        elif opt.net == 2:
+        elif opt.mod == 2:
             self.CTRL_PNL['adjust_ang_from_est'] = True #gets betas and angles from prior estimate
         self.CTRL_PNL['clip_sobel'] = True
         self.CTRL_PNL['clip_betas'] = True
@@ -186,7 +186,7 @@ class PhysicalTrainer():
 
         #################################### PREP TRAINING DATA ##########################################
         #load training ysnth data
-        if opt.small == True and opt.net == 1:
+        if opt.small == True and opt.mod == 1:
             reduce_data = True
         else:
             reduce_data = False
@@ -343,7 +343,7 @@ class PhysicalTrainer():
 
 
 
-        self.save_name = '_' + str(opt.net) + '_' + opt.losstype + \
+        self.save_name = '_' + str(opt.mod) + '_' + opt.losstype + \
                          '_' + str(self.train_x_tensor.size()[0]) + 'ct' + \
                          '_' + str(self.CTRL_PNL['batch_size']) + 'b' + \
                          '_x' + str(self.CTRL_PNL['pmat_mult']) + 'pm'
@@ -749,7 +749,7 @@ if __name__ == "__main__":
     p.add_option('--j_d_ratio', action='store', type = 'float', dest='j_d_ratio', default=0.5, #PMR parameter to adjust loss function 2
                  help='Set the loss mix: joints to depth planes. Only used for PMR regression.')
 
-    p.add_option('--net', action='store', type = 'int', dest='net', default=0,
+    p.add_option('--mod', action='store', type = 'int', dest='mod', default=0,
                  help='Choose a network.')
 
     p.add_option('--prev_device', action='store', type = 'int', dest='prev_device', default=0,
@@ -812,7 +812,7 @@ if __name__ == "__main__":
 
     data_fp_suffix = ''
 
-    if opt.net == 2 or opt.quick_test == True:
+    if opt.mod == 2 or opt.quick_test == True:
         data_fp_suffix = '_convnet_1_'+str(opt.losstype)
 
         if opt.small == True:
@@ -835,7 +835,7 @@ if __name__ == "__main__":
 
         data_fp_suffix += '_100e_'+str(0.00002)+'lr'
 
-    elif opt.net == 1:
+    elif opt.mod == 1:
         data_fp_suffix = ''
 
     else:
