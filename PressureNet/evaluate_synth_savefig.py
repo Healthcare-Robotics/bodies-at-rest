@@ -107,7 +107,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['loss_root'] = opt.loss_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
-        self.CTRL_PNL['omit_hover'] = opt.omit_hover
+        self.CTRL_PNL['use_hover'] = opt.use_hover
         self.CTRL_PNL['dropout'] = False
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -639,8 +639,8 @@ if __name__ == "__main__":
     p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
                  help='Use root in loss function.')
 
-    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
-                 help='Cut hovermap from pmr input.')
+    p.add_option('--use_hover', action='store_true', dest='use_hover', default=False,
+                 help='Use hovermap for pmr input.')
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
@@ -708,8 +708,8 @@ if __name__ == "__main__":
         NETWORK_1 += "_ocs"
         NETWORK_2 += "_ocs"
 
-    if opt.omit_hover == True:
-        NETWORK_2 += "_oh"
+    if opt.use_hover == True:
+        NETWORK_2 += "_uh"
 
     if opt.half_shape_wt == True:
         NETWORK_1 += "_hsw"

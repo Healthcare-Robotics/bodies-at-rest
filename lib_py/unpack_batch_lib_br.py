@@ -174,7 +174,7 @@ class UnpackBatchLib():
 
 
 
-        if CTRL_PNL['omit_hover'] == True and CTRL_PNL['adjust_ang_from_est'] == True:
+        if CTRL_PNL['use_hover'] == False and CTRL_PNL['adjust_ang_from_est'] == True:
             images_up[:, 1, :, :] *= 0
 
 

@@ -52,14 +52,17 @@ if __name__ == '__main__':
     p.add_option('--loss_root', action='store_true', dest='loss_root', default=False,
                  help='Use root in loss function.')
 
-    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
-                 help='Cut hovermap from pmr input.')
+    p.add_option('--use_hover', action='store_true', dest='use_hover', default=False,
+                 help='Use hovermap for pmr input.')
 
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
     p.add_option('--half_shape_wt', action='store_true', dest='half_shape_wt', default=False,
                  help='Half betas.')
+
+    p.add_option('--align_procr', action='store_true', dest='align_procr', default=False,
+                 help='Align procrustes. Only works on synthetic data.')
     
     opt, args = p.parse_args()
 
@@ -124,8 +127,8 @@ if __name__ == '__main__':
             NETWORK_2 += "_rt"
         if opt.omit_cntct_sobel == True:
             NETWORK_2 += "_ocs"
-        if opt.omit_hover == True:
-            NETWORK_2 += "_oh"
+        if opt.use_hover == True:
+            NETWORK_2 += "_uh"
         if opt.half_shape_wt == True:
             NETWORK_2 += "_hsw"
 
@@ -135,7 +138,6 @@ if __name__ == '__main__':
             FILEPATH_PREFIX = '../../../data_BR'
 
         #NETWORK_2 = "NONE-200e"
-        #NETWORK_2 = "BASELINE"
 
 
         if opt.pose_type == 'prescribed':
@@ -162,13 +164,20 @@ if __name__ == '__main__':
 
 
 
-
+        testing_data_sz_ct = 0
 
         for participant in participant_list:
 
 
+            #if participant in ['S145']: continue
+
             participant_directory = FILEPATH_PREFIX+"/real/"+participant
             participant_info = load_pickle(participant_directory + "/participant_info_red.p")
+
+            for key in participant_info:
+                print "key: ", key
+
+            #if participant_info['gender'] == 'f': continue #use this to test gender partitions
 
 
            # pose_type_list = participant_info['pose_type']
@@ -181,7 +190,7 @@ if __name__ == '__main__':
 
             print "/media/henry/multimodal_data_2/data_BR/final_results/"+NETWORK_2+"/results_real_"+participant+"_"+POSE_TYPE+"_"+NETWORK_2+".p"
             #for entry in current_results_dict:
-            #    print entry
+            #    print "entry: ", entry
 
             #precision =
             #print participant
@@ -206,6 +215,7 @@ if __name__ == '__main__':
 
             for i in range(num_ims):
 
+
                 #partition_type = pose_type_list[i]
                # print partition_type
 
@@ -225,45 +235,37 @@ if __name__ == '__main__':
 
                 else: idx_num += 1
 
+                #if POSE_TYPE == "1":
+                #    participant_info['p_select_pose_type'].append(p_select_pose_type[i])
+                #if POSE_TYPE == "2":
+                #    participant_info['prescribed_pose_type'].append(participant_info_orig['pose_type'][i])
+
+
                 #body_roll_rad = current_results_dict['body_roll_rad'][idx_num]
 
                 #if partition_type in ['phu']:
+
+                #if participant_info['p_select_pose_type'][idx_num] not in ['prone']: continue #use this to test partitions
+                #if participant_info['prescribed_pose_type'][idx_num] not in ['supine', 'supine_plo']: continue #use this to test partitions
+                #if participant_info['prescribed_pose_type'][idx_num] not in ['rollpi', 'rollpi_plo']: continue #use this to test partitions
+                #if participant_info['prescribed_pose_type'][idx_num] not in ['sl']: continue #use this to test partitions
+
+
+                if POSE_TYPE == "1":
+                    print i, idx_num, participant_info['p_select_pose_type'][idx_num]
+                elif POSE_TYPE == "2":
+                    print i, idx_num, participant_info['prescribed_pose_type'][idx_num]
+
+
+
                 recall_list_curr.append(current_results_dict['recall'][idx_num])
                 precision_list_curr.append(current_results_dict['precision'][idx_num])
                 overlap_d_err_list_curr.append( current_results_dict['overlap_d_err'][idx_num])
                 v_limb_to_gt_err_list_curr.append(current_results_dict['v_limb_to_gt_err'][idx_num])
                 v_to_gt_err_list_curr.append(current_results_dict['v_to_gt_err'][idx_num])
                 gt_to_v_err_list_curr.append(current_results_dict['gt_to_v_err'][idx_num])
-                '''
-                if idx_num in [3] and participant not in ["S145", "S188", "S140"]:
-                    #if partition_type in ['supine_plo', 'rollpi_plo']:
-                    recall_list.append(current_results_dict['recall'][idx_num])
-                    precision_list.append(current_results_dict['precision'][idx_num])
-                    overlap_d_err_list.append( current_results_dict['overlap_d_err'][idx_num])
-                    v_limb_to_gt_err_list.append(current_results_dict['v_limb_to_gt_err'][idx_num])
-                    v_to_gt_err_list.append(current_results_dict['v_to_gt_err'][idx_num])
-                    gt_to_v_err_list.append(current_results_dict['gt_to_v_err'][idx_num]) #for 140 get supine from last
-                elif idx_num in [1] and participant in ["S188"]:
-                    recall_list.append(current_results_dict['recall'][idx_num])
-                    precision_list.append(current_results_dict['precision'][idx_num])
-                    overlap_d_err_list.append( current_results_dict['overlap_d_err'][idx_num])
-                    v_limb_to_gt_err_list.append(current_results_dict['v_limb_to_gt_err'][idx_num])
-                    v_to_gt_err_list.append(current_results_dict['v_to_gt_err'][idx_num])
-                    gt_to_v_err_list.append(current_results_dict['gt_to_v_err'][idx_num]) #for 140 get supine from last
-                elif idx_num in [2] and participant in ["S145"]:
-                    recall_list.append(current_results_dict['recall'][idx_num])
-                    precision_list.append(current_results_dict['precision'][idx_num])
-                    overlap_d_err_list.append( current_results_dict['overlap_d_err'][idx_num])
-                    v_limb_to_gt_err_list.append(current_results_dict['v_limb_to_gt_err'][idx_num])
-                    v_to_gt_err_list.append(current_results_dict['v_to_gt_err'][idx_num])
-                    gt_to_v_err_list.append(current_results_dict['gt_to_v_err'][idx_num]) #for 140 get supine from last
-                elif idx_num in [2] and participant in ["S140"]:
-                    recall_list.append(current_results_dict['recall'][idx_num])
-                    precision_list.append(current_results_dict['precision'][idx_num])
-                    overlap_d_err_list.append( current_results_dict['overlap_d_err'][idx_num])
-                    v_limb_to_gt_err_list.append(current_results_dict['v_limb_to_gt_err'][idx_num])
-                    v_to_gt_err_list.append(current_results_dict['v_to_gt_err'][idx_num])
-                    gt_to_v_err_list.append(current_results_dict['gt_to_v_err'][idx_num]) #for 140 get supine from last'''
+                testing_data_sz_ct += 1
+
 
 
             recall_list.append(np.mean(recall_list_curr))
@@ -274,21 +276,25 @@ if __name__ == '__main__':
             gt_to_v_err_list.append(np.mean(gt_to_v_err_list_curr))
 
 
-
-
             #print  curr_gt_to_v_err
-            print len(v_to_gt_err_list), 'ct list'
             #break
 
             #height, weight = get_heightweight_from_betas(current_results_dict['betas'])
+
+            #print "LENGTH: ", len(participant_info['p_select_pose_type'])
+            #print "LENGTH: ", len(participant_info['prescribed_pose_type'])
+            #pkl.dump(participant_info, open(participant_directory_orig + "/participant_info_red.p", 'wb'))
 
 
         #print "average precision: ", np.mean(precision_list)
        # print "average recall: ", np.mean(recall_list)
         #print "average overlap depth err: ", np.mean(overlap_d_err_list)
+
+        print "testing data size ct: ", testing_data_sz_ct
         print "average v to gt err: ", np.mean(v_to_gt_err_list)*100
         print "average gt to v err: ", np.mean(gt_to_v_err_list)*100
         print "mean 3D err: ", np.mean([np.mean(v_to_gt_err_list), np.mean(gt_to_v_err_list)])
+
 
 
 
@@ -318,10 +324,14 @@ if __name__ == '__main__':
             NETWORK_2 += "_rt"
         if opt.omit_cntct_sobel == True:
             NETWORK_2 += "_ocs"
-        if opt.omit_hover == True:
-            NETWORK_2 += "_oh"
+        if opt.use_hover == True:
+            NETWORK_2 += "_uh"
         if opt.half_shape_wt == True:
             NETWORK_2 += "_hsw"
+        if opt.align_procr == True:
+            NETWORK_2 += "_ap"
+#
+        #NETWORK_2 = "BASELINE"
 
 
         filename_list = ["test_rollpi_f_lay_set23to24_1500",
@@ -381,7 +391,7 @@ if __name__ == '__main__':
 
                 v2v_err_list.append(current_results_dict['v2v_err'][i])
 
-
+                #print current_results_dict['j_err']
                 joint_err_list.append(current_results_dict['j_err'][i])
                 #print np.shape(joint_err_list)
 

@@ -93,7 +93,7 @@ class PhysicalTrainer():
         self.CTRL_PNL['incl_ht_wt_channels'] = opt.htwt
         self.CTRL_PNL['loss_root'] = opt.loss_root
         self.CTRL_PNL['omit_cntct_sobel'] = opt.omit_cntct_sobel
-        self.CTRL_PNL['omit_hover'] = opt.omit_hover
+        self.CTRL_PNL['use_hover'] = opt.use_hover
         self.CTRL_PNL['incl_pmat_cntct_input'] = True
         self.CTRL_PNL['lock_root'] = False
         self.CTRL_PNL['num_input_channels'] = 2
@@ -368,8 +368,8 @@ class PhysicalTrainer():
             self.save_name += '_rt'
         if  self.CTRL_PNL['omit_cntct_sobel'] == True:
             self.save_name += '_ocs'
-        if  self.CTRL_PNL['omit_hover'] == True:
-            self.save_name += '_oh'
+        if  self.CTRL_PNL['use_hover'] == True:
+            self.save_name += '_uh'
         if  self.opt.half_shape_wt == True:
             self.save_name += '_hsw'
 
@@ -776,7 +776,7 @@ if __name__ == "__main__":
     p.add_option('--omit_cntct_sobel', action='store_true', dest='omit_cntct_sobel', default=False,
                  help='Cut contact and sobel from input.')
 
-    p.add_option('--omit_hover', action='store_true', dest='omit_hover', default=False,
+    p.add_option('--use_hover', action='store_true', dest='use_hover', default=False,
                  help='Cut hovermap from pmr input.')
 
     p.add_option('--calnoise', action='store_true', dest='calnoise', default=False,
