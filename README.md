@@ -1,4 +1,4 @@
-# Bodies at Rest - v1.1
+# Bodies at Rest - v1.1: CVPR Camera Ready code version
 ## 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data
 
 <p align="center">
