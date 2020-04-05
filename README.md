@@ -45,7 +45,9 @@ PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real 
 * For a quick start up, run `./download_qt_real`, which represents a single participant (500 MB).
 * Link to all the real data: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KOA4ML .
 
-
+Trained PressureNet model: the best network presented in the paper.
+* Run `/download_model` to download Mod1 and Mod2 for the best performing PressureNet in the paper (2 GB).
+* Link to the model: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/xxxxxx .
 
 
 <p align="center">
