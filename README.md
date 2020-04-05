@@ -11,6 +11,9 @@ Clever, Henry M., Zackory Erickson, Ariel Kapusta, Greg Turk, C. Karen Liu, Char
 ### Video: 
 https://www.youtube.com/watch?v=Y7-2D5TwRJY
 
+### Code version (v1.1) note:
+This is the "camera ready" version of the code.
+
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break1.JPG?raw=true" alt="None"/>
 </p>
@@ -42,7 +45,10 @@ PressurePose real dataset: 20 human participants (10M/10F) with 1K labeled real 
 * For a quick start up, run `./download_qt_real`, which represents a single participant (500 MB).
 * Link to all the real data: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KOA4ML .
 
-
+Trained PressureNet model: the best performing PressureNet presented in the paper.
+* Run `./download_model` to download Mod1 and Mod2 for the best performing PressureNet in the paper (2 GB).
+* To use this with the training and evaluation code, you'll have to specify the correct flags. See sections below to understand what flags to use.
+* Link to the model: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/xxxxxx .
 
 
 <p align="center">
@@ -136,7 +142,7 @@ To train all 184K images, you'll need at least 64GB of ram on your CPU with the 
 </p>
 
 ## What code isn't here? 
-The code for generating more synthetic data isn't here. I've got it spread across multiple repositories, so it would be challenging to make it decipherable.
+The code for generating more synthetic data isn't here. I plan on adding it, but it's much more complicated than the PressureNet code, so I don't intend on making it as easy to use as this.
 
 
 <p align="center">
@@ -145,7 +151,7 @@ The code for generating more synthetic data isn't here. I've got it spread acros
 
 
 ## Updates since last version
-This version of the code is a light upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, made installation easier, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
+This version of the code is an upgrade from that submitted to CVPR 2020. Changes: improved file naming conventions, made installation easier, addition of per-image normalization to correct for blankets/sheets on the bed, other minor improvements.
 
 <p align="center">
   <img width="110%" src="https://github.com/henryclever/bodies-at-rest/blob/master/docs/figures/git_break9.JPG?raw=true" alt="None"/>
