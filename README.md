@@ -12,6 +12,9 @@ Clever, Henry M., Zackory Erickson, Ariel Kapusta, Greg Turk, C. Karen Liu, Char
 ### Video:
 https://www.youtube.com/watch?v=UHBqw0BYWEw
 
+### Code version:
+This version is the original CVPR submission. It's old/deprecated and I suggest using v1.1 instead.
+
 ### Getting started:
 PressurePose synthetic dataset: Make a new folder, `~/data_BR/synth`, and put the 6 folders (42 files) from the link below in there. For a quick start up, only download the two files in the `quick_test` folder, which is 3K images instead of 184K. 
 `https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IAPI0X`
