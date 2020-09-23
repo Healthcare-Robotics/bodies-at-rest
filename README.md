@@ -9,7 +9,7 @@
 Clever, Henry M., Zackory Erickson, Ariel Kapusta, Greg Turk, C. Karen Liu, Charles C. Kemp. "Bodies at Rest: 3D Human Pose and Shape Estimation from a Pressure Image using Synthetic Data." In <i>IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</i>, 2020 - Oral presentation. ArXiv preprint: https://arxiv.org/pdf/2004.01166.pdf
 
 ### Video: 
-https://www.youtube.com/watch?v=Y7-2D5TwRJY
+https://www.youtube.com/watch?v=0W8iLqHvZz8
 
 ### Code version (v1.1) note:
 This is the "camera ready" version of the code.
